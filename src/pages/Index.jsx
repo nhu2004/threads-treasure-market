@@ -5,7 +5,7 @@ import { products, formatPrice } from "@/data/products";
 import ProductCard from "@/components/ProductCard";
 
 const featuredProducts = products.slice(0, 4);
-const heroImage = "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=1200&h=800&fit=crop";
+// const heroImage = "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=1200&h=800&fit=crop";
 
 const Index = () => {
   return (
@@ -13,7 +13,7 @@ const Index = () => {
       {/* Hero */}
       <section className="relative h-[85vh] overflow-hidden">
         <img
-          src={heroImage}
+          src={"/assets/hero-fashion.jpg"}
           alt="Fashion collection"
           className="absolute inset-0 w-full h-full object-cover"
         />
