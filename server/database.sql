@@ -33,11 +33,15 @@ CREATE TABLE Products (
 -- Tạo bảng Users
 CREATE TABLE Users (
     UserID INT IDENTITY(1,1) PRIMARY KEY,
-    Username NVARCHAR(50) NOT NULL,
+    Username NVARCHAR(50) NOT NULL UNIQUE,
     PasswordHash NVARCHAR(255) NOT NULL,
     FullName NVARCHAR(100),
     Email NVARCHAR(100),
-    Role NVARCHAR(20) -- 'customer', 'admin', 'staff'
+    Phone NVARCHAR(20),
+    Address NVARCHAR(255),
+    Role NVARCHAR(20) NOT NULL DEFAULT 'customer', -- 'customer', 'admin'
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedAt DATETIME DEFAULT GETDATE()
 );
 
 -- Tạo bảng Orders
