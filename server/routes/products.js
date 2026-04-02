@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const products = require('../data/products');
+const { getProducts, createProduct } = require('../controllers/productController');
 
-router.get('/', (req, res) => {
-  res.json(products);
-});
+// Lấy danh sách sản phẩm từ SQL Server
+router.get('/', getProducts);
 
-module.exports = router;
+// Thêm sản phẩm mới
+router.post('/add', createProduct);
+
+module.exports = router;    

@@ -142,14 +142,7 @@ INSERT INTO Vouchers (Code, Name, Value, ByType, StartDate, ExpiryDate, MinimumA
 ('XUAN2026', N'Mã Giảm Giá Xuân 2026', 15.00, 'percent', GETDATE(), '2026-05-01', 500000),
 ('FREESHIP', N'Ưu đãi vận chuyển', 30000.00, 'amount', GETDATE(), '2026-12-31', 200000),
 ('VIPTHREADS', N'Tri ân khách hàng thân thiết', 100000.00, 'amount', GETDATE(), '2026-06-01', 1000000);
-
--- Thêm sản phẩm thời trang đa dạng hơn
-INSERT INTO Products (Name, Price, BrandID, CategoryID, SupplierID, Description, ImageUrl) VALUES
-(N'Chân váy xếp ly Tennis', 350000.00, 1, 2, 1, N'Chân váy trẻ trung, dễ phối đồ.', 'https://example.com/skirt.jpg'),
-(N'Áo khoác dạ dáng dài', 1850000.00, 3, 1, 2, N'Chất liệu dạ giữ ấm tốt, sang trọng.', 'https://example.com/coat.jpg');
--- 1. Đảm bảo User '01' tồn tại (nếu chưa có từ file của bạn)
--- INSERT INTO Users (Username, PasswordHash, FullName, Email, Role) VALUES ('01', '$2b$10$xyz', 'Customer 01', 'customer01@gmail.com', 'customer');
-
+ 
 -- 2. Thêm 20 đơn hàng cho UserID = 2 (Username '01')
 DECLARE @i INT = 1;
 DECLARE @UserID INT = 2; -- ID của tài khoản '01'
@@ -181,3 +174,10 @@ END;
 ALTER TABLE Vouchers ADD Name NVARCHAR(100);
 ALTER TABLE Vouchers ADD StartDate DATETIME DEFAULT GETDATE();
 ALTER TABLE Vouchers ADD MinimumAmount DECIMAL(18,2) DEFAULT 0;
+
+-- Thêm sản phẩm thời trang đa dạng hơn
+INSERT INTO Products (Name, Price, BrandID, CategoryID, SupplierID, Description, ImageUrl) VALUES
+(N'Chân váy xếp ly Tennis', 350000.00, 1, 2, 1, N'Chân váy trẻ trung, dễ phối đồ.', 'https://example.com/skirt.jpg'),
+(N'Áo khoác dạ dáng dài', 1850000.00, 3, 1, 2, N'Chất liệu dạ giữ ấm tốt, sang trọng.', 'https://example.com/coat.jpg');
+-- 1. Đảm bảo User '01' tồn tại (nếu chưa có từ file của bạn)
+-- INSERT INTO Users (Username, PasswordHash, FullName, Email, Role) VALUES ('01', '$2b$10$xyz', 'Customer 01', 'customer01@gmail.com', 'customer');
