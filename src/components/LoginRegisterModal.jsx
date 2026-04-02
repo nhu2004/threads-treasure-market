@@ -85,6 +85,18 @@ export const LoginRegisterModal = ({ isOpen, onClose, onLoginSuccess }) => {
     }
   };
 
+  const handleCloseModal = () => {
+    // Xóa tất cả thông tin đã nhập
+    setLoginData({ username: '', password: '' });
+    setRegisterData({ phone: '', password: '', fullName: '', email: '' });
+    // Xóa thông báo lỗi
+    setError('');
+    // Reset tab về login
+    setActiveTab('login');
+    // Gọi hàm onClose từ parent
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -93,7 +105,7 @@ export const LoginRegisterModal = ({ isOpen, onClose, onLoginSuccess }) => {
         <div className="flex justify-between items-start mb-6">
           <h2 className="text-2xl font-bold">Tài khoản</h2>
           <button 
-            onClick={onClose} 
+            onClick={handleCloseModal} 
             className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded transition-colors"
             aria-label="Đóng"
           >

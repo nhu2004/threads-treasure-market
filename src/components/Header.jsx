@@ -9,20 +9,10 @@ const Header = () => {
   const { totalItems, setIsCartOpen } = useCart();
   const { user, logout, setLoginModalOpen } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-
-  // Lấy user từ localStorage khi component mount
-  useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser));
-    }
-  }, [user]);
 
   const handleLogout = () => {
     logout();
-    setCurrentUser(null);
     setUserMenuOpen(false);
   };
 

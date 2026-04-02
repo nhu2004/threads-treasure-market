@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
@@ -20,10 +20,20 @@ import ChatBot from "@/components/ChatBot";
 const queryClient = new QueryClient();
 
 function AppContent() {
-  const { loginModalOpen, setLoginModalOpen, user } = useAuth();
+  const { loginModalOpen, setLoginModalOpen, user, login } = useAuth();
+  const navigate = useNavigate();
 
   const handleLoginSuccess = (userData) => {
+    // Update AuthContext
+    login(userData, localStorage.getItem('token'));
+    
+    // Đóng modal
     setLoginModalOpen(false);
+    
+    // Auto redirect admin sang trang admin
+    if (userData.role === 'admin') {
+      window.location.href = 'http://localhost:5173';
+    }
   };
 
   return (
