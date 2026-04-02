@@ -1,12 +1,30 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag, Search, Menu, X, Heart } from "lucide-react";
+import { ShoppingBag, Search, Menu, X, Heart, User, LogOut } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Header = () => {
   const { totalItems, setIsCartOpen } = useCart();
+  const { user, logout, setLoginModalOpen } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  // Lấy user từ localStorage khi component mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setCurrentUser(JSON.parse(savedUser));
+    }
+  }, [user]);
+
+  const handleLogout = () => {
+    logout();
+    setCurrentUser(null);
+    setUserMenuOpen(false);
+  };
 
   const navLinks = [
     { to: "/", label: "Trang chủ" },
@@ -72,6 +90,53 @@ const Header = () => {
                 </span>
               )}
             </button>
+
+            {/* User menu */}
+            <div className="relative md:block hidden">
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="p-2 text-foreground hover:text-muted-foreground transition-colors"
+              >
+                <User size={20} />
+              </button>
+
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50">
+                  {currentUser ? (
+                    <>
+                      <div className="px-4 py-3 border-b">
+                        <p className="font-medium">{currentUser.fullName || currentUser.username}</p>
+                        <p className="text-xs text-gray-500">{currentUser.role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}</p>
+                      </div>
+                      {currentUser.role === 'admin' && (
+                        <button
+                          onClick={() => window.location.href = 'http://localhost:5173'}
+                          className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                        >
+                          Quan lý Admin
+                        </button>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
+                      >
+                        <LogOut size={16} /> Đăng xuất
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setLoginModalOpen(true);
+                        setUserMenuOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Đăng nhập / Đăng ký
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

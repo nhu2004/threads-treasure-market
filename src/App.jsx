@@ -4,9 +4,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
+import { LoginRegisterModal } from "@/components/LoginRegisterModal";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
@@ -17,9 +19,15 @@ import ChatBot from "@/components/ChatBot";
 
 const queryClient = new QueryClient();
 
-export default function App() {
+function AppContent() {
+  const { loginModalOpen, setLoginModalOpen, user } = useAuth();
+
+  const handleLoginSuccess = (userData) => {
+    setLoginModalOpen(false);
+  };
+
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -27,6 +35,11 @@ export default function App() {
           <CartProvider>
             <Header />
             <CartDrawer />
+            <LoginRegisterModal
+              isOpen={loginModalOpen}
+              onClose={() => setLoginModalOpen(false)}
+              onLoginSuccess={handleLoginSuccess}
+            />
             <main className="min-h-screen">
               <Routes>
                 <Route path="/" element={<Index />} />
@@ -42,6 +55,16 @@ export default function App() {
           </CartProvider>
         </BrowserRouter>
       </TooltipProvider>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

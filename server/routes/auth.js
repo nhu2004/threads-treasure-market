@@ -12,6 +12,14 @@ const users = [
     email: 'admin@threads-treasure.com',
     role: 'admin',
   },
+  {
+    id: 2,
+    username: '01',
+    password: '1',
+    fullName: 'Customer',
+    email: 'customer@threads-treasure.com',
+    role: 'customer',
+  },
 ];
 
 // Register route
