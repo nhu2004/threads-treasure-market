@@ -10,7 +10,7 @@ import {
   useAddcategory,
   useAddsupplier,
   useAddproductForm,
-} from "../../../../hooks";
+} from "../../../../hooks/admin/admin";
 
 function Addproduct() {
   const { brandList, categoryList, supplierList } = useproductOptions();
@@ -508,6 +508,8 @@ function Addproduct() {
 }
 
 export default Addproduct;
+
+
 
 
 

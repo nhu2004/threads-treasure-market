@@ -13,7 +13,7 @@ import {
   useAddcategory,
   useAddsupplier,
   useUpdateproductForm,
-} from "../../../../hooks";
+} from "../../../../hooks/admin/admin";
 
 function Updateproduct() {
   const params = useParams();
@@ -540,6 +540,8 @@ function Updateproduct() {
 }
 
 export default Updateproduct;
+
+
 
 
 

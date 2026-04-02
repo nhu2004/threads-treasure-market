@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import PaginationproductStore from "../../../components/PaginationproductStore";
 import { FaEdit, FaTrashAlt, FaSearch } from "react-icons/fa";
 import { Row, Col, Table, Spinner, Modal, Button } from "react-bootstrap";
-import { usecategoryList, usecategoryCRUD } from "../../../hooks";
+import { usecategoryList, usecategoryCRUD } from "../../../hooks/admin/admin";
 
 function categoryList() {
   const {
@@ -250,6 +250,8 @@ function categoryList() {
 }
 
 export default categoryList;
+
+
 
 
 

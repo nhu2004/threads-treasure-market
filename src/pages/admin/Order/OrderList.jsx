@@ -22,7 +22,7 @@ import {
   useOrderList,
   useAdminOrderDetail,
   useUpdateOrderStatus,
-} from "../../../hooks";
+} from "../../../hooks/admin/admin";
 
 export default function OrderList() {
   const { orderData, page, setPage, loading, updateOrderInList } =
@@ -234,6 +234,8 @@ export default function OrderList() {
     </Row>
   );
 }
+
+
 
 
 

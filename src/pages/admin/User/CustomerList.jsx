@@ -17,7 +17,7 @@ import format from "../../../helper/format";
 import PaginationproductStore from "../../../components/PaginationproductStore";
 import OrderDetail from "../../../components/OrderDetail";
 import steps from "../../../components/OrderProgress/enum";
-import { useCustomerList, useCustomerOrders } from "../../../hooks";
+import { useCustomerList, useCustomerOrders } from "../../../hooks/admin/admin";
 
 export default function CustomerList() {
   const {
@@ -300,6 +300,8 @@ export default function CustomerList() {
     </Row>
   );
 }
+
+
 
 
 

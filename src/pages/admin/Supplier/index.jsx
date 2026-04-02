@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import PaginationproductStore from "../../../components/PaginationproductStore";
 import { FaEdit, FaTrashAlt, FaSearch } from "react-icons/fa";
 import { Row, Col, Table, Spinner, Modal, Button } from "react-bootstrap";
-import { usesupplierList, usesupplierCRUD } from "../../../hooks";
+import { usesupplierList, usesupplierCRUD } from "../../../hooks/admin/admin";
 
 function supplierList() {
   const {
@@ -253,6 +253,8 @@ function supplierList() {
 }
 
 export default supplierList;
+
+
 
 
 

@@ -24,7 +24,7 @@ import {
   useDashboardCards,
   useRevenueChart,
   useAnalyticsCharts,
-} from "../../../hooks";
+} from "../../../hooks/admin";
 
 ChartJS.register(
   ArcElement,
@@ -176,6 +176,8 @@ function AnalyticsPage() {
 }
 
 export default AnalyticsPage;
+
+
 
 
 

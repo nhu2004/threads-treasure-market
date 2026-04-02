@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import PaginationproductStore from "../../../components/PaginationproductStore";
 import { FaEdit, FaTrashAlt, FaSearch, FaUserPlus } from "react-icons/fa";
 import { Row, Col, Table, Spinner, Modal, Button } from "react-bootstrap";
-import { usebrandList, usebrandCRUD } from "../../../hooks";
+import { usebrandList, usebrandCRUD } from "../../../hooks/admin/admin";
 
 function brandList() {
   const {
@@ -288,6 +288,8 @@ function brandList() {
 }
 
 export default brandList;
+
+
 
 
 

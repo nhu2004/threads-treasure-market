@@ -6,7 +6,7 @@ import { FaEdit, FaTrashAlt } from "react-icons/fa";
 import { Row, Col, Table, Spinner, Modal, Button } from "react-bootstrap";
 import format from "../../../helper/format";
 import moment from "moment";
-import { useVoucherList, useVoucherCRUD } from "../../../hooks";
+import { useVoucherList, useVoucherCRUD } from "../../../hooks/admin/admin";
 
 function Voucher() {
   const { voucherData, page, setPage, loading, refreshList } = useVoucherList();
@@ -401,6 +401,8 @@ function Voucher() {
 }
 
 export default Voucher;
+
+
 
 
 

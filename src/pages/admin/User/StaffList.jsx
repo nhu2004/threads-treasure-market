@@ -21,7 +21,7 @@ import {
   FaKey,
   FaTrash,
 } from "react-icons/fa";
-import { useStaffList, useStaffCRUD } from "../../../hooks";
+import { useStaffList, useStaffCRUD } from "../../../hooks/admin/admin";
 
 export default function StaffList() {
   const {
@@ -453,6 +453,8 @@ export default function StaffList() {
     </Row>
   );
 }
+
+
 
 
 
