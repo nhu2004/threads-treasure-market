@@ -5,14 +5,11 @@ const format = {
    * @returns {string} Giá tiền đã được định dạng
    */
   formatPrice: (price) => {
-    if (typeof price !== "number" || isNaN(price)) {
-      throw new Error("Giá tiền phải là một số hợp lệ.");
-    }
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
-  },
+  if (price === null || price === undefined || isNaN(price)) {
+    return "0 ₫"; // Trả về mặc định nếu dữ liệu lỗi
+  }
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+},
 
   /**
    * Chuyển đổi mảng các đối tượng thành chuỗi, cách nhau bởi dấu phẩy

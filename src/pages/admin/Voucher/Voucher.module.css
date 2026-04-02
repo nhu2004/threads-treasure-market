@@ -1,19 +1,103 @@
-.voucherCard {
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    border: none;
+/* Tổng quan bảng điều khiển */
+.adminContentWrapper {
+    background: #ffffff;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    margin-top: 20px;
 }
 
-.statusActive {
-    color: #28a745;
+.adminContentHeader {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2c3e50;
+    border-left: 4px solid #539e31;
+    padding-left: 15px;
+}
+
+/* Tùy chỉnh Bảng hiển thị */
+.voucherTable {
+    margin-top: 10px;
+    vertical-align: middle !important;
+}
+
+.voucherTable thead th {
+    background-color: #f8fbf6;
+    color: #444;
     font-weight: 600;
+    border-bottom: 2px solid #539e31;
+    padding: 12px;
+    font-size: 0.9rem;
 }
 
-/* Tùy chỉnh input trong Modal giống phong cách các file CSS bạn đã có */
-.adminInput {
-    border: 1px solid #ddd;
-    padding: 10px;
-    border-radius: 4px;
-    margin-bottom: 15px;
-    width: 100%;
+.voucherTable tbody td {
+    padding: 15px 12px;
+    color: #555;
+}
+
+/* Hiển thị Code mã giảm giá nổi bật */
+.promoCode {
+    font-family: 'Segoe UI Mono', monospace;
+    font-weight: 700;
+    color: #e74c3c;
+    background: #fdf2f2;
+    padding: 5px 12px;
+    border: 1px dashed #e74c3c;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+/* Nhãn (Label) cho các ô nhập liệu */
+.formLabel {
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+    display: block;
+}
+
+/* Tùy chỉnh Modal để không bị lỗi layout */
+:global(.modal-content) {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+:global(.modal-header) {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    padding: 20px;
+}
+
+:global(.modal-body) {
+    padding: 25px;
+}
+
+/* Nút bấm Thêm mới */
+.btnSuccessCustom {
+    background-color: #539e31 !important;
+    border: none !important;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btnSuccessCustom:hover {
+    background-color: #458a28 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(83, 158, 49, 0.2);
+}
+
+/* Đảm bảo các ô Input đều nhau */
+:global(.form-control), :global(.form-select) {
+    border: 1px solid #e0e0e0 !important;
+    padding: 10px 15px !important;
+    border-radius: 8px !important;
+    font-size: 0.95rem !important;
+}
+
+:global(.form-control:focus) {
+    border-color: #539e31 !important;
+    box-shadow: 0 0 0 3px rgba(83, 158, 49, 0.1) !important;
 }

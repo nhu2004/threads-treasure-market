@@ -1,9 +1,8 @@
-//Client/src/pages/Admin/Voucher/index.js
 import { useCallback } from "react";
 import PaginationproductStore from "../../../components/PaginationproductStore";
-import { FaEdit, FaTrashAlt } from "react-icons/fa";
+import { FaEdit, FaTrashAlt, FaPlus } from "react-icons/fa";
 import styles from "./Voucher.module.css";
-import { Row, Col, Table, Spinner, Modal, Button } from "react-bootstrap";
+import { Row, Col, Table, Spinner, Modal, Button, Form } from "react-bootstrap";
 import format from "../../../helper/format";
 import moment from "moment";
 import { useVoucherList, useVoucherCRUD } from "../../../hooks/admin/admin";
@@ -40,338 +39,248 @@ function Voucher() {
 
   return (
     <Row>
-      <Modal
-        size="lg"
-        show={showUpdateModal}
-        onHide={() => setShowUpdateModal(false)}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Cập nhật mã giảm giá</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <form onSubmit={handleUpdate}>
-            <Row>
-              <Col xl={4}>
-                <label>Tên mã giảm giá</label>
-                <input
-                  required
-                  type="text"
-                  value={selectedVoucher?.name}
-                  className="form-control"
-                  onChange={(e) =>
-                    setSelectedVoucher((prev) => {
-                      return { ...prev, name: e.target.value };
-                    })
-                  }
-                />
-              </Col>
-              <Col xl={4}>
-                <label>Code</label>
-                <input
-                  readOnly
-                  type="text"
-                  value={selectedVoucher?.code}
-                  className="form-control"
-                />
-              </Col>
-              <Col xl={4}>
-                <label>Loại</label>
-                <input
-                  readOnly
-                  type="text"
-                  value={
-                    selectedVoucher.by === "percent"
-                      ? "Phần trăm (%)"
-                      : "Mức cố định (VNĐ)"
-                  }
-                  className="form-control"
-                />
-              </Col>
-              <Col xl={4}>
-                <label>Mức giảm</label>
-                <input
-                  readOnly
-                  type="number"
-                  value={selectedVoucher?.value}
-                  className="form-control"
-                />
-              </Col>
-              <Col xl={4}>
-                <label>Ngày bắt đầu</label>
-                <input
-                  required
-                  type="date"
-                  value={selectedVoucher?.start}
-                  className="form-control"
-                  onChange={(e) =>
-                    setSelectedVoucher((prev) => {
-                      return { ...prev, start: e.target.value };
-                    })
-                  }
-                />
-              </Col>
-              <Col xl={4}>
-                <label>Ngày kết thúc</label>
-                <input
-                  required
-                  type="date"
-                  value={selectedVoucher?.end}
-                  className="form-control"
-                  onChange={(e) =>
-                    setSelectedVoucher((prev) => {
-                      return { ...prev, end: e.target.value };
-                    })
-                  }
-                />
-              </Col>
-              <Col xl={4}>
-                <label>Mức chi tối thiểu</label>
-                <input
-                  readOnly
-                  type="number"
-                  value={selectedVoucher?.minimum}
-                  className="form-control"
-                />
-              </Col>
-            </Row>
-            <Button
-              type="submit"
-              variant="danger"
-              className="mt-2"
-              disabled={crudLoading}
-            >
-              Lưu
-            </Button>
-          </form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowUpdateModal(false)}>
-            Hủy
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      <Modal
-        size="lg"
-        show={showAddModal}
-        onHide={() => setShowAddModal(false)}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Thêm mã giảm giá</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <form onSubmit={handleCreate}>
-            <Row>
-              <Col xl={4}>
-                <label>Tên mã giảm giá</label>
-                <input
-                  required
-                  type="text"
-                  value={addVoucher?.name}
-                  className="form-control"
-                  onChange={(e) =>
-                    setAddVoucher((prev) => {
-                      return { ...prev, name: e.target.value };
-                    })
-                  }
-                />
-              </Col>
-              <Col xl={4}>
-                <label>Code</label>
-                <input
-                  required
-                  type="text"
-                  value={addVoucher?.code}
-                  className="form-control"
-                  onChange={(e) =>
-                    setAddVoucher((prev) => {
-                      return { ...prev, code: e.target.value };
-                    })
-                  }
-                />
-              </Col>
-              <Col xl={4}>
-                <label>Loại</label>
-                <select
-                  className="form-select"
-                  value={addVoucher?.by}
-                  onChange={(e) =>
-                    setAddVoucher((prev) => {
-                      return { ...prev, by: e.target.value };
-                    })
-                  }
-                >
-                  <option value="percent">Phần trăm</option>
-                  <option value="amount">Mức cố định</option>
-                </select>
-              </Col>
-              <Col xl={4}>
-                <label>Mức giảm</label>
-                <input
-                  required
-                  type="number"
-                  value={addVoucher?.value}
-                  className="form-control"
-                  onChange={(e) =>
-                    setAddVoucher((prev) => {
-                      return { ...prev, value: e.target.value };
-                    })
-                  }
-                />
-              </Col>
-              <Col xl={4}>
-                <label>Ngày bắt đầu</label>
-                <input
-                  required
-                  type="date"
-                  value={addVoucher?.start}
-                  className="form-control"
-                  onChange={(e) =>
-                    setAddVoucher((prev) => {
-                      return { ...prev, start: e.target.value };
-                    })
-                  }
-                />
-              </Col>
-              <Col xl={4}>
-                <label>Ngày kết thúc</label>
-                <input
-                  required
-                  type="date"
-                  value={addVoucher?.end}
-                  className="form-control"
-                  onChange={(e) =>
-                    setAddVoucher((prev) => {
-                      return { ...prev, end: e.target.value };
-                    })
-                  }
-                />
-              </Col>
-              <Col xl={4}>
-                <label>Mức chi tối thiểu</label>
-                <input
-                  required
-                  type="number"
-                  value={addVoucher?.minimum}
-                  className="form-control"
-                  onChange={(e) =>
-                    setAddVoucher((prev) => {
-                      return { ...prev, minimum: e.target.value };
-                    })
-                  }
-                />
-              </Col>
-            </Row>
-            <Button
-              type="submit"
-              className="mt-2"
-              variant="danger"
-              disabled={crudLoading}
-            >
-              Lưu
-            </Button>
-          </form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowAddModal(false)}>
-            Hủy
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      <Modal
-        size="lg"
-        show={showDeleteModal}
-        onHide={() => setShowDeleteModal(false)}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Xóa mã giảm giá</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Bạn có chắc xóa mã giảm giá{" "}
-          <b>{voucherDelete && voucherDelete.code}</b> này không?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
-            Hủy
-          </Button>
-          <Button
-            variant="danger"
-            onClick={handleDelete}
-            disabled={crudLoading}
-          >
-            Xóa
-          </Button>
-        </Modal.Footer>
-      </Modal>
       <Col xl={12}>
-        <div className="admin-content-wrapper">
-          <div className="admin-content-header">Danh sách Mã giảm giá</div>
-          <div className="admin-content-action">
-            <div className="d-flex">
-              <button
-                type="button"
-                className="btn btn-success ms-auto"
+        <div className={styles.adminContentWrapper}>
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className={styles.adminContentHeader}>Quản lý Mã giảm giá</div>
+            <Button 
+                className={styles.btnSuccessCustom} 
                 onClick={() => setShowAddModal(true)}
-              >
-                Thêm Mã giảm giá
-              </button>
-            </div>
+            >
+                <FaPlus className="me-2" /> Thêm mã giảm giá mới
+            </Button>
           </div>
+
           <div className="admin-content-body">
-            <Table striped bordered hover>
+            <Table responsive hover className={styles.voucherTable}>
               <thead>
                 <tr>
                   <th>STT</th>
-                  <th>Tên mã giảm giá</th>
-                  <th>Code Mã giảm giá</th>
-                  <th>Mức chi tối thiểu</th>
-                  <th>Giảm</th>
-                  <th>Thời gian</th>
-                  <th colSpan="2">Hành động</th>
+                  <th>Tên chương trình</th>
+                  <th>Mã ưu đãi</th>
+                  <th>Giá trị giảm</th>
+                  <th>Đơn tối thiểu</th>
+                  <th>Ngày hết hạn</th>
+                  <th className="text-center">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
-                {voucherData.vouchers && voucherData.vouchers.length > 0 ? (
-                  voucherData.vouchers.map((item, index) => (
-                    <tr key={item.VoucherID}>
-                      <td>{index + 1}</td>
-                      <td>{item.Name}</td>
-                      <td><strong style={{color: '#d32f2f'}}>{item.Code}</strong></td>
-                      <td>{item.ByType === 'percent' ? `${item.Value}%` : format.formatPrice(item.Value)}</td>
-                      <td>{format.formatPrice(item.MinimumAmount)}</td>
-                      <td>{moment(item.ExpiryDate).format("DD/MM/YYYY")}</td>
-                      <td className="text-center">
-                        <Button variant="warning" size="sm" className="me-2" onClick={() => openUpdateModal(item)}>
-                          <FaEdit />
-                        </Button>
-                        <Button variant="danger" size="sm" onClick={() => openDeleteModal(item)}>
-                          <FaTrashAlt />
-                        </Button>
-                      </td>
+                {loading ? (
+                    <tr>
+                        <td colSpan={7} className="text-center py-4">
+                            <Spinner animation="border" variant="success" />
+                        </td>
                     </tr>
-                  )) // Đóng map ở đây
+                ) : voucherData.vouchers && voucherData.vouchers.length > 0 ? (
+                    voucherData.vouchers.map((item, index) => (
+                        <tr key={item.VoucherID}>
+                          <td>{(page - 1) * 10 + (index + 1)}</td>
+                          <td><span className="fw-bold">{item.Name || "Chưa đặt tên"}</span></td>
+                          <td><span className={styles.promoCode}>{item.Code}</span></td>
+                          <td>
+                            {item.ByType === 'percent' 
+                              ? `Giảm ${item.Value}%` 
+                              : `Giảm ${format.formatPrice(item.Value)}`}
+                          </td>
+                          <td>{format.formatPrice(item.MinimumAmount)}</td>
+                          <td>{moment(item.ExpiryDate).format("DD/MM/YYYY")}</td>
+                          <td className="text-center">
+                            <Button variant="outline-warning" size="sm" className="me-2" onClick={() => openUpdateModal(item)}>
+                              <FaEdit />
+                            </Button>
+                            <Button variant="outline-danger" size="sm" onClick={() => openDeleteModal(item)}>
+                              <FaTrashAlt />
+                            </Button>
+                          </td>
+                        </tr>
+                    ))
                 ) : (
-                  <tr>
-                    <td colSpan={7} className="text-center">Không có mã giảm giá nào!</td>
-                  </tr>
+                    <tr>
+                        <td colSpan={7} className="text-center py-4">Không có mã giảm giá nào được tìm thấy.</td>
+                    </tr>
                 )}
               </tbody>
             </Table>
-            <div className="admin-content-pagination">
-              <Row>
-                <Col xl={12}>
-                  {voucherData.totalPage > 1 ? (
+
+            {voucherData.totalPage > 1 && (
+                <div className="d-flex justify-content-center mt-4">
                     <PaginationproductStore
-                      totalPage={voucherData.totalPage}
-                      currentPage={page}
-                      onChangePage={handleChangePage}
+                        totalPage={voucherData.totalPage}
+                        currentPage={page}
+                        onChangePage={handleChangePage}
                     />
-                  ) : null}
-                </Col>
-              </Row>
-            </div>
+                </div>
+            )}
           </div>
         </div>
       </Col>
+
+      {/* MODAL THÊM MỚI */}
+      <Modal size="lg" show={showAddModal} onHide={() => setShowAddModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title className="fw-bold">Thêm mã giảm giá mới</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleCreate}>
+            <Row className="g-3">
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className={styles.formLabel}>Tên mã giảm giá</Form.Label>
+                  <Form.Control
+                    required
+                    type="text"
+                    placeholder="Nhập tên chương trình..."
+                    value={addVoucher?.name || ""}
+                    onChange={(e) => setAddVoucher(prev => ({ ...prev, name: e.target.value }))}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className={styles.formLabel}>Mã Code (Viết liền)</Form.Label>
+                  <Form.Control
+                    required
+                    type="text"
+                    placeholder="Ví dụ: SALE2026"
+                    value={addVoucher?.code || ""}
+                    onChange={(e) => setAddVoucher(prev => ({ ...prev, code: e.target.value }))}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group>
+                  <Form.Label className={styles.formLabel}>Loại giảm</Form.Label>
+                  <Form.Select
+                    value={addVoucher?.by || "percent"}
+                    onChange={(e) => setAddVoucher(prev => ({ ...prev, by: e.target.value }))}
+                  >
+                    <option value="percent">Phần trăm (%)</option>
+                    <option value="amount">Số tiền cố định (đ)</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group>
+                  <Form.Label className={styles.formLabel}>Mức giảm</Form.Label>
+                  <Form.Control
+                    required
+                    type="number"
+                    value={addVoucher?.value || ""}
+                    onChange={(e) => setAddVoucher(prev => ({ ...prev, value: e.target.value }))}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group>
+                  <Form.Label className={styles.formLabel}>Đơn tối thiểu</Form.Label>
+                  <Form.Control
+                    required
+                    type="number"
+                    value={addVoucher?.minimum || ""}
+                    onChange={(e) => setAddVoucher(prev => ({ ...prev, minimum: e.target.value }))}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className={styles.formLabel}>Ngày bắt đầu</Form.Label>
+                  <Form.Control
+                    required
+                    type="date"
+                    value={addVoucher?.start || ""}
+                    onChange={(e) => setAddVoucher(prev => ({ ...prev, start: e.target.value }))}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className={styles.formLabel}>Ngày kết thúc</Form.Label>
+                  <Form.Control
+                    required
+                    type="date"
+                    value={addVoucher?.end || ""}
+                    onChange={(e) => setAddVoucher(prev => ({ ...prev, end: e.target.value }))}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <div className="text-end mt-4">
+              <Button variant="secondary" className="me-2" onClick={() => setShowAddModal(false)}>Hủy</Button>
+              <Button type="submit" variant="success" className={styles.btnSuccessCustom} disabled={crudLoading}>
+                {crudLoading ? "Đang lưu..." : "Lưu mã giảm giá"}
+              </Button>
+            </div>
+          </Form>
+        </Modal.Body>
+      </Modal>
+
+      {/* MODAL CẬP NHẬT */}
+      <Modal size="lg" show={showUpdateModal} onHide={() => setShowUpdateModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title className="fw-bold">Cập nhật mã giảm giá</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleUpdate}>
+            <Row className="g-3">
+              <Col md={12}>
+                <Form.Group>
+                  <Form.Label className={styles.formLabel}>Tên chương trình</Form.Label>
+                  <Form.Control
+                    required
+                    type="text"
+                    value={selectedVoucher?.Name || ""}
+                    onChange={(e) => setSelectedVoucher(prev => ({ ...prev, Name: e.target.value }))}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className={styles.formLabel}>Ngày bắt đầu</Form.Label>
+                  <Form.Control
+                    required
+                    type="date"
+                    value={selectedVoucher?.start || ""}
+                    onChange={(e) => setSelectedVoucher(prev => ({ ...prev, start: e.target.value }))}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label className={styles.formLabel}>Ngày kết thúc</Form.Label>
+                  <Form.Control
+                    required
+                    type="date"
+                    value={selectedVoucher?.end || ""}
+                    onChange={(e) => setSelectedVoucher(prev => ({ ...prev, end: e.target.value }))}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <div className="text-end mt-4">
+              <Button variant="secondary" className="me-2" onClick={() => setShowUpdateModal(false)}>Hủy</Button>
+              <Button type="submit" variant="warning" className="fw-bold" disabled={crudLoading}>
+                Lưu thay đổi
+              </Button>
+            </div>
+          </Form>
+        </Modal.Body>
+      </Modal>
+
+      {/* MODAL XÓA */}
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title className="fw-bold text-danger">Xác nhận xóa</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Bạn có chắc muốn xóa mã giảm giá <b className="text-danger">{voucherDelete?.Code}</b> này không? Hành động này không thể hoàn tác.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>Hủy</Button>
+          <Button variant="danger" onClick={handleDelete} disabled={crudLoading}>
+            Đồng ý xóa
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Row>
   );
 }

@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const analytics = require('../data/analytics');
+const { getOrderAnalytics } = require('../controllers/orderController');
 
-router.get('/', (req, res) => {
-  res.json(analytics);
-});
+router.get('/summary', getOrderAnalytics);
 
 module.exports = router;
