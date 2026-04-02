@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, VariantProps } from "class-variance-authority";
+import PropTypes from "prop-types";
 
 import { cn } from "@/lib/utils";
 
@@ -30,11 +31,13 @@ const buttonVariants = cva(
   },
 );
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-}
+// Define PropTypes for Button component
+const ButtonPropTypes = {
+  asChild: PropTypes.bool,
+  className: PropTypes.string,
+  variant: PropTypes.oneOf(["default", "destructive", "outline", "secondary", "ghost", "link"]),
+  size: PropTypes.oneOf(["default", "sm", "lg", "icon"]),
+};
 
 const Button = React.forwardRef(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
@@ -42,6 +45,8 @@ const Button = React.forwardRef(
     return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
   },
 );
+
 Button.displayName = "Button";
+Button.propTypes = ButtonPropTypes;
 
 export { Button, buttonVariants };
