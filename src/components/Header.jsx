@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { ShoppingBag, Search, Menu, X, Heart, User, LogOut } from "lucide-react";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ShoppingBag, Search, Menu, X, Heart, User, LogOut, Settings, Package, Gift } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const Header = () => {
   const { totalItems, setIsCartOpen } = useCart();
   const { user, logout, setLoginModalOpen } = useAuth();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -92,13 +93,13 @@ const Header = () => {
 
               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50">
-                  {currentUser ? (
+                  {user ? (
                     <>
                       <div className="px-4 py-3 border-b">
-                        <p className="font-medium">{currentUser.fullName || currentUser.username}</p>
-                        <p className="text-xs text-gray-500">{currentUser.role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}</p>
+                        <p className="font-medium">{user.fullName || user.username}</p>
+                        <p className="text-xs text-gray-500">{user.role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}</p>
                       </div>
-                      {currentUser.role === 'admin' && (
+                      {user.role === 'admin' && (
                         <button
                           onClick={() => window.location.href = 'http://localhost:5173'}
                           className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
