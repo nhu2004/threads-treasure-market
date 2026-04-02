@@ -2,7 +2,7 @@
 import { useCallback } from "react";
 import PaginationproductStore from "../../../components/PaginationproductStore";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
-
+import styles from "./Voucher.module.css";
 import { Row, Col, Table, Spinner, Modal, Button } from "react-bootstrap";
 import format from "../../../helper/format";
 import moment from "moment";
@@ -330,52 +330,28 @@ function Voucher() {
                 </tr>
               </thead>
               <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={7}>
-                      <Spinner animation="border" variant="success" />
-                    </td>
-                  </tr>
-                ) : voucherData.vouchers && voucherData.vouchers.length > 0 ? (
-                  voucherData.vouchers.map((item, index) => {
-                    return (
-                      <tr key={item._id}>
-                        <td>{(1 && page - 1) * 10 + (index + 1)}</td>
-                        <td>{item.name}</td>
-                        <td>{item.code}</td>
-                        <td>{`${format.formatPrice(item.minimum)}`}</td>
-                        <td>
-                          {item.by === "percent"
-                            ? "Phần trăm (%)"
-                            : "Mức cố định (VNĐ)"}{" "}
-                          - {item.value}
-                        </td>
-                        <td>
-                          Từ {moment(item?.start).format("DD-MM-yyyy")} Đến{" "}
-                          {moment(item?.end).format("DD-MM-yyyy")}
-                        </td>
-                        <td>
-                          <Button
-                            variant="warning"
-                            onClick={() => openUpdateModal(item)}
-                          >
-                            <FaEdit />
-                          </Button>
-                        </td>
-                        <td>
-                          <button
-                            className="btn btn-danger"
-                            onClick={() => openDeleteModal(item)}
-                          >
-                            <FaTrashAlt />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
+                {voucherData.vouchers && voucherData.vouchers.length > 0 ? (
+                  voucherData.vouchers.map((item, index) => (
+                    <tr key={item.VoucherID}>
+                      <td>{index + 1}</td>
+                      <td>{item.Name}</td>
+                      <td><strong style={{color: '#d32f2f'}}>{item.Code}</strong></td>
+                      <td>{item.ByType === 'percent' ? `${item.Value}%` : format.formatPrice(item.Value)}</td>
+                      <td>{format.formatPrice(item.MinimumAmount)}</td>
+                      <td>{moment(item.ExpiryDate).format("DD/MM/YYYY")}</td>
+                      <td className="text-center">
+                        <Button variant="warning" size="sm" className="me-2" onClick={() => openUpdateModal(item)}>
+                          <FaEdit />
+                        </Button>
+                        <Button variant="danger" size="sm" onClick={() => openDeleteModal(item)}>
+                          <FaTrashAlt />
+                        </Button>
+                      </td>
+                    </tr>
+                  )) // Đóng map ở đây
                 ) : (
                   <tr>
-                    <td colSpan={6}>Không có mã giảm giá!</td>
+                    <td colSpan={7} className="text-center">Không có mã giảm giá nào!</td>
                   </tr>
                 )}
               </tbody>

@@ -1,106 +1,40 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcrypt');
+const { poolPromise, sql } = require('../db'); // Đảm bảo bạn đã tạo file db.js như tôi hướng dẫn
 
-// Mock users database (tạm thời, trong thực tế sẽ kết nối SQL Server)
-const users = [
-  {
-    id: 1,
-    username: 'admin1',
-    password: '1',
-    fullName: 'Administrator',
-    email: 'admin@threads-treasure.com',
-    role: 'admin',
-  },
-  {
-    id: 2,
-    username: '01',
-    password: '1',
-    fullName: 'Customer',
-    email: 'customer@threads-treasure.com',
-    role: 'customer',
-  },
-];
-
-// Register route
-router.post('/register', async (req, res) => {
-  try {
-    const { phone, password, fullName, email } = req.body;
-
-    // Kiểm tra user đã tồn tại
-    const existingUser = users.find((u) => u.username === phone);
-    if (existingUser) {
-      return res.status(400).json({ message: 'Số điện thoại đã được đăng ký' });
-    }
-
-    // Tạo user mới
-    const newUser = {
-      id: users.length + 1,
-      username: phone,
-      password: password || '1', // Mật khẩu mặc định là "1"
-      fullName: fullName || '',
-      email: email || '',
-      role: 'customer',
-    };
-
-    users.push(newUser);
-
-    res.json({
-      message: 'Đăng ký thành công',
-      user: {
-        id: newUser.id,
-        username: newUser.username,
-        fullName: newUser.fullName,
-        email: newUser.email,
-        role: newUser.role,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Lỗi đăng ký' });
-  }
-});
-
-// Login route
+// Login route kết nối SQL Server
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
+    const pool = await poolPromise;
 
-    // Tìm user theo username
-    const user = users.find((u) => u.username === username);
+    // Truy vấn tìm user trong bảng Users
+    const result = await pool.request()
+      .input('user', sql.NVarChar, username)
+      .input('pass', sql.NVarChar, password) // Lưu ý: thực tế nên dùng bcrypt
+      .query('SELECT * FROM Users WHERE Username = @user AND PasswordHash = @pass');
+
+    const user = result.recordset[0];
+
     if (!user) {
-      return res.status(401).json({ message: 'Tên đăng nhập hoặc mật khẩu không chính xác' });
-    }
-
-    // Kiểm tra mật khẩu
-    if (user.password !== password) {
       return res.status(401).json({ message: 'Tên đăng nhập hoặc mật khẩu không chính xác' });
     }
 
     res.json({
       message: 'Đăng nhập thành công',
       user: {
-        id: user.id,
-        username: user.username,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
+        id: user.UserID,
+        username: user.Username,
+        fullName: user.FullName,
+        email: user.Email,
+        role: user.Role,
       },
-      token: 'mock-jwt-token', // Tạm thời, sau sẽ xử dụng JWT thực
+      token: 'mock-jwt-token',
     });
   } catch (error) {
-    res.status(500).json({ message: 'Lỗi đăng nhập' });
+    console.error("Login Error:", error);
+    res.status(500).json({ message: 'Lỗi kết nối SQL Server' });
   }
-});
-
-// Get current user
-router.get('/me', (req, res) => {
-  // Tạm thời, sau sẽ kiểm tra token
-  res.json({ message: 'Lấy user thành công' });
-});
-
-// Logout
-router.post('/logout', (req, res) => {
-  res.json({ message: 'Đăng xuất thành công' });
 });
 
 module.exports = router;
