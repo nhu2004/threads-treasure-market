@@ -92,26 +92,72 @@ const Header = () => {
               </button>
 
               {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50">
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg z-50 overflow-hidden">
                   {user ? (
                     <>
-                      <div className="px-4 py-3 border-b">
-                        <p className="font-medium">{user.fullName || user.username}</p>
-                        <p className="text-xs text-gray-500">{user.role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}</p>
+                      <div className="px-4 py-4 border-b bg-gray-50">
+                        <p className="font-medium text-foreground">{user.fullName || user.username}</p>
+                        <p className="text-xs text-muted-foreground">{user.role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}</p>
                       </div>
-                      {user.role === 'admin' && (
+                      
+                      {/* Menu items */}
+                      <div className="py-2">
                         <button
-                          onClick={() => window.location.href = 'http://localhost:5173'}
-                          className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                          onClick={() => {
+                            navigate('/profile');
+                            setUserMenuOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-100 text-sm flex items-center gap-3 transition-colors"
                         >
-                          Quan lý Admin
+                          <Settings size={16} />
+                          <span>Thông tin cá nhân</span>
                         </button>
+                        
+                        <button
+                          onClick={() => {
+                            navigate('/orders');
+                            setUserMenuOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-100 text-sm flex items-center gap-3 transition-colors"
+                        >
+                          <Package size={16} />
+                          <span>Lịch sử mua hàng</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => {
+                            navigate('/vouchers');
+                            setUserMenuOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-100 text-sm flex items-center gap-3 transition-colors"
+                        >
+                          <Gift size={16} />
+                          <span>Voucher của bạn</span>
+                        </button>
+                      </div>
+
+                      {user.role === 'admin' && (
+                        <>
+                          <div className="border-t"></div>
+                          <button
+                            onClick={() => {
+                              navigate('/admin');
+                              setUserMenuOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-3 hover:bg-gray-100 text-sm font-medium text-primary"
+                          >
+                            Quản lý Admin
+                          </button>
+                        </>
                       )}
+
+                      <div className="border-t"></div>
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
+                        className="w-full text-left px-4 py-3 hover:bg-red-50 text-sm flex items-center gap-3 transition-colors text-red-600"
                       >
-                        <LogOut size={16} /> Đăng xuất
+                        <LogOut size={16} />
+                        <span>Đăng xuất</span>
                       </button>
                     </>
                   ) : (
@@ -120,7 +166,7 @@ const Header = () => {
                         setLoginModalOpen(true);
                         setUserMenuOpen(false);
                       }}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                      className="w-full text-left px-4 py-3 hover:bg-gray-100 text-sm font-medium"
                     >
                       Đăng nhập / Đăng ký
                     </button>

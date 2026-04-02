@@ -14,6 +14,9 @@ import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
 import Checkout from "./pages/Checkout";
+import Profile from "./pages/Profile";
+import Orders from "./pages/Orders";
+import Vouchers from "./pages/Vouchers";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import ChatBot from "@/components/ChatBot";
@@ -66,6 +69,9 @@ function AppContent() {
             <Route path="/shop" element={<Shop />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/vouchers" element={<Vouchers />} />
             <Route path="/admin/*" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
