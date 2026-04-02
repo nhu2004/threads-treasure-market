@@ -1,0 +1,19 @@
+.voucherCard {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: none;
+}
+
+.statusActive {
+    color: #28a745;
+    font-weight: 600;
+}
+
+/* Tùy chỉnh input trong Modal giống phong cách các file CSS bạn đã có */
+.adminInput {
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    width: 100%;
+}
