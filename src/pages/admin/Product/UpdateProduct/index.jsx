@@ -8,11 +8,11 @@ import { useParams } from "react-router-dom";
 import PreviewImage from "../../../../components/PreviewImage";
 import styles from "./Updateproduct.module.css";
 import {
-  useAdminproductDetail,
-  useproductOptions,
-  useAddcategory,
-  useAddsupplier,
-  useUpdateproductForm,
+  useAdminProductDetail,
+  useProductOptions,
+  useAddCategory,
+  useAddSupplier,
+  useUpdateProductForm,
 } from "../../../../hooks/admin/admin";
 
 function Updateproduct() {

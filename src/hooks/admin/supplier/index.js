@@ -1,5 +1,5 @@
-export { useSupplierList } from "./useSupplierList";
-export { useSupplierCRUD } from "./useSupplierCRUD";
+export { usesupplierList } from "./useSupplierList";
+export { usesupplierCRUD } from "./useSupplierCRUD";
 
 
 

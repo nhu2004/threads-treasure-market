@@ -1,6 +1,6 @@
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useUpdateBook } from "./useUpdateBook";
+import { useUpdateBook } from "./useUpdateProduct";
 
 /**
  * Custom hook để xử lý form cập nhật sách với validation
@@ -9,7 +9,7 @@ import { useUpdateBook } from "./useUpdateBook";
  * @param {Array} supplierList - Danh sách nhà xuất bản
  * @returns {Object} { formik, loading, updateImage, setUpdateImage }
  */
-export const useUpdateBookForm = (productId, bookData, supplierList) => {
+export const useUpdateProductForm = (productId, bookData, supplierList) => {
     const { loading, updateImage, setUpdateImage, updateBook } =
         useUpdateBook(productId);
 

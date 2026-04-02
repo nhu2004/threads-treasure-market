@@ -5,7 +5,7 @@ import PaginationproductStore from "../../../../components/PaginationproductStor
 import { FaEdit, FaTrashAlt, FaSearch } from "react-icons/fa";
 import { Row, Col, Table, Spinner, Modal, Button } from "react-bootstrap";
 import format from "../../../../helper/format";
-import { useproductList, useDeleteproduct } from "../../../../hooks/admin/admin";
+import { useProductList, useDeleteProduct } from "../../../../hooks/admin/admin";
 
 function productList() {
   const {

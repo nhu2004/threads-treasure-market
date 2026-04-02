@@ -1,5 +1,5 @@
-export { useBrandList } from "./useBrandList";
-export { useBrandCRUD } from "./useBrandCRUD";
+export { usebrandList } from "./useBrandList";
+export { usebrandCRUD } from "./useBrandCRUD";
 
 
 

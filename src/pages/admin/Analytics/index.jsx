@@ -17,7 +17,7 @@ import styles from "./AnalyticsPage.module.css";
 import { useState } from "react";
 import DashboardCard from "../DashboardCard";
 import Loading from "../../../components/Loading";
-import { Faproduct, FaChartBar, FaShoppingBag } from "react-icons/fa";
+import { FaBox, FaChartBar, FaShoppingBag } from "react-icons/fa";
 
 // Custom hooks
 import {
@@ -69,7 +69,7 @@ function AnalyticsPage() {
               name="Sản phẩm"
               quantity={cardData && cardData.product}
               bgColor="bg-success"
-              Icon={Faproduct}
+              Icon={FaBox}
             />
           </Col>
           <Col xl={3}>

@@ -6,10 +6,10 @@ import Select, { components } from "react-select";
 import PreviewImage from "../../../../components/PreviewImage";
 import styles from "./Addproduct.module.css";
 import {
-  useproductOptions,
-  useAddcategory,
-  useAddsupplier,
-  useAddproductForm,
+  useProductOptions,
+  useAddCategory,
+  useAddSupplier,
+  useAddProductForm,
 } from "../../../../hooks/admin/admin";
 
 function Addproduct() {
