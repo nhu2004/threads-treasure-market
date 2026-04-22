@@ -123,85 +123,32 @@ export default function OrderList() {
                 </tr>
               </thead>
               <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={7}>
-                      <Spinner animation="border" variant="success" />
-                    </td>
-                  </tr>
-                ) : orderData.orders && orderData.orders.length > 0 ? (
+                {orderData.orders && orderData.orders.length > 0 ? (
                   orderData.orders.map((item, index) => {
                     return (
-                      <tr key={item?._id}>
-                        <td className="text-center align-middle">
-                          {(1 && page - 1) * 10 + (index + 1)}
+                      <tr key={item._id || item.OrderID}> 
+                        <td>{index + 1}</td>
+                        {/* Hiển thị OrderID từ SQL Server */}
+                        <td>#ORD-{item._id}</td> 
+                        <td>{moment(item.orderDate).format("DD/MM/YYYY HH:mm")}</td>
+                        <td>{format.price(item.totalPrice)} VNĐ</td>
+                        <td>
+                          <Badge bg={item.paymentStatus?.code === 2 ? "success" : "warning"}>
+                            {item.paymentStatus?.text}
+                          </Badge>
                         </td>
-                        <td className="text-start align-middle">
-                          <div>
-                            <p className="mb-1">
-                              <span className="fw-bold">Người nhận:</span>{" "}
-                              {item?.delivery?.fullName}
-                            </p>
-                            <p className="mb-1">
-                              <span className="fw-bold">Email:</span>{" "}
-                              {item?.delivery?.email}
-                            </p>
-                            <p className="mb-1">
-                              <span className="fw-bold">Điện thoại:</span>{" "}
-                              {item?.delivery?.phoneNumber}
-                            </p>
-                            <p className="mb-0">
-                              <span className="fw-bold">Địa chỉ:</span>{" "}
-                              {item?.delivery?.address}
-                            </p>
-                          </div>
+                        <td>
+                          {/* Sử dụng component tiến độ dựa trên code từ SQL */}
+                          <OrderProgress currentStep={item.orderStatus?.code} />
                         </td>
-                        <td className="text-center align-middle">
-                          <p className="mb-1">
-                            {moment(item?.createdAt).format(
-                              "DD-MM-yyyy HH:mm:ss"
-                            )}
-                          </p>
-                          {moment(item.createdAt).isSame(moment(), "day") && (
-                            <span
-                              style={{ backgroundColor: "#ff709e" }}
-                              className="badge"
-                            >
-                              {moment(item?.createdAt).fromNow()}
-                            </span>
-                          )}
-                        </td>
-                        <td className="text-center align-middle fw-bold">
-                          {format.formatPrice(item?.cost?.total)}
-                        </td>
-                        <td className="text-center align-middle">
-                          <span
-                            className="badge px-3 py-2"
-                            style={{
-                              backgroundColor:
-                                steps[item?.orderStatus?.code]?.color,
-                            }}
-                          >
-                            {item?.orderStatus?.text}
-                          </span>
-                        </td>
-                        <td className="text-center align-middle">
+                        <td className="text-center">
                           <div className="d-flex gap-2 justify-content-center">
                             <Button
-                              variant="success"
-                              onClick={() => openUpdateModal(item?._id)}
-                              disabled={
-                                item?.method?.code !== 0 &&
-                                item?.paymentStatus?.code !== 2
-                              }
+                              variant="outline-primary"
+                              size="sm"
+                              onClick={() => fetchOrderDetail(item._id)}
                             >
-                              <FaEdit />
-                            </Button>
-                            <Button
-                              variant="primary"
-                              onClick={() => fetchOrderDetail(item?._id)}
-                            >
-                              <FaEye />
+                              <FaEye /> Xem
                             </Button>
                           </div>
                         </td>
@@ -210,7 +157,7 @@ export default function OrderList() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={6}>Không có đơn hàng nào!</td>
+                    <td colSpan={7} className="text-center">Không có đơn hàng nào!</td>
                   </tr>
                 )}
               </tbody>
