@@ -10,16 +10,34 @@ const sqlConfig = {
 
 router.get('/', async (req, res) => {
     try {
+        // 1. Nhận từ khóa tìm kiếm từ React gửi lên
+        const searchKeyword = req.query.search || ''; 
         let pool = await sql.connect(sqlConfig);
-        let result = await pool.request().query(`
-           SELECT 
+        
+        // 2. Chuẩn bị câu truy vấn gốc
+        let queryStr = `
+            SELECT 
                 p.ProductID, p.Name, p.Price, p.OriginalPrice, 
                 p.ImageUrl, p.Description, p.Badge, p.Colors, p.Sizes, 
                 c.Name AS CategoryName
             FROM Products p
             LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
-        `);
+        `;
 
+        // 3. Nếu có từ khóa tìm kiếm, ghép thêm điều kiện WHERE vào SQL
+        if (searchKeyword) {
+            // Tìm sản phẩm có Tên hoặc Danh mục chứa từ khóa
+            queryStr += ` WHERE p.Name LIKE @search OR c.Name LIKE @search`;
+        }
+
+        // 4. Chạy truy vấn an toàn
+        let request = pool.request();
+        if (searchKeyword) {
+            request.input('search', sql.NVarChar, `%${searchKeyword}%`);
+        }
+        let result = await request.query(queryStr);
+
+        // 5. Chuẩn hóa dữ liệu trả về
         const formattedProducts = result.recordset.map(p => ({
             id: p.ProductID,
             name: p.Name,
@@ -35,6 +53,7 @@ router.get('/', async (req, res) => {
 
         res.json({ products: formattedProducts, totalPage: 1 });
     } catch (err) {
+        console.error("Lỗi lấy sản phẩm:", err);
         res.status(500).json({ message: 'Lỗi kết nối database' });
     }
 });

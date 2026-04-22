@@ -17,7 +17,6 @@ export const AdminLayout = ({ children }) => {
     { icon: Home, label: "Tổng quan", path: "/admin" },
     { icon: Package, label: "Sản phẩm", path: "/admin/products" },
     { icon: ShoppingCart, label: "Đơn hàng", path: "/admin/orders" },
-    { icon: Tag, label: "Mã giảm giá", path: "/admin/vouchers" },
     { icon: Users, label: "Khách hàng", path: "/admin/users" },
   ];
 

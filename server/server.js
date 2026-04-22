@@ -22,8 +22,7 @@ app.use('/api/auth', authRouter);
   app.use('/api/analytics', analyticsRouter);
   app.use('/api/vouchers', vouchersRouter);
   app.use('/api/categories', categoriesRouter);
-  app.use('/api/users', usersRouter);
-
+  app.use('/api/users', usersRouter);  
 // Route kiểm tra server
 app.get('/', (req, res) => {
   res.send('Backend server Threads & Treasure is running!');

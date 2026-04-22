@@ -14,18 +14,10 @@ export const useProductList = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const query = {
-          name: { $regex: searchString, $options: "i" },
-        };
+        // ĐÃ SỬA: Truyền trực tiếp chữ tìm kiếm thay vì dùng query của MongoDB
+        const res = await productApi.getAll({ search: searchString, page: page, limit: 10 });
         
-        // Gọi API lấy dữ liệu
-        const res = await productApi.getAll({ query, page: page, limit: 10 });
-        
-        // Xử lý dữ liệu an toàn chống Crash:
-        // Lấy danh sách sản phẩm (Hỗ trợ cả mock data 'res.data' và real API 'res.products')
         const productsList = res.data || res.products || [];
-        
-        // Lấy tổng số trang một cách an toàn
         const totalPage = res.pagination?.totalPage || res.totalPage || 1;
 
         setProductData({ products: productsList, totalPage: totalPage });
