@@ -11,7 +11,19 @@ export default function useDashboardCards() {
   const [cardData, setCardData] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [resBook, resOrder, resRevenue, resCustomer] = await Promise.all([
+    productApi.getAll({}),
+    orderApi.getAll({}),
+    analyticApi.getTotalRevenue(),
+    analyticApi.getCustomersThisYear() // Gọi thêm khách hàng
+  ]);
 
+  setCardData({
+    product: resBook?.count || 0,
+    order: resOrder?.count || 0,
+    revenue: resRevenue?.data[0]?.revenue || 0,
+    customers: resCustomer?.count || 0 // Lưu vào state
+  });
   useEffect(() => {
     const fetchCardData = async () => {
       try {
