@@ -1,97 +1,68 @@
+/* DashboardCard.module.css */
 .dashboardCard {
     padding: 24px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
+    background-color: #ffffff; /* Nền trắng sáng */
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+    border: 1px solid #e2e8f0; /* Viền mờ tinh tế */
     transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    position: relative;
-    overflow: hidden;
-}
-
-.dashboardCard::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100px;
-    height: 100px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    transform: translate(30%, -30%);
 }
 
 .dashboardCard:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
 }
 
-.dashboardCard .icon {
-    font-size: 64px;
-    color: rgba(255, 255, 255, 0.25);
-    position: relative;
-    z-index: 1;
-    flex-shrink: 0;
-    margin-left: 20px;
+.info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Khoảng cách giữa chữ và số */
 }
 
-.dashboardCard .info {
+.label {
+    font-size: 14px;
+    color: #64748b; /* Xám nhạt cho tiêu đề */
     font-weight: 600;
-    position: relative;
-    z-index: 1;
+    text-transform: capitalize;
 }
 
-.dashboardCard .info .title {
-    color: white;
-    font-size: 36px;
-    font-weight: 800;
+.title {
+    color: #0f172a; /* Xám đen đậm cho số liệu */
+    font-size: 32px;
+    font-weight: 700;
     margin: 0;
     line-height: 1.2;
 }
 
-.dashboardCard .info span {
-    display: block;
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.85);
-    margin-top: 8px;
-    font-weight: 500;
-    letter-spacing: 0.3px;
+/* Hộp chứa Icon bo góc hiện đại */
+.iconWrapper {
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #ffffff; /* Icon luôn có màu trắng để nổi bật trên nền màu */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-/* Color Variants */
-.dashboardCard.bg-success {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-}
-
-.dashboardCard.bg-info {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-}
-
-.dashboardCard.bg-danger {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-}
-
-/* Responsive */
+/* Responsive cho màn hình nhỏ */
 @media (max-width: 768px) {
     .dashboardCard {
         padding: 20px;
     }
 
-    .dashboardCard .info .title {
+    .title {
         font-size: 28px;
     }
 
-    .dashboardCard .icon {
-        font-size: 48px;
-        margin-left: 15px;
+    .iconWrapper {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
     }
 }
-  
-
-
-
-
-

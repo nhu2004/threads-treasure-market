@@ -2,42 +2,45 @@ import { useCallback } from "react";
 import { Link } from "react-router-dom";
 import PaginationproductStore from "../../../../components/PaginationproductStore";
 import { FaEdit, FaTrashAlt, FaSearch, FaPlus } from "react-icons/fa";
-import { Row, Col, Table, Spinner, Modal, Button } from "react-bootstrap";
+import { Spinner, Modal, Button } from "react-bootstrap";
 import format from "../../../../helper/format";
 import { useProductList, useDeleteProduct } from "../../../../hooks/admin/admin";
 import styles from "./ProductList.module.css";
 
 function ProductList() {
   const {
-    productData,
+    productData = {}, 
     page,
     setPage,
     loading,
     searchInput,
     setSearchInput,
     handleSearch,
-    removeProduct, // Sửa tên hàm cho đúng chuẩn camelCase
+    removeProduct,
   } = useProductList();
 
   const { showModal, setShowModal, productDelete, openDeleteModal, handleDelete } =
     useDeleteProduct(removeProduct);
 
   const handleChangePage = useCallback(
-    (page) => {
-      setPage(page);
-    },
+    (page) => setPage(page),
     [setPage]
   );
 
+  const productsList = Array.isArray(productData) 
+    ? productData 
+    : (productData?.products || productData?.data || []);
+    
+  const totalPages = productData?.totalPage || 1;
+
   return (
     <div className={styles.wrapper}>
-      {/* Modal xác nhận xóa sản phẩm */}
       <Modal size="md" show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Xác nhận xóa</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Bạn có chắc chắn muốn xóa sản phẩm <b>{productDelete?.Name || productDelete?.name}</b> này không? 
+          Bạn có chắc chắn muốn xóa sản phẩm <b>{productDelete?.name}</b> này không? 
           <br /><span className="text-danger small">* Hành động này không thể hoàn tác.</span>
         </Modal.Body>
         <Modal.Footer>
@@ -46,19 +49,17 @@ function ProductList() {
         </Modal.Footer>
       </Modal>
 
-      {/* Header */}
       <div className={styles.header}>
         <h1 className={styles.headerTitle}>Quản lý Sản Phẩm</h1>
       </div>
 
-      {/* Action Bar */}
       <div className={styles.actionBar}>
         <div className={styles.actionContent}>
           <div className={styles.searchBox}>
             <input
               className={styles.searchInput}
-              placeholder="Tìm tên sản phẩm, thương hiệu..."
-              value={searchInput}
+              placeholder="Tìm tên sản phẩm, danh mục..."
+              value={searchInput || ""}
               onChange={(e) => setSearchInput(e.target.value)}
             />
             <button className={styles.searchBtn} onClick={handleSearch}>
@@ -71,7 +72,6 @@ function ProductList() {
         </div>
       </div>
 
-      {/* Table */}
       <div className={styles.tableContainer}>
         <table className={styles.table}>
           <thead className={styles.tableHead}>
@@ -80,7 +80,7 @@ function ProductList() {
               <th className={styles.tableHeadCell}>Hình ảnh</th>
               <th className={styles.tableHeadCell}>Thông tin sản phẩm</th>
               <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Danh mục</th>
-              <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Thương hiệu</th>
+              {/* ĐÃ XÓA CỘT THƯƠNG HIỆU Ở ĐÂY */}
               <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Giá bán</th>
               <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Thao tác</th>
             </tr>
@@ -88,50 +88,48 @@ function ProductList() {
           <tbody className={styles.tableBody}>
             {loading ? (
               <tr>
-                <td colSpan={7} className={styles.loadingState}>
+                <td colSpan={6} className={styles.loadingState}>
                   <Spinner animation="border" variant="success" />
                   <p className={styles.loadingText}>Đang tải dữ liệu...</p>
                 </td>
               </tr>
-            ) : productData.products && productData.products.length > 0 ? (
-              productData.products.map((item, index) => (
-                <tr key={item.ProductID || item._id}>
+            ) : productsList.length > 0 ? (
+              productsList.map((item, index) => (
+                <tr key={item.id || index}>
                   <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
-                    {(page - 1) * 10 + (index + 1)}
+                    {((page || 1) - 1) * 10 + (index + 1)}
                   </td>
                   <td className={`${styles.tableCell} ${styles.tableCellImage}`}>
                     <img 
-                      src={item.ImageUrl || 'https://via.placeholder.com/50x70'} 
-                      alt={item.Name}
+                      src={item.image || 'https://via.placeholder.com/50x70'} 
+                      alt={item.name}
                       className={styles.productImage}
                       style={{ width: '50px', height: '65px' }}
                     />
                   </td>
                   <td className={styles.tableCell}>
                     <div className={styles.productInfo}>
-                      <div className={styles.productName}>{item.Name || item.name}</div>
-                      <div className={styles.productId}>ID: {item.ProductID}</div>
+                      <div className={styles.productName}>
+                        {item.badge && <span className="badge bg-danger me-2">{item.badge}</span>}
+                        {item.name}
+                      </div>
+                      <div className={styles.productId}>ID: {item.id}</div>
+                      {/* Hiển thị size trực tiếp trên Admin nếu muốn */}
+                      {item.sizes && item.sizes.length > 0 && (
+                        <div className="text-dark small mt-1">Size: {item.sizes.join(', ')}</div>
+                      )}
                     </div>
                   </td>
                   <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
-                    <span className={styles.categoryBadge}>
-                      {item.CategoryName || (Array.isArray(item.category) ? item.category[0] : item.category)}
-                    </span>
+                    <span className={styles.categoryBadge}>{item.category || 'Mặc định'}</span>
                   </td>
                   <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
-                    <span className={styles.brandName}>
-                      {item.BrandName || item.brand}
-                    </span>
-                  </td>
-                  <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
-                    <span className={styles.priceValue}>
-                      {format.formatPrice(item.Price || item.price)}
-                    </span>
+                    <span className={styles.priceValue}>{format.formatPrice(item.price || 0)}</span>
                   </td>
                   <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
                     <div className={styles.actionsCell}>
                       <Link
-                        to={`/admin/product/update/${item.ProductID || item._id}`}
+                        to={`/admin/product/update/${item.id}`}
                         className={`${styles.actionBtn} ${styles.editBtn}`}
                         title="Chỉnh sửa"
                       >
@@ -150,7 +148,7 @@ function ProductList() {
               ))
             ) : (
               <tr>
-                <td colSpan={7} className={styles.emptyState}>
+                <td colSpan={6} className={styles.emptyState}>
                   Hiện chưa có sản phẩm nào trong kho.
                 </td>
               </tr>
@@ -159,11 +157,10 @@ function ProductList() {
         </table>
       </div>
 
-      {/* Pagination */}
-      {!loading && productData.totalPage > 1 && (
+      {!loading && totalPages > 1 && (
         <div className={styles.paginationContainer}>
           <PaginationproductStore
-            totalPage={productData.totalPage}
+            totalPage={totalPages}
             currentPage={page}
             onChangePage={handleChangePage}
           />
