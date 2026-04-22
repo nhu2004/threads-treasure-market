@@ -179,12 +179,15 @@
 
 .tableCellImage {
   text-align: center;
+  vertical-align: middle; /* Ép căn giữa theo chiều dọc của ô */
 }
 
 .productImage {
   border-radius: 8px;
   object-fit: cover;
   transition: transform 0.3s ease;
+  display: block; /* Biến ảnh thành phần tử khối */
+  margin: 0 auto; /* Tự động chia đều khoảng trống 2 bên để căn giữa ngang tuyệt đối */
 }
 
 .productImage:hover {

@@ -13,13 +13,16 @@ const authRouter = require('./routes/auth');
   const ordersRouter = require('./routes/orders');
   const analyticsRouter = require('./routes/analytics');
   const vouchersRouter = require('./routes/vouchers');
-
+  const categoriesRouter = require('./routes/categories');
+  const usersRouter = require('./routes/users');
 // 3. Sử dụng các Routes
 app.use('/api/auth', authRouter);
   app.use('/api/products', productsRouter);
   app.use('/api/orders', ordersRouter);
   app.use('/api/analytics', analyticsRouter);
   app.use('/api/vouchers', vouchersRouter);
+  app.use('/api/categories', categoriesRouter);
+  app.use('/api/users', usersRouter);
 
 // Route kiểm tra server
 app.get('/', (req, res) => {

@@ -1,21 +1,11 @@
-// Placeholder for user API functions
-
 const userApi = {
   getAll: async (params) => {
-    // Simulate fetching user data
-    return {
-      data: [
-        { id: 1, username: 'user1', role: 'customer' },
-        { id: 2, username: 'staff1', role: 'staff' },
-        { id: 3, username: 'admin1', role: 'admin' },
-      ],
-      pagination: { page: 1, total: 3 }
-    };
+    try {
+      const res = await fetch('http://localhost:5000/api/users');
+      const data = await res.json();
+      return { data: data.users || [], pagination: { page: 1, total: data.users?.length || 0 } };
+    } catch (err) { return { data: [], pagination: { page: 1, total: 0 } }; }
   },
-  create: async (data) => {
-    // Simulate creating user
-    return { id: Date.now(), ...data };
-  },
+  create: async (data) => { return { id: Date.now(), ...data }; },
 };
-
 export default userApi;

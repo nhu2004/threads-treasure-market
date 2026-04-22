@@ -36,17 +36,48 @@ function ProductList() {
   return (
     <div className={styles.wrapper}>
       <Modal size="md" show={showModal} onHide={() => setShowModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Xác nhận xóa</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Bạn có chắc chắn muốn xóa sản phẩm <b>{productDelete?.name}</b> này không? 
-          <br /><span className="text-danger small">* Hành động này không thể hoàn tác.</span>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>Hủy</Button>
-          <Button variant="danger" onClick={handleDelete}>Xác nhận xóa</Button>
-        </Modal.Footer>
+         {/* Cửa sổ Popup Xác nhận xóa (Giao diện Window + Nút X) */}
+      {showModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+          <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', width: '100%', maxWidth: '400px', overflow: 'hidden' }}>
+            
+            {/* Header có nút X */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
+              <h5 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Xác nhận xóa</h5>
+              <button 
+                onClick={() => setShowModal(false)} 
+                style={{ background: 'none', border: 'none', fontSize: '26px', cursor: 'pointer', color: '#9ca3af', lineHeight: 1 }}
+                title="Đóng cửa sổ"
+              >
+                &times;
+              </button>
+            </div>
+            
+            {/* Nội dung cảnh báo */}
+            <div style={{ padding: '20px', fontSize: '15px', color: '#374151' }}>
+              Bạn có chắc chắn muốn xóa sản phẩm <b style={{ color: '#111827' }}>{productDelete?.name}</b> này không?
+              <div style={{ color: '#ef4444', fontSize: '13px', marginTop: '8px' }}>* Hành động này không thể hoàn tác.</div>
+            </div>
+            
+            {/* Thanh công cụ chứa nút bấm */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', padding: '16px', backgroundColor: '#f9fafb', borderTop: '1px solid #e5e7eb' }}>
+              <button 
+                onClick={() => setShowModal(false)} 
+                style={{ padding: '8px 16px', backgroundColor: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}
+              >
+                Hủy
+              </button>
+              <button 
+                onClick={handleDelete} 
+                style={{ padding: '8px 16px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}
+              >
+                Xác nhận xóa
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
       </Modal>
 
       <div className={styles.header}>

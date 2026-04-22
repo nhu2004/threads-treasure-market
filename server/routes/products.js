@@ -12,8 +12,12 @@ router.get('/', async (req, res) => {
     try {
         let pool = await sql.connect(sqlConfig);
         let result = await pool.request().query(`
-            SELECT ProductID, Name, Price, OriginalPrice, ImageUrl, Description, Badge, Colors, Sizes, CategoryID
-            FROM Products
+           SELECT 
+                p.ProductID, p.Name, p.Price, p.OriginalPrice, 
+                p.ImageUrl, p.Description, p.Badge, p.Colors, p.Sizes, 
+                c.Name AS CategoryName
+            FROM Products p
+            LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
         `);
 
         const formattedProducts = result.recordset.map(p => ({
@@ -25,7 +29,8 @@ router.get('/', async (req, res) => {
             description: p.Description,
             badge: p.Badge,
             colors: p.Colors ? JSON.parse(p.Colors) : [],
-            sizes: p.Sizes ? p.Sizes.split(',') : []
+            sizes: p.Sizes ? p.Sizes.split(',') : [],
+            category: p.CategoryName
         }));
 
         res.json({ products: formattedProducts, totalPage: 1 });
