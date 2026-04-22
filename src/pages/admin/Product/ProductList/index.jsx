@@ -5,6 +5,7 @@ import { FaEdit, FaTrashAlt, FaSearch, FaPlus } from "react-icons/fa";
 import { Row, Col, Table, Spinner, Modal, Button } from "react-bootstrap";
 import format from "../../../../helper/format";
 import { useProductList, useDeleteProduct } from "../../../../hooks/admin/admin";
+import styles from "./ProductList.module.css";
 
 function ProductList() {
   const {
@@ -29,7 +30,7 @@ function ProductList() {
   );
 
   return (
-    <Row>
+    <div className={styles.wrapper}>
       {/* Modal xác nhận xóa sản phẩm */}
       <Modal size="md" show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
@@ -45,123 +46,130 @@ function ProductList() {
         </Modal.Footer>
       </Modal>
 
-      <Col xl={12}>
-        <div className="admin-content-wrapper">
-          <div className="admin-content-header">Quản lý Kho Hàng (Quần áo)</div>
-          
-          <div className="admin-content-action mb-3">
-            <div className="d-flex justify-content-between align-items-center">
-              <div className="d-flex gap-2">
-                <input
-                  className="form-control search"
-                  style={{ width: '300px' }}
-                  placeholder="Tìm tên sản phẩm, thương hiệu..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                />
-                <Button variant="info" className="text-white" onClick={handleSearch}>
-                  <FaSearch />
-                </Button>
-              </div>
-              <Link to="/admin/product/add" className="btn btn-success d-flex align-items-center gap-2">
-                <FaPlus /> Thêm sản phẩm mới
-              </Link>
-            </div>
-          </div>
+      {/* Header */}
+      <div className={styles.header}>
+        <h1 className={styles.headerTitle}>Quản lý Sản Phẩm</h1>
+      </div>
 
-          <div className="admin-content-body">
-            <Table hover responsive striped bordered className="align-middle">
-              <thead className="table-light">
-                <tr>
-                  <th className="text-center">STT</th>
-                  <th>Hình ảnh</th>
-                  <th>Thông tin sản phẩm</th>
-                  <th className="text-center">Danh mục</th>
-                  <th className="text-center">Thương hiệu</th>
-                  <th className="text-center">Giá bán</th>
-                  <th className="text-center">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={7} className="text-center py-5">
-                      <Spinner animation="border" variant="success" />
-                      <p className="mt-2 text-muted">Đang tải dữ liệu từ SQL Server...</p>
-                    </td>
-                  </tr>
-                ) : productData.products && productData.products.length > 0 ? (
-                  productData.products.map((item, index) => (
-                    <tr key={item.ProductID || item._id}>
-                      <td className="text-center">
-                        {(page - 1) * 10 + (index + 1)}
-                      </td>
-                      <td className="text-center">
-                        <img 
-                          src={item.ImageUrl || 'https://via.placeholder.com/50x70'} 
-                          alt={item.Name} 
-                          style={{ width: '50px', height: '65px', objectFit: 'cover', borderRadius: '4px' }}
-                        />
-                      </td>
-                      <td>
-                        <div className="fw-bold text-dark">{item.Name || item.name}</div>
-                        <div className="small text-muted">ID: {item.ProductID}</div>
-                      </td>
-                      <td className="text-center">
-                        <span className="badge bg-light text-dark border">
-                          {item.CategoryName || (Array.isArray(item.category) ? item.category[0] : item.category)}
-                        </span>
-                      </td>
-                      <td className="text-center">
-                        {item.BrandName || item.brand}
-                      </td>
-                      <td className="text-center fw-bold text-success">
-                        {format.formatPrice(item.Price || item.price)}
-                      </td>
-                      <td className="text-center">
-                        <div className="d-flex gap-2 justify-content-center">
-                          <Link
-                            to={`/admin/product/update/${item.ProductID || item._id}`}
-                            className="btn btn-sm btn-outline-warning"
-                          >
-                            <FaEdit />
-                          </Link>
-                          <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => openDeleteModal(item)}
-                          >
-                            <FaTrashAlt />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={7} className="text-center py-4">Hiện chưa có sản phẩm nào trong kho.</td>
-                  </tr>
-                )}
-              </tbody>
-            </Table>
-
-            <div className="admin-content-pagination mt-4">
-              <Row>
-                <Col xl={12} className="d-flex justify-content-center">
-                  {productData.totalPage > 1 && (
-                    <PaginationproductStore
-                      totalPage={productData.totalPage}
-                      currentPage={page}
-                      onChangePage={handleChangePage}
-                    />
-                  )}
-                </Col>
-              </Row>
-            </div>
+      {/* Action Bar */}
+      <div className={styles.actionBar}>
+        <div className={styles.actionContent}>
+          <div className={styles.searchBox}>
+            <input
+              className={styles.searchInput}
+              placeholder="Tìm tên sản phẩm, thương hiệu..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+            <button className={styles.searchBtn} onClick={handleSearch}>
+              <FaSearch /> Tìm kiếm
+            </button>
           </div>
+          <Link to="/admin/product/add" className={styles.addBtn}>
+            <FaPlus /> Thêm sản phẩm
+          </Link>
         </div>
-      </Col>
-    </Row>
+      </div>
+
+      {/* Table */}
+      <div className={styles.tableContainer}>
+        <table className={styles.table}>
+          <thead className={styles.tableHead}>
+            <tr>
+              <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>STT</th>
+              <th className={styles.tableHeadCell}>Hình ảnh</th>
+              <th className={styles.tableHeadCell}>Thông tin sản phẩm</th>
+              <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Danh mục</th>
+              <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Thương hiệu</th>
+              <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Giá bán</th>
+              <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody className={styles.tableBody}>
+            {loading ? (
+              <tr>
+                <td colSpan={7} className={styles.loadingState}>
+                  <Spinner animation="border" variant="success" />
+                  <p className={styles.loadingText}>Đang tải dữ liệu...</p>
+                </td>
+              </tr>
+            ) : productData.products && productData.products.length > 0 ? (
+              productData.products.map((item, index) => (
+                <tr key={item.ProductID || item._id}>
+                  <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
+                    {(page - 1) * 10 + (index + 1)}
+                  </td>
+                  <td className={`${styles.tableCell} ${styles.tableCellImage}`}>
+                    <img 
+                      src={item.ImageUrl || 'https://via.placeholder.com/50x70'} 
+                      alt={item.Name}
+                      className={styles.productImage}
+                      style={{ width: '50px', height: '65px' }}
+                    />
+                  </td>
+                  <td className={styles.tableCell}>
+                    <div className={styles.productInfo}>
+                      <div className={styles.productName}>{item.Name || item.name}</div>
+                      <div className={styles.productId}>ID: {item.ProductID}</div>
+                    </div>
+                  </td>
+                  <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
+                    <span className={styles.categoryBadge}>
+                      {item.CategoryName || (Array.isArray(item.category) ? item.category[0] : item.category)}
+                    </span>
+                  </td>
+                  <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
+                    <span className={styles.brandName}>
+                      {item.BrandName || item.brand}
+                    </span>
+                  </td>
+                  <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
+                    <span className={styles.priceValue}>
+                      {format.formatPrice(item.Price || item.price)}
+                    </span>
+                  </td>
+                  <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
+                    <div className={styles.actionsCell}>
+                      <Link
+                        to={`/admin/product/update/${item.ProductID || item._id}`}
+                        className={`${styles.actionBtn} ${styles.editBtn}`}
+                        title="Chỉnh sửa"
+                      >
+                        <FaEdit />
+                      </Link>
+                      <button
+                        className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                        onClick={() => openDeleteModal(item)}
+                        title="Xóa"
+                      >
+                        <FaTrashAlt />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={7} className={styles.emptyState}>
+                  Hiện chưa có sản phẩm nào trong kho.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      {!loading && productData.totalPage > 1 && (
+        <div className={styles.paginationContainer}>
+          <PaginationproductStore
+            totalPage={productData.totalPage}
+            currentPage={page}
+            onChangePage={handleChangePage}
+          />
+        </div>
+      )}
+    </div>
   );
 }
 

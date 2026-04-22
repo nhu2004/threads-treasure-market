@@ -1,21 +1,69 @@
-.wrapperDashboard {
-    overflow: hidden;
-    padding: 10px;
+/* AnalyticsPage.module.css */
+:root {
+    --navy-primary: #1e3a8a; /* Màu xanh đậm từ ảnh mẫu */
+    --blue-accent: #3b82f6;
+    --bg-light: #f1f5f9;
+    --text-main: #1e293b;
+    --card-radius: 12px;
+    --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-.revenueSelectTime {
-    width: 300px;
+.wrapperDashboard {
+    padding: 32px;
+    background-color: var(--bg-light);
+    min-height: 100vh;
 }
 
 .chart {
-    padding: 10px;
-    border-radius: 4px;
+    padding: 24px;
+    border-radius: var(--card-radius);
     background-color: white;
-    box-shadow: 0 0 1px rgb(0 0 0 / 13%), 0 1px 3px rgb(0 0 0 / 20%);
+    box-shadow: var(--shadow-soft);
+    border: none;
+    transition: transform 0.2s ease;
+    height: 100%;
+}
+
+/* Accent bar ở trên cùng của chart - dùng màu xanh Navy */
+.chart::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: var(--navy-primary);
+    border-radius: var(--card-radius) var(--card-radius) 0 0;
+}
+
+.chart h2 {
+    color: var(--navy-primary);
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     margin-bottom: 20px;
 }
 
+/* Custom Select giống ảnh mẫu */
+.revenueSelectTime {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    background-color: #fff;
+}
 
+.loadingPlaceholder {
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #94a3b8;
+}
 
-
-
+@media (max-width: 768px) {
+    .wrapperDashboard { padding: 16px; }
+}

@@ -1,27 +1,93 @@
 .dashboardCard {
-    padding: 8px 20px;
+    padding: 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-radius: 4px;
-    box-shadow: 0 0 5px 1px rgb(0 0 0 / 15%);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     color: white;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboardCard::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(30%, -30%);
+}
+
+.dashboardCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 
 .dashboardCard .icon {
-  font-size: 65px;
-  color: rgba(0, 0, 0, .15);
+    font-size: 64px;
+    color: rgba(255, 255, 255, 0.25);
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    margin-left: 20px;
 }
 
 .dashboardCard .info {
-  font-weight: 600;
-
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
 }
 
 .dashboardCard .info .title {
-  color: white;
-  font-size: 32px;
-  font-weight: 700;
+    color: white;
+    font-size: 36px;
+    font-weight: 800;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.dashboardCard .info span {
+    display: block;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: 8px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* Color Variants */
+.dashboardCard.bg-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.dashboardCard.bg-info {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.dashboardCard.bg-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboardCard {
+        padding: 20px;
+    }
+
+    .dashboardCard .info .title {
+        font-size: 28px;
+    }
+
+    .dashboardCard .icon {
+        font-size: 48px;
+        margin-left: 15px;
+    }
 }
   
 

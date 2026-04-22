@@ -25,7 +25,7 @@ export default function useDashboardCards() {
         ]);
 
         setCardData({
-          book: resBook?.count || 0,
+          product: resBook?.count || 0,
           order: resOrder?.count || 0,
           revenue: resRevenue?.data[0]?.revenue || 0,
         });
