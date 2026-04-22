@@ -1,24 +1,25 @@
 const express = require('express');
 const cors = require('cors');
-const app = express(); // Định nghĩa app trước khi sử dụng middleware
+const app = express();
 
 // 1. Middleware
 app.use(cors()); // Cho phép Frontend gọi API
-app.use(express.json()); // Để đọc dữ liệu JSON từ các form Login/Register
+app.use(express.json()); // Để đọc dữ liệu JSON
 
-// 2. Import các Routes
-const productsRouter = require('./routes/products');
-const ordersRouter = require('./routes/orders');
-const analyticsRouter = require('./routes/analytics');
+// 2. Import các Routes (Đảm bảo bạn đã tạo các file này trong thư mục routes)
 const authRouter = require('./routes/auth');
-const vouchersRouter = require('./routes/vouchers'); // Bổ sung route Voucher
+ // Các router này nếu bạn chưa code thì có thể comment (thêm // ở trước) để tránh lỗi
+  const productsRouter = require('./routes/products');
+  const ordersRouter = require('./routes/orders');
+  const analyticsRouter = require('./routes/analytics');
+  const vouchersRouter = require('./routes/vouchers');
 
-// 3. Sử dụng các Routes (Định nghĩa đường dẫn API)
-app.use('/api/products', productsRouter);
-app.use('/api/orders', ordersRouter);
-app.use('/api/analytics', analyticsRouter);
+// 3. Sử dụng các Routes
 app.use('/api/auth', authRouter);
-app.use('/api/vouchers', vouchersRouter); // Thêm endpoint cho Voucher
+  app.use('/api/products', productsRouter);
+  app.use('/api/orders', ordersRouter);
+  app.use('/api/analytics', analyticsRouter);
+  app.use('/api/vouchers', vouchersRouter);
 
 // Route kiểm tra server
 app.get('/', (req, res) => {
@@ -28,6 +29,6 @@ app.get('/', (req, res) => {
 // 4. Khởi chạy Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(` Server running on port ${PORT}`);
-  console.log(` API Login: http://localhost:${PORT}/api/auth/login`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🔑 API Login: http://localhost:${PORT}/api/auth/login`);
 });
