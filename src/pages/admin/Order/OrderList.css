@@ -1,0 +1,93 @@
+/* Client/src/pages/Admin/Order/OrderList.css */
+
+.admin-content-wrapper {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  padding: 25px;
+  margin-bottom: 30px;
+}
+
+.admin-content-header {
+  font-size: 22px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f1f2f6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Tùy chỉnh bảng */
+.custom-order-table {
+  vertical-align: middle;
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+.custom-order-table thead th {
+  background-color: #f8f9fa;
+  color: #495057;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  padding: 16px 12px;
+  border-bottom: 2px solid #e9ecef;
+  border-top: none;
+  white-space: nowrap;
+}
+
+.custom-order-table tbody td {
+  padding: 16px 12px;
+  color: #34495e;
+  font-size: 14px;
+  border-bottom: 1px solid #f1f2f6;
+}
+
+.custom-order-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.custom-order-table tbody tr:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+/* Tùy chỉnh cột Tiến độ đơn hàng */
+.progress-cell {
+  min-width: 180px;
+}
+
+/* Tùy chỉnh Badge (Trạng thái thanh toán) */
+.custom-badge {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+}
+
+/* Tùy chỉnh nút bấm */
+.action-buttons .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.action-buttons .btn-outline-primary:hover {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.action-buttons .btn-outline-warning:hover {
+  background-color: #ffc107;
+  color: #000;
+}

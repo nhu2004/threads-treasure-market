@@ -1,5 +1,6 @@
 // Client/src/pages/Admin/Order/OrderList.js
 import { useCallback } from "react";
+import "./OrderList.css";
 import {
   Row,
   Col,
@@ -111,14 +112,15 @@ export default function OrderList() {
         <div className="admin-content-wrapper">
           <div className="admin-content-header">Danh sách đơn hàng</div>
           <div className="admin-content-body">
-            <Table striped bordered hover>
+            {/* Đã thêm class custom-order-table */}
+            <Table responsive hover className="custom-order-table border-0">
               <thead>
                 <tr>
                   <th className="text-center">STT</th>
-                  <th className="text-center">Thông tin giao hàng</th>
-                  <th className="text-center">Ngày đặt hàng</th>
-                  <th className="text-center">Tổng tiền</th>
-                  <th className="text-center">Tình trạng</th>
+                  <th>Mã đơn hàng</th>
+                  <th>Ngày đặt hàng</th>
+                  <th className="text-end">Tổng tiền</th> 
+                  <th className="text-center">Tiến độ giao hàng</th> 
                   <th className="text-center">Hành động</th>
                 </tr>
               </thead>
@@ -127,22 +129,27 @@ export default function OrderList() {
                   orderData.orders.map((item, index) => {
                     return (
                       <tr key={item._id || item.OrderID}> 
-                        <td>{index + 1}</td>
-                        {/* Hiển thị OrderID từ SQL Server */}
-                        <td>#ORD-{item._id}</td> 
+                        <td className="text-center fw-bold">{index + 1}</td>
+                        <td className="fw-medium text-primary">#ORD-{item._id}</td> 
                         <td>{moment(item.orderDate).format("DD/MM/YYYY HH:mm")}</td>
-                        <td>{format.price(item.totalPrice)} VNĐ</td>
-                        <td>
-                          <Badge bg={item.paymentStatus?.code === 2 ? "success" : "warning"}>
+                        <td className="text-end fw-bold text-danger">
+                          {format.formatPrice(item.totalPrice)} 
+                        </td>
+                        <td className="text-center">
+                          <Badge 
+                            className="custom-badge"
+                            bg={item.paymentStatus?.code === 2 ? "success" : "warning"}
+                          >
                             {item.paymentStatus?.text}
                           </Badge>
                         </td>
-                        <td>
-                          {/* Sử dụng component tiến độ dựa trên code từ SQL */}
+                        {/* Thêm class cho cột này để rộng rãi hơn */}
+                        <td className="progress-cell">
                           <OrderProgress currentStep={item.orderStatus?.code} />
                         </td>
                         <td className="text-center">
-                          <div className="d-flex gap-2 justify-content-center">
+                          {/* Thêm class action-buttons */}
+                          <div className="d-flex gap-2 justify-content-center action-buttons">
                             <Button
                               variant="outline-primary"
                               size="sm"
@@ -150,6 +157,13 @@ export default function OrderList() {
                             >
                               <FaEye /> Xem
                             </Button>
+                            <Button
+                              variant="outline-warning"
+                              size="sm"
+                              onClick={() => openUpdateModal(item._id)}
+                            >
+                              <FaEdit /> Cập nhật
+                            </Button> 
                           </div>
                         </td>
                       </tr>
@@ -157,7 +171,9 @@ export default function OrderList() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={7} className="text-center">Không có đơn hàng nào!</td>
+                    <td colSpan={7} className="text-center py-4 text-muted">
+                      Không có đơn hàng nào!
+                    </td>
                   </tr>
                 )}
               </tbody>

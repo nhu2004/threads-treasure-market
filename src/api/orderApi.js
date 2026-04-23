@@ -2,7 +2,6 @@ const orderApi = {
   getAll: async (params = {}) => {
     try {
       const { page = 1, limit = 10 } = params;
-      // Gửi query params lên backend để SQL thực hiện OFFSET/FETCH
       const res = await fetch(`http://localhost:5000/api/orders?page=${page}&limit=${limit}`);
       const data = await res.json();
       
@@ -17,5 +16,21 @@ const orderApi = {
       return { count: 0, data: [], pagination: { totalPage: 1 } }; 
     }
   },
+
+  getById: async (id, params = {}) => {
+    const res = await fetch(`http://localhost:5000/api/orders/${id}`);
+    if (!res.ok) throw new Error("Failed to fetch");
+    return await res.json();
+  },
+
+  updateOrderStatus: async (id, data) => {
+    const res = await fetch(`http://localhost:5000/api/orders/${id}/status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Failed to update");
+    return await res.json();
+  }
 };
 export default orderApi;
