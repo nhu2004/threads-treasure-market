@@ -180,7 +180,7 @@ export const LoginRegisterModal = ({ isOpen, onClose, onLoginSuccess }) => {
               />
             </div>
             <p className="text-xs text-gray-500">
-              💡 Admin: username: admin1, password: 1
+              💡 Admin: username: admin, password: 1
             </p>
             <Button
               type="submit"

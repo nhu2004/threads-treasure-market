@@ -14,7 +14,7 @@ const REVENUE_QUERY_CONFIG = { value: 1 };
 const AdminDashboard = () => {
   const { cardData, loading: cardsLoading } = useDashboardCards();
   const { revenueChartData, loading: revenueLoading } = useRevenueChart(REVENUE_QUERY_CONFIG); 
-  const { bestSellerChartData, loading: analyticsLoading } = useAnalyticsCharts();
+  const { bestSellerChartData, orderStatusData = [], loading: analyticsLoading } = useAnalyticsCharts();
   // Chuyển đổi dữ liệu cho LineChart (Doanh thu)
   const formattedRevenueData = revenueChartData.labels?.map((label, index) => ({
     date: label,
