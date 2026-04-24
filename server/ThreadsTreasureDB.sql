@@ -66,7 +66,7 @@ GO
 -- =============================================
 
 -- Dữ liệu Categories
-INSERT INTO Categories (Name) VALUES (N'Áo'), (N'Quần'), (N'Đầm'), (N'Phụ kiện');
+INSERT INTO Categories (Name) VALUES (N'Áo'), (N'Quần'), (N'Phụ kiện');
 
 -- Dữ liệu Users
 INSERT INTO Users (Username, PasswordHash, FullName, Email, Role, CreatedAt, UpdatedAt)
