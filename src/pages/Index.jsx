@@ -13,7 +13,7 @@ const Index = () => {
       {/* Hero */}
       <section className="relative h-[85vh] overflow-hidden">
         <img
-          src={"/assets/hero-fashion.jpg"}
+          src={"/assets/BR_fasshion.jpg"}
           alt="Fashion collection"
           className="absolute inset-0 w-full h-full object-cover"
         />

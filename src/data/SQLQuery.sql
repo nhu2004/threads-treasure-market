@@ -307,3 +307,70 @@ SET @OrderID_DaHuy = SCOPE_IDENTITY();
 INSERT INTO OrderDetails (OrderID, ProductID, Quantity, Price)
 VALUES (@OrderID_DaHuy, 1, 1, 1290000);
 -- Không sinh hóa đơn và không trừ kho cho đơn đã hủy
+
+-- =======================================================================
+-- 1. CẬP NHẬT DỮ LIỆU CÁC VOUCHER ĐANG BỊ NULL
+-- =======================================================================
+
+-- Cập nhật Voucher 1 (SALE10 - Giảm 10%)
+UPDATE Vouchers
+SET Name = N'Siêu Sale Giảm 10%',
+    StartDate = '2024-01-01',
+    MinimumAmount = 500000,
+    VoucherType = 'General', -- Dành cho mọi người
+    MinOrderValue = 500000,  -- Đơn tối thiểu 500k
+    MaxDiscountAmount = 100000, -- Giảm tối đa 100k
+    TargetRankID = NULL, -- NULL nghĩa là ai cũng dùng được
+    Description = N'Giảm 10% (tối đa 100.000đ) cho tất cả đơn hàng có giá trị từ 500.000đ trở lên.',
+    IsActive = 1
+WHERE VoucherID = 1;
+
+-- Cập nhật Voucher 2 (DISCOUNT50K - Giảm 50k)
+UPDATE Vouchers
+SET Name = N'Giảm Trực Tiếp 50K',
+    StartDate = '2024-01-01',
+    MinimumAmount = 300000,
+    VoucherType = 'General',
+    MinOrderValue = 300000,
+    MaxDiscountAmount = 50000,
+    TargetRankID = NULL,
+    Description = N'Giảm thẳng 50.000đ vào tổng hóa đơn cho các đơn hàng từ 300.000đ.',
+    IsActive = 1
+WHERE VoucherID = 2;
+
+-- Cập nhật Voucher 3 (NEWUSER20 - Khách hàng mới)
+UPDATE Vouchers
+SET Name = N'Ưu Đãi Khách Hàng Mới',
+    StartDate = '2024-01-01',
+    MinimumAmount = 1000000,
+    VoucherType = 'NewUser', -- Loại ưu đãi khách mới
+    MinOrderValue = 1000000, -- Đơn tối thiểu 1 triệu như bạn từng mô tả
+    MaxDiscountAmount = 200000, -- Giảm 20% tối đa 200k
+    TargetRankID = 1, -- Khách vãng lai (RankID = 1) mới đăng ký
+    Description = N'Ưu đãi dành riêng cho khách hàng mới. Giảm 20% (tối đa 200.000đ) cho đơn hàng đầu tiên từ 1.000.000đ.',
+    IsActive = 1
+WHERE VoucherID = 3;
+
+-- Tặng thêm 1 Voucher Sinh nhật tự động (Bonus thêm cho đúng nghiệp vụ của bạn)
+INSERT INTO Vouchers (Code, Value, ByType, ExpiryDate, Name, StartDate, MinimumAmount, VoucherType, MinOrderValue, MaxDiscountAmount, TargetRankID, Description, IsActive)
+VALUES ('HPBD20', 20.00, 'percent', '2026-12-31', N'Quà Tặng Sinh Nhật', '2024-01-01', 0, 'Birthday', 0, 500000, NULL, N'Giảm 20% (tối đa 500.000đ) cho tháng sinh nhật của khách hàng. Không giới hạn giá trị đơn hàng tối thiểu.', 1);
+
+
+-- =======================================================================
+-- 2. TỰ ĐỘNG XUẤT HÓA ĐƠN CHO CÁC ĐƠN HÀNG HỢP LỆ (Chưa có hóa đơn)
+-- =======================================================================
+
+-- Lấy mẫu hóa đơn mặc định
+DECLARE @TemplateID INT;
+SELECT TOP 1 @TemplateID = TemplateID FROM InvoiceTemplates;
+
+-- Insert hàng loạt vào bảng Invoices
+INSERT INTO Invoices (OrderID, TemplateID, InvoiceDate, TotalAmount)
+SELECT 
+    OrderID, 
+    @TemplateID, 
+    OrderDate, -- Tạm lấy ngày đặt hàng làm ngày xuất hóa đơn cho các đơn cũ
+    Total
+FROM Orders
+WHERE Status IN (N'Đang giao', N'Đã giao') -- Chỉ lấy đơn hợp lệ
+  AND OrderID NOT IN (SELECT OrderID FROM Invoices); -- Bỏ qua những đơn đã xuất hóa đơn rồi (như OrderID 59)
