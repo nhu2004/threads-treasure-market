@@ -31,6 +31,17 @@ const orderApi = {
     });
     if (!res.ok) throw new Error("Failed to update");
     return await res.json();
+  },
+// Hàm mới để lấy đơn hàng theo User đang đăng nhập
+  getUserOrders: async (userId) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/orders/user/${userId}`);
+      if (!res.ok) throw new Error("Failed to fetch user orders");
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      return { orders: [] };
+    }
   }
 };
 export default orderApi;

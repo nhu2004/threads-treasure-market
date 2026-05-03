@@ -139,5 +139,31 @@ router.put('/:id/status', async (req, res) => {
         res.status(500).json({ message: 'Lỗi server' });
     }
 });
+router.get('/user/:userId', async (req, res) => {
+    try {
+        let pool = await sql.connect(sqlConfig);
+        let result = await pool.request()
+            .input('userId', sql.Int, req.params.userId)
+            .query(`
+                SELECT 
+                    o.OrderID, 
+                    o.OrderDate, 
+                    o.Status, 
+                    o.Total,
+                    o.SubTotal,
+                    o.DiscountAmount,
+                    ISNULL(SUM(od.Quantity), 0) as TotalItems
+                FROM Orders o
+                LEFT JOIN OrderDetails od ON o.OrderID = od.OrderID
+                WHERE o.UserID = @userId
+                GROUP BY o.OrderID, o.OrderDate, o.Status, o.Total, o.SubTotal, o.DiscountAmount
+                ORDER BY o.OrderDate DESC
+            `);
 
+        res.json({ orders: result.recordset });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Lỗi server' });
+    }
+});
 module.exports = router;
