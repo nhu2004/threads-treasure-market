@@ -95,7 +95,9 @@ ALTER TABLE InvoiceTemplates ADD
     TemplateName NVARCHAR(100);
 
 
-	CREATE TRIGGER trg_UpdateCustomerRank
+---------------------
+
+CREATE TRIGGER trg_UpdateCustomerRank
 ON Orders
 AFTER UPDATE
 AS
