@@ -1,19 +1,23 @@
-// Placeholder for voucher API functions
+//src/api/voucherApi.js
+import axios from 'axios'; 
+
+const API_URL = 'http://localhost:5000/api/vouchers';  
 
 const voucherApi = {
-  getAll: async (params) => {
-    // Simulate fetching voucher data
-    return {
-      data: [
-        { id: 1, code: 'VOUCHER1', value: 10, by: 'percent' },
-        { id: 2, code: 'VOUCHER2', value: 50, by: 'amount' },
-      ],
-      pagination: { page: 1, total: 2 }
-    };
+  getAll: async () => {
+    const response = await axios.get(API_URL);
+    return response.data;
   },
+  
+  // Endpoint mới gọi theo user
+  getUserVouchers: async (userId) => {
+    const response = await axios.get(`${API_URL}/user/${userId}`);
+    return response.data;
+  },
+  
   create: async (data) => {
-    // Simulate creating voucher
-    return { id: Date.now(), ...data };
+    const response = await axios.post(`${API_URL}/add`, data);
+    return response.data;
   },
 };
 
