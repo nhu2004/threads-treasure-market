@@ -122,6 +122,7 @@ export default function OrderList() {
                   <th className="text-end">Tổng tiền</th> 
                   <th className="text-center">Tiến độ giao hàng</th> 
                   <th className="text-center">Hành động</th>
+                  <th className="text-center">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
