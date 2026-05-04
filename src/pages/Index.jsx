@@ -1,30 +1,29 @@
-import { useState, useEffect } from "react";
+// src/pages/Index.jsx
+import { useState, useEffect, useRef } from "react";
 import productApi from "../api/productApi"; // Gọi API từ Backend
 import ProductCard from "@/components/ProductCard";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";  
-
-// XÓA DÒNG NÀY (Vì 'products' không còn tồn tại)[cite: 13]
-// const featuredProducts = products.slice(0, 4); 
+import { ArrowRight } from "lucide-react";    
 
 const Index = () => {
-  // 1. Khởi tạo state để lưu sản phẩm nổi bật
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Trạng thái để xác định khi nào video kết thúc
+  const [videoEnded, setVideoEnded] = useState(false);
+  const videoRef = useRef(null);
 
-  // 2. Sử dụng useEffect để gọi API khi trang Index load
+  const handleVideoEnd = () => {
+    setVideoEnded(true);
+  };
+
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
         setLoading(true);
-        // Gọi API
         const res = await productApi.getAll({ featured: true, limit: 4 }); 
-        
-        // SỬA TẠI ĐÂY: Trích xuất mảng từ thuộc tính `products` thay vì `data`
         const productsArray = res.products || []; 
-        
-        // Giới hạn 4 sản phẩm để hiển thị
         setFeaturedProducts(productsArray.slice(0, 4));
       } catch (error) {
         console.error("Lỗi khi lấy sản phẩm nổi bật:", error);
@@ -38,13 +37,38 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="relative h-[85vh] overflow-hidden">
-        <img
-          src={"/assets/BR_fasshion.jpg"}
-          alt="Fashion collection"
-          className="absolute inset-0 w-full h-full object-cover"
+      <section className="relative h-[85vh] overflow-hidden bg-black">
+        {/* 1. Ảnh BR_fashion nằm dưới, sẽ hiện lên khi videoEnded = true */}
+        <img 
+          src="/assets/BR_fasshion.jpg" 
+          alt="Background"
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+            videoEnded ? "opacity-100" : "opacity-0"
+          }`}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-foreground/60 via-foreground/30 to-transparent" />
+
+        {/* 2. Video chạy 1 lần (không có thuộc tính loop) */}
+        <video
+          ref={videoRef}
+          src="/assets/bia_fashion_1.mp4"
+          autoPlay 
+          muted
+          playsInline
+          onEnded={handleVideoEnd} // Kích hoạt khi video chạy hết
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+            videoEnded ? "opacity-0" : "opacity-100"
+          }`}
+        />
+
+        {/* 3. Lớp Overlay Gradient - Tối dần khi video kết thúc */}
+        <div 
+          className={`absolute inset-0 transition-all duration-1000 ${
+            videoEnded 
+              ? "bg-black/50" // Tối đen dần khi hiện ảnh để nổi bật chữ
+              : "bg-gradient-to-r from-foreground/60 via-foreground/30 to-transparent"
+          }`} 
+        />
+
         <div className="relative container mx-auto px-4 h-full flex items-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -87,9 +111,9 @@ const Index = () => {
         <div className="grid grid-cols-3 md:grid-cols-3 gap-3">
           {[
           
-            { name: "Áo Sơ Mi", category: "ao", img: "../../public/assets/ao_bia.jpg" },
-            { name: "Quần Tây ", category: "quan", img: "../../public/assets/quan_bia.jpg" },
-            { name: "Phụ kiện", category: "phu-kien", img: "../../public/assets/phukien_bia.jpg" },
+            { name: "Áo Sơ Mi", category: "ao", img: "/assets/ao_bia.jpg" },
+            { name: "Quần Tây ", category: "quan", img: "/assets/quan_bia.jpg" },
+            { name: "Phụ kiện", category: "phu-kien", img: "/assets/phukien_bia.jpg" },
           ].map((cat, i) => (
             <motion.div
               key={cat.name}

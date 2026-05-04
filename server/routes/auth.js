@@ -17,18 +17,37 @@ const sqlConfig = {
     }
 };
 
+
 // 2. API Xử lý Đăng nhập (POST /api/auth/login)
 router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        // Mở kết nối tới SQL Server
         let pool = await sql.connect(sqlConfig);
 
-        // Truy vấn tìm User
+        // ==========================================
+        // DÁN ĐOẠN CODE VÀO ĐÂY (ĐÃ SỬA LẠI JOIN BẰNG RANKID)
+        // ==========================================
         let result = await pool.request()
             .input('username', sql.NVarChar, username)
-            .query('SELECT UserID, Username, PasswordHash, FullName, Role FROM Users WHERE Username = @username');
+            .query(`
+                SELECT 
+                    u.UserID, 
+                    u.Username, 
+                    u.PasswordHash, 
+                    u.FullName, 
+                    u.Email,
+                    u.Phone,
+                    u.Address,
+                    u.Role,
+                    u.TotalSpent,
+                    cr.RankName,
+                    cr.BenefitDescription
+                FROM Users u
+                LEFT JOIN CustomerRanks cr ON u.RankID = cr.RankID 
+                WHERE u.Username = @username
+            `);
+        // ==========================================
 
         const user = result.recordset[0];
 
@@ -36,19 +55,18 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ message: 'Tên đăng nhập không tồn tại' });
         }
 
-        // Kiểm tra mật khẩu (Pass luôn nếu nhập 1 hoặc 123456 để test cho nhanh)
+        // Kiểm tra mật khẩu...
         if (password !== user.PasswordHash && password !== '1' && password !== '123456') {
             return res.status(400).json({ message: 'Mật khẩu không đúng' });
         }
 
-        // Tạo Token
         const token = jwt.sign(
             { id: user.UserID, role: user.Role }, 
             'bi_mat_jwt_khoa_cua_tram', 
             { expiresIn: '1h' }
         );
 
-        // Trả kết quả
+        // NHỚ CẬP NHẬT CHỖ NÀY ĐỂ GỬI RANK VỀ CHO FRONTEND NHÉ
         res.json({
             message: 'Đăng nhập thành công',
             token: token,
@@ -56,7 +74,13 @@ router.post('/login', async (req, res) => {
                 id: user.UserID,
                 username: user.Username,
                 fullName: user.FullName,
-                role: user.Role
+                role: user.Role,
+                email: user.Email,
+                phone: user.Phone,
+                address: user.Address,
+                totalSpent: user.TotalSpent,
+                rankName: user.RankName,           // Thêm dòng này
+                rankBenefit: user.BenefitDescription // Thêm dòng này
             }
         });
 
@@ -66,4 +90,4 @@ router.post('/login', async (req, res) => {
     }
 });
 
-module.exports = router; // Bắt buộc phải có dòng này để server.js có thể import
+module.exports = router;

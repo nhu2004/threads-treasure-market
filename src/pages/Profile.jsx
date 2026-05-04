@@ -1,18 +1,30 @@
-import { useState } from "react";
+// src/pages/Profile.jsx
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Edit2, Save, X } from "lucide-react";
+import { Edit2, Save, X, Award } from "lucide-react"; 
+import userApi from "../api/userApi";
 
 const Profile = () => {
-  const { user, logout } = useAuth();
+  const { user, login } = useAuth(); // Dùng hàm login của Context để cập nhật lại state toàn cục
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: user?.fullName || "",
-    email: user?.email || "",
-    phone: user?.phone || "",
-    address: user?.address || "",
+    fullName: "",
+    email: "",
+    phone: "",
+    address: "",
   });
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        fullName: user.fullName || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        address: user.address || "",
+      });
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,20 +33,23 @@ const Profile = () => {
       [name]: value,
     }));
   };
+  const handleSave = async () => {
+      try {
+        // 1. Gửi lên SQL Server qua API
+        await userApi.updateProfile(user.id, formData);
 
-  const handleSave = () => {
-    // Lưu lên API
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        ...user,
-        ...formData,
-      })
-    );
-    setIsEditing(false);
-    window.location.reload();
-  };
+        // 2. Cập nhật lại State và LocalStorage thông qua hàm login của AuthContext
+        // Điều này giúp dữ liệu mới được cập nhật ngay lập tức mà không cần reload trang
+        const updatedUser = { ...user, ...formData };
+        login(updatedUser, localStorage.getItem('token')); 
 
+        setIsEditing(false);
+        alert("Cập nhật thành công!");
+      } catch (error) {
+        console.error("Lỗi:", error);
+        alert("Cập nhật thất bại!");
+      }
+    };
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 py-12 px-4">
@@ -62,6 +77,17 @@ const Profile = () => {
               {isEditing ? <X size={20} /> : <Edit2 size={20} />}
             </button>
           </div>
+          
+          {/* HIỂN THỊ RANK Ở ĐÂY */}
+          <div className="mt-4 pt-4 border-t flex items-center gap-2 text-amber-600 font-medium">
+             <Award size={20} />
+             <span>Hạng thẻ: {user.rankName || 'Chưa có thông tin hạng'}</span>
+          </div>
+          {/* Tùy chọn: Hiển thị thêm mô tả ưu đãi */}
+          {user.rankBenefit && (
+             <p className="text-sm text-gray-500 mt-1 pl-7">{user.rankBenefit}</p>
+          )}
+
         </div>
 
         {/* Profile Form */}

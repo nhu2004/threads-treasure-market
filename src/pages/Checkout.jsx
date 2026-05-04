@@ -35,6 +35,7 @@ const Checkout = () => {
     alert("Có lỗi khi đặt hàng, vui lòng thử lại!");
   }
 };
+
   if (submitted) {
     return (
       <div className="min-h-screen flex items-center justify-center">
