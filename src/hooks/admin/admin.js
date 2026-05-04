@@ -1,8 +1,5 @@
 // Export all admin hooks from subdirectories
 
-// Brand hooks
-export { usebrandList, usebrandCRUD } from "./brand";
-
 // Category hooks
 export { usecategoryList, usecategoryCRUD } from "./category";
 

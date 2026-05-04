@@ -5,7 +5,6 @@ import Analytics from "./admin/Analytics";
 import ProductList from "./admin/Product/ProductList";
 import AddProduct from "./admin/Product/AddProduct";
 import UpdateProduct from "./admin/Product/UpdateProduct";
-import Brand from "./admin/Brand";
 import Category from "./admin/Category";
 import Supplier from "./admin/Supplier";
 import Order from "./admin/Order";
@@ -21,7 +20,6 @@ const Admin = () => {
         <Route path="/products" element={<ProductList />} />
         <Route path="/products/add" element={<AddProduct />} />
         <Route path="/products/update/:id" element={<UpdateProduct />} />
-        <Route path="/brands" element={<Brand />} />
         <Route path="/categories" element={<Category />} />
         <Route path="/suppliers" element={<Supplier />} />
         <Route path="/orders" element={<Order />} />
