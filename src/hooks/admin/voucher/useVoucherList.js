@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import voucherApi from "../../../api/voucherApi";
 
 export const useVoucherList = () => {
-  const [voucherData, setVoucherData] = useState({});
+  const [voucherData, setVoucherData] = useState({ vouchers: [], totalPage: 1 });
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [searchInput, setSearchInput] = useState("");
@@ -13,25 +13,21 @@ export const useVoucherList = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const query = searchString
-          ? {
-              code: { $regex: searchString, $options: "i" },
-            }
-          : {};
+        // Truyền page và limit xuống API (tạm bỏ regex MongoDB)
         const res = await voucherApi.getAll({
-          query,
           page: page,
           limit: 10,
-          sortByDate: "desc",
         });
+        
         setLoading(false);
+        // Cập nhật đúng các object trả về từ Controller Backend của SQL
         setVoucherData({
-          vouchers: res.data,
-          totalPage: res.pagination.totalPage,
+          vouchers: res.vouchers || [],
+          totalPage: res.totalPage || 1,
         });
       } catch (error) {
         setLoading(false);
-        console.log(error);
+        console.log("Lỗi tải danh sách voucher:", error);
       }
     };
     fetchData();
@@ -51,7 +47,8 @@ export const useVoucherList = () => {
       const newArray = [...preState.vouchers];
       return {
         ...preState,
-        vouchers: newArray.filter((item) => item._id !== voucherId),
+        // Đổi _id thành VoucherID để xóa trên giao diện
+        vouchers: newArray.filter((item) => item.VoucherID !== voucherId),
       };
     });
   };
@@ -68,9 +65,3 @@ export const useVoucherList = () => {
     removeVoucher,
   };
 };
-
-
-
-
-
-

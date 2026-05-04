@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut, BarChart3, Package, ShoppingCart, Users, Tag, Home, Settings } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom"; 
+import { Menu, X, LogOut, Package, ShoppingCart, Users, Tag, Home, Settings } from "lucide-react"; 
 import { useAuth } from "@/contexts/AuthContext";
 
 export const AdminLayout = ({ children }) => {
@@ -13,13 +13,13 @@ export const AdminLayout = ({ children }) => {
     navigate("/");
   };
 
-  const menuItems = [
+const menuItems = [
     { icon: Home, label: "Tổng quan", path: "/admin" },
     { icon: Package, label: "Sản phẩm", path: "/admin/products" },
     { icon: ShoppingCart, label: "Đơn hàng", path: "/admin/orders" },
     { icon: Users, label: "Khách hàng", path: "/admin/users" },
+    { icon: Tag, label: "Voucher", path: "/admin/vouchers" },  
   ];
-
   return (
     <div className="flex h-screen bg-white">
       {/* Sidebar */}

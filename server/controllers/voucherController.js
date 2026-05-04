@@ -4,9 +4,34 @@ const { poolPromise, sql } = require('../db');
 // Dành cho Admin quản lý
 const getVouchers = async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
+
         const pool = await poolPromise;
-        const result = await pool.request().query('SELECT * FROM Vouchers');
-        res.json({ vouchers: result.recordset });
+        
+        // Query 2 câu lệnh cùng lúc: Lấy data theo trang và Đếm tổng số lượng
+        const result = await pool.request()
+            .input('offset', sql.Int, offset)
+            .input('limit', sql.Int, limit)
+            .query(`
+                SELECT * FROM Vouchers 
+                ORDER BY VoucherID DESC 
+                OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY;
+                
+                SELECT COUNT(*) as total FROM Vouchers;
+            `);
+            
+        // Tính toán tổng số trang
+        const totalRecords = result.recordsets[1][0].total;
+        const totalPage = Math.ceil(totalRecords / limit);
+
+        // Trả về đúng format mà Frontend đang đợi
+        res.json({ 
+            vouchers: result.recordsets[0], 
+            totalPage: totalPage,
+            total: totalRecords
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -43,7 +68,28 @@ const getUserVouchers = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
+// Thêm hàm lấy Top Voucher được dùng nhiều nhất
+const getTopVouchers = async (req, res) => {
+    try {
+        const pool = await poolPromise;
+        // Lấy top 3 voucher được sử dụng nhiều nhất từ bảng Orders
+        const result = await pool.request().query(`
+            SELECT TOP 3
+                v.VoucherID,
+                v.Code,
+                v.Name,
+                COUNT(o.OrderID) as UsageCount
+            FROM Vouchers v
+            INNER JOIN Orders o ON v.VoucherID = o.VoucherID
+            GROUP BY v.VoucherID, v.Code, v.Name
+            ORDER BY UsageCount DESC
+        `);
+        
+        res.json({ topVouchers: result.recordset });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 // Dành cho Admin thêm Voucher mới
 const createVoucher = async (req, res) => {
     try {
@@ -72,5 +118,52 @@ const createVoucher = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+// 1. Hàm Cập nhật Voucher
+const updateVoucher = async (req, res) => {
+    try {
+        const { id } = req.params;
+        // Dựa theo UI Modal của bạn, ta chỉ cập nhật Tên, Ngày bắt đầu và Ngày kết thúc
+        const { Name, start, end } = req.body; 
+        const pool = await poolPromise;
+        
+        await pool.request()
+            .input('id', sql.Int, id)
+            .input('name', sql.NVarChar, Name)
+            .input('start', sql.DateTime, start)
+            .input('end', sql.DateTime, end)
+            .query(`UPDATE Vouchers 
+                    SET Name = @name, StartDate = @start, ExpiryDate = @end 
+                    WHERE VoucherID = @id`);
+                    
+        res.json({ message: 'Cập nhật mã giảm giá thành công' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 
-module.exports = { getVouchers, getUserVouchers, createVoucher };
+// 2. Hàm Xóa Voucher (Có xử lý an toàn Khóa Ngoại)
+const deleteVoucher = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const pool = await poolPromise;
+        
+        // Bước 1: Xóa mã này khỏi "Ví" của khách hàng trước (bảng UserVouchers)
+        await pool.request()
+            .input('id', sql.Int, id)
+            .query(`DELETE FROM UserVouchers WHERE VoucherID = @id`);
+
+        // Bước 2: Xóa mã khỏi bảng Vouchers
+        await pool.request()
+            .input('id', sql.Int, id)
+            .query(`DELETE FROM Vouchers WHERE VoucherID = @id`);
+            
+        res.json({ message: 'Xóa mã giảm giá thành công' });
+    } catch (error) {
+        // Mã lỗi 547 là lỗi Conflict Foreign Key trong SQL Server
+        if (error.number === 547) {
+            return res.status(400).json({ message: 'Không thể xóa! Mã này đã được sử dụng trong Đơn hàng của khách.' });
+        }
+        res.status(500).json({ message: error.message });
+    }
+}; 
+module.exports = { getVouchers, getUserVouchers, createVoucher, getTopVouchers, updateVoucher, deleteVoucher }; 
