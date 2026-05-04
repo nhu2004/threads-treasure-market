@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useCart } from "@/contexts/CartContext";
-import { formatPrice } from "@/data/products";
+import { useCart } from "@/contexts/CartContext"; 
 import { Link } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
+import orderApi from "../api/orderApi";
 
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCart();
@@ -17,12 +17,24 @@ const Checkout = () => {
 
   const shippingFee = totalPrice >= 1000000 ? 0 : 30000;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const orderData = {
+      customer: form,
+      items: items,
+      totalPrice: totalPrice + shippingFee,
+      status: 'pending',
+      createdAt: new Date()
+    };
+    
+    await orderApi.create(orderData); // Lưu vào Database
     setSubmitted(true);
     clearCart();
-  };
-
+  } catch (error) {
+    alert("Có lỗi khi đặt hàng, vui lòng thử lại!");
+  }
+};
   if (submitted) {
     return (
       <div className="min-h-screen flex items-center justify-center">

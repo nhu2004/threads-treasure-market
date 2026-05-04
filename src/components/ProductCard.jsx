@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { formatPrice } from "@/data/products";
+import { motion } from "framer-motion"; 
 import { Heart } from "lucide-react";
 
+
+const formatPrice = (price) => {
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+};
 const ProductCard = ({ product, index = 0 }) => {
   return (
     <motion.div

@@ -1,13 +1,40 @@
+import { useState, useEffect } from "react";
+import productApi from "../api/productApi"; // Gọi API từ Backend
+import ProductCard from "@/components/ProductCard";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-import { products, formatPrice } from "@/data/products";
-import ProductCard from "@/components/ProductCard";
+import { ArrowRight } from "lucide-react";  
 
-const featuredProducts = products.slice(0, 4);
-// const heroImage = "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=1200&h=800&fit=crop";
+// XÓA DÒNG NÀY (Vì 'products' không còn tồn tại)[cite: 13]
+// const featuredProducts = products.slice(0, 4); 
 
 const Index = () => {
+  // 1. Khởi tạo state để lưu sản phẩm nổi bật
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // 2. Sử dụng useEffect để gọi API khi trang Index load
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      try {
+        setLoading(true);
+        // Gọi API
+        const res = await productApi.getAll({ featured: true, limit: 4 }); 
+        
+        // SỬA TẠI ĐÂY: Trích xuất mảng từ thuộc tính `products` thay vì `data`
+        const productsArray = res.products || []; 
+        
+        // Giới hạn 4 sản phẩm để hiển thị
+        setFeaturedProducts(productsArray.slice(0, 4));
+      } catch (error) {
+        console.error("Lỗi khi lấy sản phẩm nổi bật:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFeaturedProducts();
+  }, []);
+
   return (
     <div className="min-h-screen">
       {/* Hero */}
@@ -26,7 +53,7 @@ const Index = () => {
             className="max-w-lg"
           >
             <p className="font-body text-xs tracking-[0.3em] uppercase text-primary-foreground/80 mb-4">
-              Bộ sưu tập mới 2026
+              Bộ sưu tập nam mới 2026
             </p>
             <h1 className="font-display text-5xl md:text-7xl font-bold text-primary-foreground leading-[1.1] mb-6">
               Phong Cách
@@ -34,7 +61,7 @@ const Index = () => {
               <span className="italic">Đương Đại</span>
             </h1>
             <p className="font-body text-sm text-primary-foreground/80 mb-8 max-w-sm leading-relaxed">
-              Khám phá bộ sưu tập mới nhất với thiết kế tinh tế, chất liệu cao cấp.
+              Khám phá bộ sưu tập mới nhất với thiết kế tinh tế, chất liệu cao cấp dành riêng cho phái nam.
             </p>
             <Link
               to="/shop"
@@ -55,14 +82,14 @@ const Index = () => {
           viewport={{ once: true }}
           className="text-center mb-14"
         >
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground">Danh mục</h2>
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground">Danh mục nổi bật</h2>
         </motion.div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-3 md:grid-cols-3 gap-3">
           {[
-            { name: "Áo", category: "ao", img: "https://images.unsplash.com/photo-1598554747436-c9293d6a588f?w=400&h=500&fit=crop" },
-            { name: "Quần", category: "quan", img: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop" },
-            { name: "Đầm", category: "dam", img: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=500&fit=crop" },
-            { name: "Phụ kiện", category: "phu-kien", img: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=500&fit=crop" },
+          
+            { name: "Áo Sơ Mi", category: "ao", img: "../../public/assets/ao_bia.jpg" },
+            { name: "Quần Tây ", category: "quan", img: "../../public/assets/quan_bia.jpg" },
+            { name: "Phụ kiện", category: "phu-kien", img: "../../public/assets/phukien_bia.jpg" },
           ].map((cat, i) => (
             <motion.div
               key={cat.name}
@@ -103,11 +130,18 @@ const Index = () => {
               Xem tất cả <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {featuredProducts.map((product, i) => (
-              <ProductCard key={product.id} product={product} index={i} />
-            ))}
-          </div>
+          
+          {loading ? (
+              <p className="text-center">Đang tải sản phẩm...</p>
+          ) : featuredProducts.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {featuredProducts.map((product, i) => (
+                <ProductCard key={product.id || product._id} product={product} index={i} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-muted-foreground">Chưa có sản phẩm nào.</p>
+          )}
         </div>
       </section>
 

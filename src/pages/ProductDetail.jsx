@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { products, formatPrice } from "@/data/products";
+import { useParams, Link } from "react-router-dom"; 
 import { useCart } from "@/contexts/CartContext";
 import { Star, ChevronLeft, Truck, RotateCcw, Shield } from "lucide-react";
 import { motion } from "framer-motion";
@@ -39,90 +38,48 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-6">
-        <Link
-          to="/shop"
-          className="inline-flex items-center gap-1 font-body text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
-        >
-          <ChevronLeft size={16} /> Quay lại
+        <Link to="/shop" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-8">
+          <ChevronLeft size={16} /> Quay lại cửa hàng  
         </Link>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {/* Images */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
+          <motion.div>
             <div className="aspect-[3/4] bg-secondary overflow-hidden mb-3">
-              <img
-                src={product.images[selectedImage]}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
+              <img src={product.images?.[selectedImage] || product.image} alt={product.name} className="w-full h-full object-cover" />
             </div>
-            {product.images.length > 1 && (
-              <div className="flex gap-2">
-                {product.images.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setSelectedImage(i)}
-                    className={`w-16 h-20 overflow-hidden border-2 transition-colors ${
-                      i === selectedImage ? "border-foreground" : "border-transparent"
-                    }`}
-                  >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* Hiển thị danh sách ảnh nhỏ từ DB */}
+            <div className="flex gap-2">
+              {product.images?.map((img, i) => (
+                <button key={i} onClick={() => setSelectedImage(i)} className={`w-16 h-20 border-2 ${i === selectedImage ? "border-black" : "border-transparent"}`}>
+                  <img src={img} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
           </motion.div>
 
           {/* Info */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex flex-col"
-          >
-            {product.badge && (
-              <span className="inline-block w-fit bg-primary text-primary-foreground text-[10px] font-body font-semibold uppercase tracking-widest px-3 py-1 mb-4">
-                {product.badge}
-              </span>
-            )}
-            <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
-              {product.name}
-            </h1>
+          <div className="flex flex-col">
+            <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
+            <p className="text-2xl font-bold text-primary mb-6">{formatPrice(product.price)}</p>
+            <p className="text-muted-foreground mb-8">{product.description}</p>
 
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex items-center gap-0.5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    size={14}
-                    className={i < Math.floor(product.rating) ? "fill-gold text-gold" : "text-border"}
-                  />
+            {/* Sizes & Colors lấy từ API */}
+            <div className="mb-6">
+              <p className="text-sm font-medium mb-3">Kích thước:</p>
+              <div className="flex gap-2">
+                {product.sizes?.map(size => (
+                  <button key={size} onClick={() => setSelectedSize(size)} className={`px-4 py-2 border ${selectedSize === size ? "bg-black text-white" : ""}`}>
+                    {size}
+                  </button>
                 ))}
               </div>
-              <span className="font-body text-xs text-muted-foreground">
-                ({product.reviews} đánh giá)
-              </span>
             </div>
 
-            <div className="flex items-center gap-3 mb-6">
-              <span className="font-body text-2xl font-bold text-foreground">
-                {formatPrice(product.price)}
-              </span>
-              {product.originalPrice && (
-                <span className="font-body text-lg text-muted-foreground line-through">
-                  {formatPrice(product.originalPrice)}
-                </span>
-              )}
-            </div>
-
-            <p className="font-body text-sm text-muted-foreground leading-relaxed mb-8">
-              {product.description}
-            </p>
-
+            <button onClick={handleAddToCart} className="w-full bg-primary text-white py-4 font-bold uppercase tracking-widest">
+              Thêm vào giỏ hàng
+            </button>
+          </div>
             {/* Colors */}
             <div className="mb-6">
               <p className="font-body text-sm font-medium text-foreground mb-3">
@@ -175,6 +132,7 @@ const ProductDetail = () => {
             </button>
 
             {/* Benefits */}
+            <motion.div>
             <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border">
               {[
                 { icon: Truck, text: "Miễn phí ship" },

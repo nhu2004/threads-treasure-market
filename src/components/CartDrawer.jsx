@@ -1,6 +1,5 @@
 import { X, Plus, Minus, ShoppingBag } from "lucide-react";
-import { useCart } from "@/contexts/CartContext";
-import { formatPrice } from "@/data/products";
+import { useCart } from "@/contexts/CartContext"; 
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
