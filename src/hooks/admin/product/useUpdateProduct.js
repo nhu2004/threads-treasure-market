@@ -1,98 +1,62 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import productApi from "../../../api/productApi";
-
-export const useUpdateBook = (productId) => {
+// useUpdateProduct.js
+export const useUpdateProduct = (productId) => {
   const [loading, setLoading] = useState(false);
   const [updateImage, setUpdateImage] = useState(false);
   const navigate = useNavigate();
 
-  const updateBook = async (formValues) => {
+  const updateProduct = async (formValues) => {
     const {
-      productId: productIdValue,
       name,
-      brand,
-      category,
-      supplier,
+      categoryId,
+      supplierId,
       description,
-      year,
-      pages,
-      size,
       price,
-      discount,
+      originalPrice,
+      colors,
+      sizes,
+      stockQuantity,
       image,
     } = formValues;
 
-    const categorys = category.map((item) => item.value);
-    const brands = brand.map((item) => item.value);
-
     try {
       setLoading(true);
-
       let imageUrl = null;
-      let publicId = null;
 
-      // Upload new image if updateImage is true
+      // Upload ảnh mới lên Cloudinary (Dùng chung preset clothingstore)
       if (updateImage && image) {
         const formData = new FormData();
         formData.append("file", image);
-        formData.append("upload_preset", "bookstore");
+        formData.append("upload_preset", "clothingstore"); // Đổi từ bookstore thành clothingstore
 
         const resCloudinary = await axios.post(
-          "https://api.cloudinary.com/v1_1/bookstore2/image/upload",
+          "https://api.cloudinary.com/v1_1/clothingstore/image/upload",
           formData
         );
-
-        const { secure_url, public_id } = resCloudinary.data;
-        imageUrl = secure_url;
-        publicId = public_id;
+        imageUrl = resCloudinary.data.secure_url;
       }
 
       const updateData = {
-        productId: productIdValue,
         name,
-        year,
-        pages,
-        size,
         price,
-        discount,
+        originalPrice,
+        categoryId,
+        supplierId,
         description,
-        brand: brands,
-        category: categorys,
-        supplier: supplier,
+        colors: Array.isArray(colors) ? colors : colors.split(',').map(c => c.trim()),
+        sizes: Array.isArray(sizes) ? sizes : sizes.split(',').map(s => s.trim()),
+        stockQuantity,
+        imageUrl: imageUrl || undefined,
       };
 
-      // Add image data if new image was uploaded
-      if (imageUrl && publicId) {
-        updateData.imageUrl = imageUrl;
-        updateData.publicId = publicId;
-      }
-
       await productApi.update(productId, updateData);
-
       setLoading(false);
-      alert("Cập nhật sách thành công!");
-      navigate(`/admin/book?refresh=${Date.now()}`);
+      alert("Cập nhật sản phẩm thành công!");
+      navigate(`/admin/product?refresh=${Date.now()}`); // Chuyển hướng đúng trang product[cite: 20]
     } catch (error) {
       setLoading(false);
-      alert(
-        "Thất bại: " + (error.response?.data?.error?.message || error.message)
-      );
-      console.error("Update error:", error.response?.data || error.message);
+      alert("Thất bại: " + error.message);
     }
   };
 
-  return {
-    loading,
-    updateImage,
-    setUpdateImage,
-    updateBook,
-  };
+  return { loading, updateImage, setUpdateImage, updateProduct };
 };
-
-
-
-
-
-

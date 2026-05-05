@@ -2,32 +2,36 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import productApi from "../../../api/productApi";
 
-export const useDeleteBook = (onSuccess) => {
+export const useDeleteProduct = (onSuccess) => {
   const [showModal, setShowModal] = useState(false);
-  const [bookDelete, setBookDelete] = useState({});
+  const [productDelete, setProductDelete] = useState({});
 
-  const openDeleteModal = (book) => {
-    setBookDelete(book);
+  const openDeleteModal = (product) => {
+    setProductDelete(product);
     setShowModal(true);
   };
 
   const handleDelete = async () => {
     try {
-      const { data: orders } = await productApi.checkIsOrdered(bookDelete._id);
+      // Kiểm tra xem sản phẩm đã từng được đặt hàng chưa[cite: 22]
+      const { data: orders } = await productApi.checkIsOrdered(productDelete.ProductID || productDelete.id);
+      
       if (orders.length > 0) {
-        toast.error("Sản phẩm đã được mua, không thể xóa!", {
+        toast.error("Sản phẩm đã có trong đơn hàng, không thể xóa!", {
           autoClose: 2000,
         });
         return;
       }
-      await productApi.delete(bookDelete._id);
-      toast.success("Xóa thành công!", { autoClose: 2000 });
+
+      await productApi.delete(productDelete.ProductID || productDelete.id);
+      toast.success("Xóa sản phẩm thành công!", { autoClose: 2000 });
       setShowModal(false);
+
       if (onSuccess) {
-        onSuccess(bookDelete._id);
+        onSuccess(productDelete.ProductID || productDelete.id);
       }
     } catch (error) {
-      toast.error("Xóa thất bại!");
+      toast.error("Lỗi khi xóa sản phẩm!");
       setShowModal(false);
     }
   };
@@ -35,14 +39,8 @@ export const useDeleteBook = (onSuccess) => {
   return {
     showModal,
     setShowModal,
-    bookDelete,
+    productDelete,
     openDeleteModal,
     handleDelete,
   };
 };
-
-
-
-
-
-

@@ -21,23 +21,50 @@ router.get('/revenue', async (req, res) => {
     }
 });
 
-// 2. API lấy doanh thu theo ngày (Cho biểu đồ)
+// 2.   API lấy doanh thu theo mốc thời gian cho biểu đồ
 router.get('/lifetime', async (req, res) => {
     try {
+        // Nhận tham số time gửi từ Frontend
+        const timeFilter = parseInt(req.query.time) || 0;
+        let dateCondition = "";
+
+        // Tạo điều kiện lọc thời gian bằng SQL
+        switch(timeFilter) {
+            case 1: // Tuần (7 ngày)
+                dateCondition = "AND OrderDate >= DATEADD(day, -7, GETDATE())";
+                break;
+            case 2: // Tháng (30 ngày)
+                dateCondition = "AND OrderDate >= DATEADD(day, -30, GETDATE())";
+                break;
+            case 3: // 3 tháng (Quý - 90 ngày)
+                dateCondition = "AND OrderDate >= DATEADD(day, -90, GETDATE())";
+                break;
+            case 4: // Năm (365 ngày)
+                dateCondition = "AND OrderDate >= DATEADD(day, -365, GETDATE())";
+                break;
+            default: // Tất cả
+                dateCondition = "";
+        }
+
         let pool = await sql.connect(sqlConfig);
+        
+        // QUERY BẮT BUỘC CHỨA "WHERE Status = N'Đã giao'"
         let result = await pool.request().query(`
-            SELECT FORMAT(OrderDate, 'dd/MM') as _id, ISNULL(SUM(Total), 0) as revenue 
+            SELECT 
+                FORMAT(OrderDate, 'dd/MM') as _id, 
+                ISNULL(SUM(Total), 0) as revenue 
             FROM Orders 
-            WHERE Status = N'Đã giao' -- THÊM VÀO ĐÂY
+            WHERE Status = N'Đã giao' ${dateCondition}
             GROUP BY FORMAT(OrderDate, 'dd/MM'), CAST(OrderDate AS DATE)
             ORDER BY CAST(OrderDate AS DATE) ASC
         `);
+        
         res.json({ data: result.recordset });
     } catch (err) {
+        console.error("Lỗi api lifetime:", err);
         res.status(500).json({ data: [] });
     }
 });
-
 // 3. API lấy sản phẩm bán chạy (Cho biểu đồ PieChart)
 router.get('/bestseller', async (req, res) => {
     try {

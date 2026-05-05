@@ -374,3 +374,43 @@ SELECT
 FROM Orders
 WHERE Status IN (N'Đang giao', N'Đã giao') -- Chỉ lấy đơn hợp lệ
   AND OrderID NOT IN (SELECT OrderID FROM Invoices); -- Bỏ qua những đơn đã xuất hóa đơn rồi (như OrderID 59)
+ 
+-- Xóa dữ liệu cũ (nếu muốn làm sạch bảng trước khi thêm mẫu)
+-- TRUNCATE TABLE [dbo].[Suppliers]; 
+ 
+
+-- Kiểm tra lại dữ liệu vừa thêm
+SELECT * FROM [dbo].[Suppliers];
+
+---------------------------------------------------------------
+CREATE TRIGGER trg_AutoUpdateStatus_DeliveryProof
+ON [ThreadsTreasureDB].[dbo].[Orders]
+AFTER UPDATE
+AS
+BEGIN
+    -- Ngăn việc đếm số dòng ảnh hưởng làm rối kết quả trả về
+    SET NOCOUNT ON;
+
+    -- Kiểm tra xem cột DeliveryProofImage có nằm trong lệnh UPDATE hay không
+    IF UPDATE(DeliveryProofImage)
+    BEGIN
+        -- Cập nhật Status thành 'Đã giao' cho những đơn hàng vừa được thêm ảnh
+        UPDATE o
+        SET o.Status = N'Đã giao'
+        FROM [ThreadsTreasureDB].[dbo].[Orders] o
+        INNER JOIN inserted i ON o.OrderID = i.OrderID
+        WHERE i.DeliveryProofImage IS NOT NULL 
+          AND (o.Status <> N'Đã giao' OR o.Status IS NULL); 
+          -- Điều kiện AND để tránh việc update lặp lại nếu status đã là 'Đã giao'
+    END
+END;
+
+
+------------------------------------them khoa ngoai 
+ALTER TABLE [ThreadsTreasureDB].[dbo].[Products]
+ADD [SupplierID] INT NULL;
+
+-- (Tùy chọn) Thêm khóa ngoại để đảm bảo toàn vẹn dữ liệu
+ALTER TABLE [ThreadsTreasureDB].[dbo].[Products]
+ADD CONSTRAINT FK_Products_Suppliers FOREIGN KEY (SupplierID)
+REFERENCES [ThreadsTreasureDB].[dbo].[Suppliers](SupplierID);

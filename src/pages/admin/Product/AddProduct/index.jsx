@@ -91,23 +91,44 @@ function Addproduct() {
               </Row>
 
               <Row className="mt-3">
-                <Col xl={4}>
+                <Col xl={6}>
                   <div className="form-group">
-                    <label className={styles.formLabel}>Thương hiệu</label>
-                    <Select
-                      options={brandList}
-                      onChange={(opt) => formik.setFieldValue("brandId", opt.value)}
-                      placeholder="Chọn thương hiệu..."
+                    <label className={styles.formLabel}>Màu sắc (Các màu cách nhau bằng dấu phẩy)</label>
+                    <input
+                      type="text"
+                      name="colors"
+                      className="form-control"
+                      placeholder="Ví dụ: Đen, Trắng, Đỏ"
+                      value={formik.values.colors || ""}
+                      onChange={(e) => formik.setFieldValue("colors", e.target.value.split(',').map(c => c.trim()))}
                     />
                   </div>
                 </Col>
-                <Col xl={4}>
+                <Col xl={6}>
                   <div className="form-group">
-                    <label className={styles.formLabel}>Danh mục</label>
-                    <Select
-                      options={categoryList}
-                      onChange={(opt) => formik.setFieldValue("categoryId", opt.value)}
-                      placeholder="Chọn loại quần áo..."
+                    <label className={styles.formLabel}>Kích cỡ (Sizes)</label>
+                    <input
+                      type="text"
+                      name="sizes"
+                      className="form-control"
+                      placeholder="Ví dụ: S, M, L, XL"
+                      value={formik.values.sizes || ""}
+                      onChange={(e) => formik.setFieldValue("sizes", e.target.value.split(',').map(s => s.trim()))}
+                    />
+                  </div>
+                </Col>
+              </Row>
+
+              <Row className="mt-3">
+                <Col xl={6}>
+                  <div className="form-group">
+                    <label className={styles.formLabel}>Số lượng tồn kho</label>
+                    <input
+                      type="number"
+                      name="stockQuantity"
+                      className="form-control"
+                      value={formik.values.stockQuantity || 0}
+                      onChange={formik.handleChange}
                     />
                   </div>
                 </Col>

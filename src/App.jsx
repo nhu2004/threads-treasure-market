@@ -19,7 +19,7 @@ import Orders from "./pages/Orders";
 import Vouchers from "./pages/Vouchers";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
-import ChatBot from "@/components/ChatBot";
+import ChatBot from "@/components/ChatBot"; 
 
 const queryClient = new QueryClient();
 
@@ -73,7 +73,7 @@ function AppContent() {
             <Route path="/orders" element={<Orders />} />
             <Route path="/vouchers" element={<Vouchers />} />
             <Route path="/admin/*" element={<Admin />} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<NotFound />} /> 
           </Routes>
         </main>
         {!isAdminPage && (
