@@ -3,8 +3,20 @@ import { useCart } from "@/contexts/CartContext";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
+// ✅ FIX: thêm formatPrice
+const formatPrice = (price) =>
+  price?.toLocaleString("vi-VN") + " đ";
+
 const CartDrawer = () => {
-  const { items, isCartOpen, setIsCartOpen, removeItem, updateQuantity, totalPrice, totalItems } = useCart();
+  const {
+    items,
+    isCartOpen,
+    setIsCartOpen,
+    removeItem,
+    updateQuantity,
+    totalPrice,
+    totalItems
+  } = useCart();
 
   return (
     <AnimatePresence>
@@ -17,6 +29,7 @@ const CartDrawer = () => {
             className="fixed inset-0 bg-foreground/40 z-50"
             onClick={() => setIsCartOpen(false)}
           />
+
           <motion.div
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
@@ -29,7 +42,10 @@ const CartDrawer = () => {
               <h2 className="font-display text-xl font-semibold text-foreground">
                 Giỏ hàng ({totalItems})
               </h2>
-              <button onClick={() => setIsCartOpen(false)} className="p-1 text-foreground hover:text-muted-foreground">
+              <button
+                onClick={() => setIsCartOpen(false)}
+                className="p-1 text-foreground hover:text-muted-foreground"
+              >
                 <X size={22} />
               </button>
             </div>
@@ -50,41 +66,71 @@ const CartDrawer = () => {
               ) : (
                 <div className="space-y-6">
                   {items.map((item) => (
-                    <div key={`${item.product.id}-${item.size}-${item.color}`} className="flex gap-4">
+                    <div
+                      key={`${item.product.id}-${item.size}-${item.color}`}
+                      className="flex gap-4"
+                    >
                       <img
                         src={item.product.image}
                         alt={item.product.name}
                         className="w-20 h-24 object-cover bg-secondary flex-shrink-0"
                       />
+
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-body text-sm font-medium text-foreground truncate">{item.product.name}</h3>
+                        <h3 className="font-body text-sm font-medium text-foreground truncate">
+                          {item.product.name}
+                        </h3>
+
                         <p className="font-body text-xs text-muted-foreground mt-0.5">
                           {item.size} / {item.color}
                         </p>
+
                         <p className="font-body text-sm font-semibold text-foreground mt-1">
                           {formatPrice(item.product.price)}
                         </p>
+
                         <div className="flex items-center gap-3 mt-2">
                           <button
                             onClick={() =>
-                              updateQuantity(item.product.id, item.size, item.color, item.quantity - 1)
+                              updateQuantity(
+                                item.product.id,
+                                item.size,
+                                item.color,
+                                item.quantity - 1
+                              )
                             }
-                            className="p-1 border border-border text-foreground hover:bg-secondary"
+                            className="p-1 border border-border hover:bg-secondary"
                           >
                             <Minus size={12} />
                           </button>
-                          <span className="font-body text-sm w-6 text-center text-foreground">{item.quantity}</span>
+
+                          <span className="w-6 text-center">
+                            {item.quantity}
+                          </span>
+
                           <button
                             onClick={() =>
-                              updateQuantity(item.product.id, item.size, item.color, item.quantity + 1)
+                              updateQuantity(
+                                item.product.id,
+                                item.size,
+                                item.color,
+                                item.quantity + 1
+                              )
                             }
-                            className="p-1 border border-border text-foreground hover:bg-secondary"
+                            className="p-1 border border-border hover:bg-secondary"
                           >
                             <Plus size={12} />
                           </button>
+
                           <button
-                            onClick={() => removeItem(item.product.id, item.size, item.color)}
-                            className="ml-auto font-body text-xs text-muted-foreground hover:text-destructive underline"
+                            onClick={() =>
+                              removeItem(
+                                item.product.id,
+                                item.size,
+                                item.color
+                              )
+                            }
+                            className="ml-auto text-xs text-muted-foreground hover:text-destructive underline"
                           >
                             Xóa
                           </button>
@@ -100,13 +146,18 @@ const CartDrawer = () => {
             {items.length > 0 && (
               <div className="border-t border-border p-6 space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="font-body text-sm text-muted-foreground">Tạm tính</span>
-                  <span className="font-body text-lg font-semibold text-foreground">{formatPrice(totalPrice)}</span>
+                  <span className="text-sm text-muted-foreground">
+                    Tạm tính
+                  </span>
+                  <span className="text-lg font-semibold">
+                    {formatPrice(totalPrice)}
+                  </span>
                 </div>
+
                 <Link
                   to="/checkout"
                   onClick={() => setIsCartOpen(false)}
-                  className="block w-full bg-primary text-primary-foreground text-center py-4 font-body text-sm font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity"
+                  className="block w-full bg-primary text-primary-foreground text-center py-4 text-sm font-semibold uppercase tracking-widest hover:opacity-90"
                 >
                   Thanh toán
                 </Link>

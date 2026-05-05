@@ -1,12 +1,19 @@
 import { useState } from "react";
-import { useCart } from "@/contexts/CartContext"; 
+import { useCart } from "@/contexts/CartContext";
 import { Link } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 import orderApi from "../api/orderApi";
 
+// format price (FIX CRASH)
+const formatPrice = (price) =>
+  (price ?? 0).toLocaleString("vi-VN") + " đ";
+
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCart();
+
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -15,39 +22,64 @@ const Checkout = () => {
     note: "",
   });
 
+  const safeItems = Array.isArray(items) ? items : [];
+
   const shippingFee = totalPrice >= 1000000 ? 0 : 30000;
 
+  // CHECKOUT API
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const orderData = {
-      customer: form,
-      items: items,
-      totalPrice: totalPrice + shippingFee,
-      status: 'pending',
-      createdAt: new Date()
-    };
-    
-    await orderApi.create(orderData); // Lưu vào Database
-    setSubmitted(true);
-    clearCart();
-  } catch (error) {
-    alert("Có lỗi khi đặt hàng, vui lòng thử lại!");
-  }
-};
+    e.preventDefault();
 
+    if (safeItems.length === 0) return;
+
+    try {
+      setLoading(true);
+
+      const orderData = {
+        customer: form,
+        items: safeItems.map((item) => ({
+          productId: item.product?.id,
+          name: item.product?.name,
+          price: item.product?.price,
+          image: item.product?.image,
+          size: item.size,
+          color: item.color,
+          quantity: item.quantity,
+        })),
+        totalPrice: totalPrice + shippingFee,
+        shippingFee,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      };
+
+      await orderApi.create(orderData);
+
+      clearCart();
+      setSubmitted(true);
+    } catch (error) {
+      console.error("Order error:", error);
+      alert("Có lỗi khi đặt hàng, vui lòng thử lại!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // SUCCESS SCREEN
   if (submitted) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center max-w-md px-4">
           <CheckCircle size={64} className="mx-auto text-green-600 mb-6" />
-          <h1 className="font-display text-3xl font-bold text-foreground mb-3">Đặt hàng thành công!</h1>
-          <p className="font-body text-muted-foreground mb-8">
-            Cảm ơn bạn đã mua hàng. Chúng tôi sẽ liên hệ xác nhận đơn hàng trong thời gian sớm nhất.
+          <h1 className="text-3xl font-bold mb-3">
+            Đặt hàng thành công!
+          </h1>
+          <p className="text-muted-foreground mb-8">
+            Chúng tôi sẽ liên hệ xác nhận đơn hàng sớm nhất.
           </p>
+
           <Link
             to="/"
-            className="inline-block bg-primary text-primary-foreground px-8 py-4 font-body text-sm font-semibold uppercase tracking-widest"
+            className="inline-block bg-black text-white px-8 py-4"
           >
             Về trang chủ
           </Link>
@@ -56,12 +88,13 @@ const Checkout = () => {
     );
   }
 
-  if (items.length === 0) {
+  // EMPTY CART (SAFE)
+  if (!safeItems || safeItems.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="font-body text-muted-foreground mb-4">Giỏ hàng trống</p>
-          <Link to="/shop" className="font-body text-sm underline text-foreground">
+          <p className="mb-4">Giỏ hàng trống</p>
+          <Link to="/shop" className="underline">
             Tiếp tục mua sắm
           </Link>
         </div>
@@ -72,100 +105,129 @@ const Checkout = () => {
   return (
     <div className="min-h-screen py-10">
       <div className="container mx-auto px-4">
-        <h1 className="font-display text-3xl font-bold text-foreground mb-10">Thanh toán</h1>
+        <h1 className="text-3xl font-bold mb-10">Thanh toán</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-6">
-            <h2 className="font-display text-xl font-semibold text-foreground">Thông tin giao hàng</h2>
 
-            {[
-              { label: "Họ và tên", key: "name", type: "text", required: true },
-              { label: "Số điện thoại", key: "phone", type: "tel", required: true },
-              { label: "Email", key: "email", type: "email", required: false },
-            ].map((field) => (
-              <div key={field.key}>
-                <label className="font-body text-sm text-foreground block mb-1.5">
-                  {field.label} {field.required && <span className="text-destructive">*</span>}
-                </label>
-                <input
-                  type={field.type}
-                  required={field.required}
-                  value={form[field.key]}
-                  onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
-                  className="w-full px-4 py-3 border border-border bg-background text-foreground font-body text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                />
-              </div>
-            ))}
+          {/* FORM */}
+          <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-5">
 
-            <div>
-              <label className="font-body text-sm text-foreground block mb-1.5">
-                Địa chỉ giao hàng <span className="text-destructive">*</span>
-              </label>
-              <textarea
-                required
-                rows={3}
-                value={form.address}
-                onChange={(e) => setForm({ ...form, address: e.target.value })}
-                className="w-full px-4 py-3 border border-border bg-background text-foreground font-body text-sm focus:outline-none focus:ring-1 focus:ring-ring resize-none"
-              />
-            </div>
+            <input
+              placeholder="Họ tên"
+              required
+              value={form.name}
+              onChange={(e) =>
+                setForm({ ...form, name: e.target.value })
+              }
+              className="w-full border p-3"
+            />
 
-            <div>
-              <label className="font-body text-sm text-foreground block mb-1.5">Ghi chú</label>
-              <textarea
-                rows={2}
-                value={form.note}
-                onChange={(e) => setForm({ ...form, note: e.target.value })}
-                className="w-full px-4 py-3 border border-border bg-background text-foreground font-body text-sm focus:outline-none focus:ring-1 focus:ring-ring resize-none"
-              />
-            </div>
+            <input
+              placeholder="Số điện thoại"
+              required
+              value={form.phone}
+              onChange={(e) =>
+                setForm({ ...form, phone: e.target.value })
+              }
+              className="w-full border p-3"
+            />
+
+            <input
+              placeholder="Email"
+              value={form.email}
+              onChange={(e) =>
+                setForm({ ...form, email: e.target.value })
+              }
+              className="w-full border p-3"
+            />
+
+            <textarea
+              placeholder="Địa chỉ"
+              required
+              value={form.address}
+              onChange={(e) =>
+                setForm({ ...form, address: e.target.value })
+              }
+              className="w-full border p-3"
+            />
+
+            <textarea
+              placeholder="Ghi chú"
+              value={form.note}
+              onChange={(e) =>
+                setForm({ ...form, note: e.target.value })
+              }
+              className="w-full border p-3"
+            />
 
             <button
-              type="submit"
-              className="w-full bg-primary text-primary-foreground py-4 font-body text-sm font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity"
+              disabled={loading}
+              className="w-full bg-black text-white py-4"
             >
-              Đặt hàng — {formatPrice(totalPrice + shippingFee)}
+              {loading
+                ? "Đang xử lý..."
+                : `Đặt hàng — ${formatPrice(
+                    totalPrice + shippingFee
+                  )}`}
             </button>
           </form>
 
-          {/* Order summary */}
-          <div className="lg:col-span-2">
-            <div className="bg-secondary p-6 sticky top-32">
-              <h2 className="font-display text-xl font-semibold text-foreground mb-6">Đơn hàng</h2>
-              <div className="space-y-4 mb-6">
-                {items.map((item) => (
-                  <div key={`${item.product.id}-${item.size}-${item.color}`} className="flex gap-3">
-                    <img
-                      src={item.product.image}
-                      alt={item.product.name}
-                      className="w-14 h-18 object-cover flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-body text-sm text-foreground truncate">{item.product.name}</p>
-                      <p className="font-body text-xs text-muted-foreground">{item.size} / {item.color} x{item.quantity}</p>
-                      <p className="font-body text-sm font-semibold text-foreground">
-                        {formatPrice(item.product.price * item.quantity)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+          {/* ORDER SUMMARY */}
+          <div className="lg:col-span-2 border p-5">
+            <h2 className="text-xl font-bold mb-5">
+              Đơn hàng
+            </h2>
 
-              <div className="border-t border-border pt-4 space-y-2">
-                <div className="flex justify-between font-body text-sm">
-                  <span className="text-muted-foreground">Tạm tính</span>
-                  <span className="text-foreground">{formatPrice(totalPrice)}</span>
+            <div className="space-y-4">
+              {safeItems.map((item, i) => (
+                <div key={i} className="flex gap-3">
+                  <img
+                    src={item.product?.image}
+                    className="w-14 h-16 object-cover"
+                  />
+
+                  <div>
+                    <p className="text-sm">
+                      {item.product?.name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {item.size} / {item.color} x
+                      {item.quantity}
+                    </p>
+                    <p className="font-bold">
+                      {formatPrice(
+                        (item.product?.price || 0) *
+                          item.quantity
+                      )}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex justify-between font-body text-sm">
-                  <span className="text-muted-foreground">Phí vận chuyển</span>
-                  <span className="text-foreground">{shippingFee === 0 ? "Miễn phí" : formatPrice(shippingFee)}</span>
-                </div>
-                <div className="flex justify-between font-body text-base font-bold pt-2 border-t border-border">
-                  <span className="text-foreground">Tổng cộng</span>
-                  <span className="text-foreground">{formatPrice(totalPrice + shippingFee)}</span>
-                </div>
-              </div>
+              ))}
+            </div>
+
+            <hr className="my-4" />
+
+            <div className="flex justify-between">
+              <span>Tạm tính</span>
+              <span>{formatPrice(totalPrice)}</span>
+            </div>
+
+            <div className="flex justify-between">
+              <span>Phí ship</span>
+              <span>
+                {shippingFee === 0
+                  ? "Free"
+                  : formatPrice(shippingFee)}
+              </span>
+            </div>
+
+            <div className="flex justify-between font-bold mt-2">
+              <span>Tổng</span>
+              <span>
+                {formatPrice(
+                  totalPrice + shippingFee
+                )}
+              </span>
             </div>
           </div>
         </div>
