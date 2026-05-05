@@ -5,7 +5,6 @@ import {
   Row,
   Col,
   Table,
-  Spinner,
   Modal,
   Badge,
   Button,
@@ -26,8 +25,7 @@ import {
 } from "../../../hooks/admin/admin";
 
 export default function OrderList() {
-  const { orderData, page, setPage, loading, updateOrderInList } =
-    useOrderList();
+  const { orderData, page, setPage, updateOrderInList } = useOrderList();
 
   const {
     showModal: showDetailModal,
@@ -62,6 +60,7 @@ export default function OrderList() {
 
   return (
     <Row>
+      {/* MODAL CẬP NHẬT TRẠNG THÁI (Giữ nguyên) */}
       <Modal
         dialogClassName="modal-w1100"
         size="lg"
@@ -93,26 +92,19 @@ export default function OrderList() {
           )}
         </Modal.Body>
       </Modal>
-      <Modal
-        size="lg"
-        dialogClassName="modal-w1100"
-        show={showDetailModal}
-        onHide={() => setShowDetailModal(false)}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>
-            Hóa đơn <Badge bg="secondary">{orderDetail?._id}</Badge>
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {showDetailModal && orderDetail && <OrderDetail data={orderDetail} />}
-        </Modal.Body>
-      </Modal>
+
+      {/* SỬA LỖI Ở ĐÂY: GỌI THẲNG POPUP ORDER DETAIL, BỎ THẺ <Modal> BAO BỌC */}
+      {showDetailModal && orderDetail && (
+        <OrderDetail 
+          data={orderDetail} 
+          onBack={() => setShowDetailModal(false)} 
+        />
+      )}
+
       <Col xl={12}>
         <div className="admin-content-wrapper">
           <div className="admin-content-header">Danh sách đơn hàng</div>
           <div className="admin-content-body">
-            {/* Đã thêm class custom-order-table */}
             <Table responsive hover className="custom-order-table border-0">
               <thead>
                 <tr>
@@ -120,8 +112,8 @@ export default function OrderList() {
                   <th>Mã đơn hàng</th>
                   <th>Ngày đặt hàng</th>
                   <th className="text-end">Tổng tiền</th> 
+                  <th className="text-center">Trạng thái thanh toán</th> 
                   <th className="text-center">Tiến độ giao hàng</th> 
-                  <th className="text-center">Hành động</th>
                   <th className="text-center">Thao tác</th>
                 </tr>
               </thead>
@@ -141,15 +133,13 @@ export default function OrderList() {
                             className="custom-badge"
                             bg={item.paymentStatus?.code === 2 ? "success" : "warning"}
                           >
-                            {item.paymentStatus?.text}
+                            {item.paymentStatus?.text || (item.paymentStatus === "Chưa hỗ trợ DB" ? "Thanh toán khi nhận hàng" : item.paymentStatus)}
                           </Badge>
                         </td>
-                        {/* Thêm class cho cột này để rộng rãi hơn */}
                         <td className="progress-cell">
                           <OrderProgress currentStep={item.orderStatus?.code} />
                         </td>
                         <td className="text-center">
-                          {/* Thêm class action-buttons */}
                           <div className="d-flex gap-2 justify-content-center action-buttons">
                             <Button
                               variant="outline-primary"
@@ -198,9 +188,3 @@ export default function OrderList() {
     </Row>
   );
 }
-
-
-
-
-
-

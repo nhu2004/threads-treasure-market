@@ -13,8 +13,9 @@ const sqlConfig = {
 router.get('/revenue', async (req, res) => {
     try {
         let pool = await sql.connect(sqlConfig);
-        let result = await pool.request().query('SELECT SUM(Total) as revenue FROM Orders');
-        res.json({ data: [{ revenue: result.recordset[0].revenue || 0 }] });
+        // THÊM ĐIỀU KIỆN WHERE VÀO ĐÂY
+        let result = await pool.request().query("SELECT ISNULL(SUM(Total), 0) as revenue FROM Orders WHERE Status = N'Đã giao'");
+        res.json({ data: [{ revenue: result.recordset[0].revenue }] });
     } catch (err) {
         res.status(500).json({ data: [{ revenue: 0 }] });
     }

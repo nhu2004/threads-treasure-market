@@ -14,7 +14,7 @@ const sqlConfig = {
     }
 };
 
-// Hàm hỗ trợ chuyển đổi từ Text trong Database sang Code cho Frontend
+// Hàm hỗ trợ chuyển đổi từ Text sang Code
 const getStatusCode = (statusText) => {
     switch(statusText) {
         case "Chờ xác nhận": return 0;
@@ -25,7 +25,7 @@ const getStatusCode = (statusText) => {
     }
 };
 
-// Lấy danh sách đơn hàng có phân trang
+// 1. Lấy danh sách đơn hàng có phân trang (Admin)
 router.get('/', async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
@@ -51,15 +51,14 @@ router.get('/', async (req, res) => {
         const formattedOrders = result.recordsets[0].map(order => ({
             _id: order.OrderID, 
             orderDate: order.OrderDate,
-            // Đã sửa TotalAmount thành Total khớp với DB
             totalPrice: order.Total, 
             paymentStatus: {
-                text: order.PaymentStatus === 1 ? "Đã thanh toán" : "Chưa thanh toán",
-                code: order.PaymentStatus || 0
+                text: "Thanh toán khi nhận hàng", // Hardcode do DB không có cột này
+                code: 0
             },
             orderStatus: {
-                text: order.Status || "Chờ xác nhận", // Lấy chữ từ cột Status
-                code: getStatusCode(order.Status)     // Dịch chữ ra số cho UI
+                text: order.Status || "Chờ xác nhận", 
+                code: getStatusCode(order.Status)     
             }
         }));
 
@@ -74,88 +73,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Lấy chi tiết một đơn hàng
-router.get('/:id', async (req, res) => {
-    try {
-        let pool = await sql.connect(sqlConfig);
-        const orderId = req.params.id;
-
-        // 1. Lấy thông tin chung của đơn hàng + JOIN với Users để lấy thông tin giao hàng
-        let orderResult = await pool.request()
-            .input('id', sql.Int, orderId)
-            .query(`
-                SELECT o.*, u.FullName, u.Phone, u.Email, u.Address
-                FROM Orders o
-                LEFT JOIN Users u ON o.UserID = u.UserID
-                WHERE o.OrderID = @id
-            `);
-            
-        if (orderResult.recordset.length === 0) {
-            return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
-        }
-        
-        const order = orderResult.recordset[0];
-
-        // 2. Lấy danh sách sản phẩm trong OrderDetails + JOIN với Products để lấy Tên và Hình ảnh
-        let detailsResult = await pool.request()
-            .input('id', sql.Int, orderId)
-            .query(`
-                SELECT od.*, p.Name as ProductName, p.ImageUrl as ProductImage
-                FROM OrderDetails od
-                LEFT JOIN Products p ON od.ProductID = p.ProductID
-                WHERE od.OrderID = @id
-            `);
-
-        // 3. Format mảng sản phẩm cho Frontend dễ đọc
-        const formattedProducts = detailsResult.recordset.map(item => ({
-            _id: item.OrderDetailID,
-            product: {
-                _id: item.ProductID,
-                name: item.ProductName || 'Sản phẩm không xác định',
-                image: item.ProductImage || ''
-            },
-            quantity: item.Quantity,
-            price: item.Price
-        }));
-
-        // 4. Trả về một Object lồng nhau (Nested Object) giống hệt cấu trúc cũ của MongoDB
-        res.json({ data: {
-            _id: order.OrderID,
-            orderDate: order.OrderDate,
-            totalPrice: order.Total,
-            paymentStatus: { 
-                text: order.PaymentStatus === 1 ? "Đã thanh toán" : "Chưa thanh toán",
-                code: order.PaymentStatus || 0 
-            },
-            orderStatus: { 
-                code: getStatusCode(order.Status), 
-                text: order.Status || "Chờ xác nhận" 
-            },
-            // Đóng gói thông tin giao hàng
-            delivery: {
-                fullName: order.FullName,
-                phoneNumber: order.Phone,
-                email: order.Email,
-                address: order.Address
-            },
-            // Đóng gói thông tin chi phí
-            cost: {
-                total: order.Total,
-                subTotal: order.SubTotal || order.Total,
-                discount: order.DiscountAmount || 0
-            },
-            // Đóng gói danh sách sản phẩm
-            products: formattedProducts,
-            cancellationReason: order.CancellationReason
-        }});
-    } catch (err) {
-        console.error("Lỗi lấy chi tiết đơn hàng:", err);
-        res.status(500).json({ message: 'Lỗi server' });
-    }
-}); 
-
-
-// 1. API Lấy lịch sử giao dịch của 1 User
+// 2. API Lấy lịch sử giao dịch của 1 User (Đã fix lỗi SQL và lấy bản chuẩn nhất)
 router.get('/user/:userId', async (req, res) => {
     try {
         let pool = await sql.connect(sqlConfig);
@@ -167,11 +85,17 @@ router.get('/user/:userId', async (req, res) => {
                     o.OrderDate as orderDate, 
                     o.Status as status, 
                     o.Total as total,
-                    o.PaymentStatus as paymentStatus
+                    o.SubTotal as subTotal,
+                    o.DiscountAmount as discountAmount,
+                    ISNULL(SUM(od.Quantity), 0) as TotalItems
                 FROM Orders o
+                LEFT JOIN OrderDetails od ON o.OrderID = od.OrderID
                 WHERE o.UserID = @userId
+                GROUP BY o.OrderID, o.OrderDate, o.Status, o.Total, o.SubTotal, o.DiscountAmount
                 ORDER BY o.OrderDate DESC
             `);
+
+        // Ánh xạ lại dữ liệu trả về cho Frontend
         res.json({ orders: result.recordset });
     } catch (err) {
         console.error("Lỗi lấy lịch sử đơn hàng:", err);
@@ -179,7 +103,7 @@ router.get('/user/:userId', async (req, res) => {
     }
 });
 
-// 2. API Lấy Chi tiết 1 Đơn hàng cụ thể
+// 3. Lấy chi tiết một đơn hàng
 router.get('/:id', async (req, res) => {
     try {
         let pool = await sql.connect(sqlConfig);
@@ -209,20 +133,20 @@ router.get('/:id', async (req, res) => {
             `);
 
         res.json({ data: {
-            id: order.OrderID,
+            id: order.OrderID,                 // Dùng 'id' thay vì '_id'
             orderDate: order.OrderDate,
-            total: order.Total,
+            total: order.Total,                // Dùng 'total' thay vì 'totalPrice'
             subTotal: order.SubTotal || order.Total,
             discount: order.DiscountAmount || 0,
             status: order.Status || "Chờ xác nhận",
-            paymentStatus: order.PaymentStatus === 1 ? "Đã thanh toán" : "Chưa thanh toán",
+            paymentStatus: "Thanh toán khi nhận hàng",   // Đã bỏ cột PaymentStatus gây lỗi
             delivery: {
                 fullName: order.FullName,
-                phone: order.Phone,
+                phone: order.Phone,            // Dùng 'phone' thay vì 'phoneNumber'
                 address: order.Address
             },
             products: detailsResult.recordset.map(item => ({
-                id: item.OrderDetailID,
+                id: item.OrderDetailID,        // Dùng 'id' thay vì '_id'
                 name: item.ProductName,
                 image: item.ProductImage,
                 quantity: item.Quantity,
@@ -230,28 +154,26 @@ router.get('/:id', async (req, res) => {
             }))
         }});
     } catch (err) {
-        console.error(err);
+        console.error("Lỗi lấy chi tiết:", err);
         res.status(500).json({ message: 'Lỗi server' });
     }
 });
-// Cập nhật trạng thái đơn hàng
+
+// 4. Cập nhật trạng thái đơn hàng
 router.put('/:id/status', async (req, res) => {
     try {
         const { orderStatusCode } = req.body;
         
-        // Mapping code từ UI trả về sang Text để lưu vào Database
         const statusMap = { 0: "Chờ xác nhận", 1: "Đang giao", 2: "Đã giao", 3: "Đã hủy" };
         const statusText = statusMap[orderStatusCode] || "Chờ xác nhận";
 
         let pool = await sql.connect(sqlConfig);
         
-        // Cập nhật Cột Status bằng Chuỗi Text (vì DB của bạn lưu bằng chữ)
         await pool.request()
             .input('id', sql.Int, req.params.id)
             .input('statusText', sql.NVarChar, statusText)
             .query('UPDATE Orders SET Status = @statusText WHERE OrderID = @id');  
 
-        // Lấy lại thông tin sau khi Update
         let updatedResult = await pool.request()
             .input('id', sql.Int, req.params.id)
             .query('SELECT * FROM Orders WHERE OrderID = @id');
@@ -260,41 +182,12 @@ router.put('/:id/status', async (req, res) => {
 
         res.json({ data: { 
             orderStatus: { code: orderStatusCode, text: statusText },
-            paymentStatus: {
-                text: updatedOrder.PaymentStatus === 1 ? "Đã thanh toán" : "Chưa thanh toán",
-                code: updatedOrder.PaymentStatus || 0
-            },
+            paymentStatus: { text: "Thanh toán khi nhận hàng", code: 0 }
         }});
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Lỗi server' });
     }
 });
-router.get('/user/:userId', async (req, res) => {
-    try {
-        let pool = await sql.connect(sqlConfig);
-        let result = await pool.request()
-            .input('userId', sql.Int, req.params.userId)
-            .query(`
-                SELECT 
-                    o.OrderID, 
-                    o.OrderDate, 
-                    o.Status, 
-                    o.Total,
-                    o.SubTotal,
-                    o.DiscountAmount,
-                    ISNULL(SUM(od.Quantity), 0) as TotalItems
-                FROM Orders o
-                LEFT JOIN OrderDetails od ON o.OrderID = od.OrderID
-                WHERE o.UserID = @userId
-                GROUP BY o.OrderID, o.OrderDate, o.Status, o.Total, o.SubTotal, o.DiscountAmount
-                ORDER BY o.OrderDate DESC
-            `);
 
-        res.json({ orders: result.recordset });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Lỗi server' });
-    }
-});
 module.exports = router;

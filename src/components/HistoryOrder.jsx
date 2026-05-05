@@ -1,8 +1,8 @@
 // Client/src/components/HistoryOrder.jsx
 import { useState, useEffect } from "react";
-import { Spinner, Modal } from "react-bootstrap";
+import { Spinner } from "react-bootstrap";
 import moment from "moment";
-import { FaEye } from "react-icons/fa";
+import { FaEye, FaArrowLeft } from "react-icons/fa"; // Thêm icon nút Quay lại
 import format from "../helper/format";
 import orderApi from "../api/orderApi";
 import OrderDetail from "./OrderDetail";
@@ -11,9 +11,9 @@ export default function HistoryOrder({ userId }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // State quản lý Modal Chi tiết
+  // State quản lý luồng hiển thị
   const [selectedOrderId, setSelectedOrderId] = useState(null);
-  const [showDetail, setShowDetail] = useState(false);
+  const [showDetail, setShowDetail] = useState(false); // false = Hiện bảng, true = Hiện chi tiết
 
   useEffect(() => {
     if (!userId) return;
@@ -33,13 +33,37 @@ export default function HistoryOrder({ userId }) {
 
   const handleViewDetail = (orderId) => {
     setSelectedOrderId(orderId);
-    setShowDetail(true);
+    setShowDetail(true); // Đổi state sang chế độ xem chi tiết
   };
 
+  const handleBackToList = () => {
+    setShowDetail(false); // Quay lại chế độ xem bảng
+    setSelectedOrderId(null);
+  };
+
+  // NẾU SHOWDETAIL = TRUE -> CHỈ HIỂN THỊ GIAO DIỆN CHI TIẾT
+  if (showDetail && selectedOrderId) {
+    return (
+      <div className="animate-fade-in">
+        <button 
+          onClick={handleBackToList}
+          className="mb-4 flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-colors border border-gray-300"
+        >
+          <FaArrowLeft /> Quay lại lịch sử đơn hàng
+        </button>
+        
+        {/* Render OrderDetail bự tràn viền giống y hệt ảnh của bạn */}
+        <div className="border border-gray-200 rounded-lg shadow-sm bg-white">
+            <OrderDetail orderId={selectedOrderId} />
+        </div>
+      </div>
+    );
+  }
+
+  // NẾU SHOWDETAIL = FALSE -> HIỂN THỊ BẢNG LỊCH SỬ
   return (
     <div>
-      {/* BẢNG LỊCH SỬ ĐƠN HÀNG */}
-      <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+      <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm bg-white">
         <table className="w-full text-sm text-left">
           <thead className="bg-gray-100 text-gray-700">
             <tr>
@@ -51,7 +75,7 @@ export default function HistoryOrder({ userId }) {
               <th className="px-4 py-3 text-center">Chi tiết</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 bg-white">
+          <tbody className="divide-y divide-gray-200">
             {loading ? (
               <tr><td colSpan={6} className="text-center py-8"><Spinner animation="border" variant="success"/></td></tr>
             ) : orders.length > 0 ? (
@@ -82,17 +106,6 @@ export default function HistoryOrder({ userId }) {
           </tbody>
         </table>
       </div>
-
-      {/* MODAL CHI TIẾT ĐƠN HÀNG LỒNG BÊN TRONG */}
-      <Modal show={showDetail} onHide={() => setShowDetail(false)} size="lg" centered dialogClassName="modal-w1100">
-        <Modal.Body className="p-0">
-          {/* Nhúng Component OrderDetail vào đây, truyền ID sang */}
-          {selectedOrderId && <OrderDetail orderId={selectedOrderId} />}
-        </Modal.Body>
-        <Modal.Footer className="bg-gray-50">
-          <button onClick={() => setShowDetail(false)} className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg">Đóng</button>
-        </Modal.Footer>
-      </Modal>
     </div>
   );
 }
