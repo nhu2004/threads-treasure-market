@@ -74,9 +74,9 @@ export default function CustomerList() {
       {/* GIAO DIỆN CHÍNH: DANH SÁCH KHÁCH HÀNG */}
       {/* ========================================================= */}
       <div className="w-full">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mt-4">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 border-l-4 border-emerald-500 pl-3">Danh sách khách hàng</h2>
-
+        <div className="items-center bg-white p-6 rounded-lg shadow-sm border border-border mt-4">
+          <h2 className="text-xl font-bold text-gray-800 mb-2 border-l-4 border-emerald-500 pl-3">Danh sách khách hàng</h2>
+                      
           {/* Thanh tìm kiếm */}
           <div className="flex mb-6">
             <div className="flex w-full md:w-1/2">

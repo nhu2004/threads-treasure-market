@@ -79,10 +79,9 @@ function ProductList() {
         </div>
       )}
       </Modal>
-
-      <div className={styles.header}>
-        <h1 className={styles.headerTitle}>Quản lý Sản Phẩm</h1>
-      </div>
+ 
+        <h2 className="text-xl font-bold text-gray-800 mb-2 border-l-4 border-emerald-500 pl-3">Quản lý Sản Phẩm</h2>
+     
 
       <div className={styles.actionBar}>
         <div className={styles.actionContent}>

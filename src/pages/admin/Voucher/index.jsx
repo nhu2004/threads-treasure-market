@@ -29,12 +29,9 @@ function Voucher() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center bg-white p-6 rounded-lg shadow-sm border border-border">
-        <div className="flex items-center gap-3">
-          <div className="bg-primary/10 p-2 rounded-lg">
-            <Tag className="text-primary" size={24} />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">Quản lý Mã giảm giá</h1>
+      <div className="flex justify-between items-center bg-white p-6 rounded-lg shadow-sm border border-border mt-4">
+        <div className="flex items-center gap-3"> 
+          <h2 className="text-xl font-bold text-gray-800 mb-2 border-l-4 border-emerald-500 pl-3">Quản lý mã giảm giá</h2>
         </div>
         <button
           onClick={() => setShowAddModal(true)}

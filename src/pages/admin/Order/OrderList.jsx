@@ -103,7 +103,7 @@ export default function OrderList() {
 
       <Col xl={12}>
         <div className="admin-content-wrapper">
-          <div className="admin-content-header">Danh sách đơn hàng</div>
+          <h2 class="text-xl font-bold text-gray-800 mb-2 border-l-4 border-emerald-500 pl-3">Danh sách đơn hàng</h2>
           <div className="admin-content-body">
             <Table responsive hover className="custom-order-table border-0">
               <thead>

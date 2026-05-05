@@ -87,7 +87,7 @@ const menuItems = [
             <Settings size={20} />
           </button>
         </div>
-        <div className="p-8">{children}</div>
+        <div className="p-2">{children}</div>
       </main>
     </div>
   );

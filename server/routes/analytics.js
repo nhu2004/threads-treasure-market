@@ -21,16 +21,16 @@ router.get('/revenue', async (req, res) => {
     }
 });
 
-// 2. API lấy doanh thu theo ngày (Cho biểu đồ LineChart)
+// 2. API lấy doanh thu theo ngày (Cho biểu đồ)
 router.get('/lifetime', async (req, res) => {
     try {
         let pool = await sql.connect(sqlConfig);
-        // Nhóm theo ngày và tính tổng tiền
         let result = await pool.request().query(`
-            SELECT FORMAT(OrderDate, 'dd/MM') as _id, SUM(Total) as revenue 
+            SELECT FORMAT(OrderDate, 'dd/MM') as _id, ISNULL(SUM(Total), 0) as revenue 
             FROM Orders 
-            GROUP BY FORMAT(OrderDate, 'dd/MM'), OrderDate
-            ORDER BY OrderDate ASC
+            WHERE Status = N'Đã giao' -- THÊM VÀO ĐÂY
+            GROUP BY FORMAT(OrderDate, 'dd/MM'), CAST(OrderDate AS DATE)
+            ORDER BY CAST(OrderDate AS DATE) ASC
         `);
         res.json({ data: result.recordset });
     } catch (err) {
@@ -43,9 +43,11 @@ router.get('/bestseller', async (req, res) => {
     try {
         let pool = await sql.connect(sqlConfig);
         let result = await pool.request().query(`
-            SELECT TOP 5 p.Name as _id, COUNT(od.ProductID) as count
+            SELECT TOP 5 p.Name as _id, SUM(od.Quantity) as count
             FROM OrderDetails od
             JOIN Products p ON od.ProductID = p.ProductID
+            JOIN Orders o ON od.OrderID = o.OrderID -- JOIN thêm bảng Orders
+            WHERE o.Status = N'Đã giao'            -- Lọc trạng thái Đã giao
             GROUP BY p.Name
             ORDER BY count DESC
         `);
