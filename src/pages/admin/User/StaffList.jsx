@@ -1,223 +1,82 @@
-//Client/src/pages/Admin/User/StaffList.js
+// Client/src/pages/Admin/User/StaffList.js
 import { useCallback } from "react";
-import {
-  Row,
-  Col,
-  Table,
-  Button,
-  Badge,
-  Modal,
-  Spinner,
-} from "react-bootstrap";
+import { Row, Col, Table, Button, Badge, Modal, Spinner } from "react-bootstrap";
 import PaginationproductStore from "../../../components/PaginationproductStore";
-
 import moment from "moment";
-import {
-  FaSearch,
-  FaLock,
-  FaLockOpen,
-  FaUserPlus,
-  FaEdit,
-  FaKey,
-  FaTrash,
-} from "react-icons/fa";
+import { FaSearch, FaLock, FaLockOpen, FaUserPlus, FaEdit, FaKey, FaTrash } from "react-icons/fa";
 import { useStaffList, useStaffCRUD } from "../../../hooks/admin/admin";
 
 export default function StaffList() {
-  const {
-    staffData,
-    page,
-    setPage,
-    loading,
-    searchInput,
-    setSearchInput,
-    handleSearch,
-    refreshList,
-  } = useStaffList();
+  const { staffData, page, setPage, loading, searchInput, setSearchInput, handleSearch, refreshList } = useStaffList();
 
   const {
-    loading: crudLoading,
-    showAddModal,
-    setShowAddModal,
-    addStaff,
-    setAddStaff,
-    handleCreate,
-    showUpdateModal,
-    setShowUpdateModal,
-    selectedStaff,
-    setSelectedStaff,
-    openUpdateModal,
-    handleUpdate,
-    handleUpdateStatus,
-    showResetPasswordModal,
-    setShowResetPasswordModal,
-    staffToReset,
-    openResetPasswordModal,
-    handleResetPassword,
-    showDeleteModal,
-    setShowDeleteModal,
-    staffToDelete,
-    openDeleteModal,
-    handleDelete,
+    loading: crudLoading, showAddModal, setShowAddModal, addStaff, setAddStaff, handleCreate,
+    showUpdateModal, setShowUpdateModal, selectedStaff, setSelectedStaff, openUpdateModal, handleUpdate,
+    handleUpdateStatus, showResetPasswordModal, setShowResetPasswordModal, staffToReset,
+    openResetPasswordModal, handleResetPassword, showDeleteModal, setShowDeleteModal,
+    staffToDelete, openDeleteModal, handleDelete,
   } = useStaffCRUD(refreshList);
 
-  const handleChangePage = useCallback(
-    (page) => {
-      setPage(page);
-    },
-    [setPage]
-  );
+  const handleChangePage = useCallback((page) => { setPage(page); }, [setPage]);
+
+  // Lọc chỉ lấy Nhân viên
+  const staffs = staffData?.data?.filter(u => u.role === 'admin' || u.role === 'staff') || [];
 
   return (
     <Row>
       {/* Modal Thêm nhân viên */}
-      <Modal
-        size="lg"
-        show={showAddModal}
-        onHide={() => setShowAddModal(false)}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Thêm nhân viên</Modal.Title>
-        </Modal.Header>
+      <Modal size="lg" show={showAddModal} onHide={() => setShowAddModal(false)}>
+        <Modal.Header closeButton><Modal.Title>Thêm nhân viên</Modal.Title></Modal.Header>
         <Modal.Body>
-          <div>
-            <h5>Thông tin nhân viên</h5>
-            <form onSubmit={handleCreate}>
-              <Row>
-                <Col xl={4}>
-                  <label>Tên nhân viên</label>
-                  <input
-                    required
-                    type="text"
-                    value={addStaff?.fullName}
-                    className="form-control"
-                    onChange={(e) =>
-                      setAddStaff((prev) => {
-                        return { ...prev, fullName: e.target.value };
-                      })
-                    }
-                  />
-                </Col>
-                <Col xl={4}>
-                  <label>Email</label>
-                  <input
-                    required
-                    type="email"
-                    value={addStaff?.email}
-                    className="form-control"
-                    onChange={(e) =>
-                      setAddStaff((prev) => {
-                        return { ...prev, email: e.target.value };
-                      })
-                    }
-                  />
-                </Col>
-                <Col xl={4}>
-                  <label>Điện thoại</label>
-                  <input
-                    required
-                    type="text"
-                    value={addStaff?.phoneNumber}
-                    className="form-control"
-                    onChange={(e) =>
-                      setAddStaff((prev) => {
-                        return { ...prev, phoneNumber: e.target.value };
-                      })
-                    }
-                  />
-                </Col>
-              </Row>
-              <div className="alert alert-info mt-3">
-                <small>
-                  <strong>Lưu ý:</strong> Mật khẩu sẽ được tạo tự động và gửi về
-                  email của nhân viên.
-                </small>
-              </div>
-              <Button
-                className="mt-2"
-                type="submit"
-                disabled={crudLoading}
-                variant="success"
-              >
-                Lưu
-              </Button>
-            </form>
-          </div>
+          <form onSubmit={async (e) => { e.preventDefault(); await handleCreate(e); setShowAddModal(false); }}>
+            <Row>
+              <Col xl={4}>
+                <label>Tên nhân viên</label>
+                <input required type="text" value={addStaff?.fullName || ''} className="form-control"
+                  onChange={(e) => setAddStaff(prev => ({ ...prev, fullName: e.target.value }))} />
+              </Col>
+              <Col xl={4}>
+                <label>Email</label>
+                <input required type="email" value={addStaff?.email || ''} className="form-control"
+                  onChange={(e) => setAddStaff(prev => ({ ...prev, email: e.target.value }))} />
+              </Col>
+              <Col xl={4}>
+                <label>Điện thoại</label>
+                {/* Đổi phoneNumber thành phone để khớp Body API[cite: 21] */}
+                <input required type="text" value={addStaff?.phone || ''} className="form-control"
+                  onChange={(e) => setAddStaff(prev => ({ ...prev, phone: e.target.value }))} /> 
+              </Col>
+            </Row>
+            <Button className="mt-4" type="submit" disabled={crudLoading} variant="success">Lưu</Button>
+          </form>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowAddModal(false)}>
-            Hủy
-          </Button>
-        </Modal.Footer>
       </Modal>
 
       {/* Modal Sửa thông tin nhân viên */}
-      <Modal
-        size="lg"
-        show={showUpdateModal}
-        onHide={() => setShowUpdateModal(false)}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Sửa thông tin nhân viên</Modal.Title>
-        </Modal.Header>
+      <Modal size="lg" show={showUpdateModal} onHide={() => setShowUpdateModal(false)}>
+        <Modal.Header closeButton><Modal.Title>Sửa thông tin nhân viên</Modal.Title></Modal.Header>
         <Modal.Body>
-          <form onSubmit={handleUpdate}>
+          <form onSubmit={async (e) => { e.preventDefault(); await handleUpdate(e); setShowUpdateModal(false); }}>
             <Row>
               <Col xl={6}>
                 <label>Tên nhân viên</label>
-                <input
-                  required
-                  type="text"
-                  value={selectedStaff?.fullName || ""}
-                  className="form-control"
-                  onChange={(e) =>
-                    setSelectedStaff((prev) => {
-                      return { ...prev, fullName: e.target.value };
-                    })
-                  }
-                />
+                <input required type="text" value={selectedStaff?.fullName || ""} className="form-control"
+                  onChange={(e) => setSelectedStaff(prev => ({ ...prev, fullName: e.target.value }))} />
               </Col>
               <Col xl={6}>
                 <label>Email</label>
-                <input
-                  required
-                  type="email"
-                  value={selectedStaff?.email || ""}
-                  className="form-control"
-                  disabled
-                  title="Email không thể thay đổi"
-                />
+                <input required type="email" value={selectedStaff?.email || ""} className="form-control" disabled />
               </Col>
               <Col xl={6} className="mt-3">
                 <label>Điện thoại</label>
-                <input
-                  required
-                  type="text"
-                  value={selectedStaff?.phoneNumber || ""}
-                  className="form-control"
-                  onChange={(e) =>
-                    setSelectedStaff((prev) => {
-                      return { ...prev, phoneNumber: e.target.value };
-                    })
-                  }
-                />
+                {/* Đổi phoneNumber thành phone[cite: 25] */}
+                <input required type="text" value={selectedStaff?.phone || ""} className="form-control"
+                  onChange={(e) => setSelectedStaff(prev => ({ ...prev, phone: e.target.value }))} />
               </Col>
             </Row>
-            <Button
-              className="mt-4"
-              type="submit"
-              disabled={crudLoading}
-              variant="success"
-            >
-              Cập nhật
-            </Button>
+            <Button className="mt-4" type="submit" disabled={crudLoading} variant="success">Cập nhật</Button>
           </form>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowUpdateModal(false)}>
-            Hủy
-          </Button>
-        </Modal.Footer>
       </Modal>
 
       {/* Modal Reset mật khẩu */}
