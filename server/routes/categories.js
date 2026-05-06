@@ -89,5 +89,54 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({ message: 'Xóa thất bại! Có thể do danh mục này đang chứa sản phẩm.' });
     }
 });
+// 5. API XUẤT DANH SÁCH SẢN PHẨM THUỘC DANH MỤC
+router.get('/:id/export-products', async (req, res) => {
+    try {
+        let pool = await sql.connect(sqlConfig);
+        let result = await pool.request()
+            .input('id', sql.Int, req.params.id)
+            .query(`
+                SELECT 
+                    ProductID as N'Mã SP', 
+                    Name as N'Tên Sản Phẩm', 
+                    Price as N'Giá Bán', 
+                    StockQuantity as N'Tồn Kho',
+                    Sizes as N'Kích cỡ',
+                    Colors as N'Màu sắc'
+                FROM Products 
+                WHERE CategoryID = @id
+            `);
+        res.json(result.recordset);
+    } catch (err) { 
+        console.error("Lỗi xuất file SP:", err);
+        res.status(500).json({ message: 'Lỗi server' }); 
+    }
+});
 
+// 6. API XUẤT DANH SÁCH ĐƠN HÀNG ĐÃ BÁN THEO DANH MỤC
+router.get('/:id/export-orders', async (req, res) => {
+    try {
+        let pool = await sql.connect(sqlConfig);
+        let result = await pool.request()
+            .input('id', sql.Int, req.params.id)
+            .query(`
+                SELECT 
+                    o.OrderID as N'Mã Đơn', 
+                    CONVERT(varchar, o.OrderDate, 103) as N'Ngày Đặt', 
+                    p.Name as N'Tên Sản Phẩm', 
+                    od.Quantity as N'Số Lượng Bán', 
+                    od.Price as N'Đơn Giá Lúc Bán', 
+                    (od.Quantity * od.Price) as N'Thành Tiền'
+                FROM Orders o
+                JOIN OrderDetails od ON o.OrderID = od.OrderID
+                JOIN Products p ON od.ProductID = p.ProductID
+                WHERE p.CategoryID = @id
+                ORDER BY o.OrderDate DESC
+            `);
+        res.json(result.recordset);
+    } catch (err) { 
+        console.error("Lỗi xuất file ĐH:", err);
+        res.status(500).json({ message: 'Lỗi server' }); 
+    }
+});
 module.exports = router;

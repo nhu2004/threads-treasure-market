@@ -21,9 +21,8 @@ const OrderProgress = ({ currentStatusText, orderStatusCode, cancellationReason,
     currentStepIndex = foundStep !== -1 ? foundStep : 0;
   }
 
-  // Nếu là chế độ thu nhỏ (trong bảng), scale nhỏ lại
-  const scaleStyle = compact ? { transform: 'scale(0.75)', transformOrigin: 'center left', margin: '-10px 0' } : {};
-
+  // Nếu là chế độ thu nhỏ (trong bảng), scale nhỏ lại 
+const scaleStyle = compact ? { transform: 'scale(0.9)', transformOrigin: 'center center', margin: '0 auto' } : {};
   return (
     <> 
     <style>
