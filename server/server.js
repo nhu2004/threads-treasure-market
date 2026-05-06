@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const app = express();
-
+const app = express(); 
 // 1. Middleware
 app.use(cors()); // Cho phép Frontend gọi API
 app.use(express.json()); // Để đọc dữ liệu JSON

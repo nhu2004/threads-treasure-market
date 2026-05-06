@@ -7,6 +7,7 @@ import UpdateProduct from "./admin/Product/UpdateProduct";
 import Category from "./admin/Category";
 import Supplier from "./admin/Supplier";
 import Order from "./admin/Order";
+import UpdateOrder from "./admin/Order/UpdateOrder";
 import { CustomerList } from "./admin/User";
 import Voucher from "./admin/Voucher";
 
@@ -21,6 +22,7 @@ const Admin = () => {
         <Route path="/categories" element={<Category />} />
         <Route path="/suppliers" element={<Supplier />} />
         <Route path="/orders" element={<Order />} />
+        <Route path="/orders/update/:id" element={<UpdateOrder />} />
         <Route path="/users" element={<CustomerList />} />
         <Route path="/vouchers" element={<Voucher />} />
       </Routes>

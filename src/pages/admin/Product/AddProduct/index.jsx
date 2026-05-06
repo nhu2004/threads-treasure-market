@@ -120,7 +120,7 @@ function Addproduct() {
               </Row>
 
               <Row className="mt-3">
-                <Col xl={6}>
+                <Col xl={4}>
                   <div className="form-group">
                     <label className={styles.formLabel}>Số lượng tồn kho</label>
                     <input
@@ -134,10 +134,24 @@ function Addproduct() {
                 </Col>
                 <Col xl={4}>
                   <div className="form-group">
-                    <label className={styles.formLabel}>Nhà cung cấp</label>
+                    <label className={styles.formLabel}>Danh mục (Category)</label>
                     <Select
-                      options={supplierList.map(s => ({ value: s.SupplierID, label: s.Name }))}
+                      options={categoryList}
+                      onChange={(opt) => formik.setFieldValue("categoryId", opt.value)}
+                      placeholder="Chọn danh mục..."
+                    />
+                  </div>
+                </Col>
+                <Col xl={4}>
+                  <div className="form-group">
+                    <label className={styles.formLabel}>Nhà cung cấp (Supplier)</label>
+                    <Select
+                      options={supplierList.map((s) => ({
+                        value: s.SupplierID,
+                        label: s.Name,
+                      }))}
                       onChange={(opt) => formik.setFieldValue("supplierId", opt.value)}
+                      placeholder="Chọn nhà cung cấp..."
                     />
                   </div>
                 </Col>

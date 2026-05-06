@@ -71,3 +71,14 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+
+CÁC THƯ VIỆN ĐÃ CÀI ĐẶT
+
+/SERVER
+npm install multer
+
+
+/SRC
+
+npm install bootstrap react-bootstrap

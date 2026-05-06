@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const sql = require('mssql');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
+
 
 const sqlConfig = {
     user: 'sa', 
@@ -189,5 +192,117 @@ router.put('/:id/status', async (req, res) => {
         res.status(500).json({ message: 'Lỗi server' });
     }
 });
+// BỔ SUNG 1: API Tạo Hóa đơn và chuyển sang Đang giao
+router.post('/:id/invoice-and-ship', async (req, res) => {
+    try {
+        let pool = await sql.connect(sqlConfig);
+        const orderId = req.params.id;
 
+        // Dùng chung 1 lệnh Transaction để vừa tạo Invoices vừa cập nhật Orders
+        let result = await pool.request()
+            .input('id', sql.Int, orderId)
+            .query(`
+                BEGIN TRANSACTION;
+                
+                -- 1. Lấy thông tin từ Orders và chèn vào Invoices (TemplateID mặc định là 1)
+                INSERT INTO Invoices (OrderID, TemplateID, InvoiceDate, TotalAmount, SubTotal, DiscountAmount)
+                SELECT OrderID, 1, GETDATE(), Total, SubTotal, DiscountAmount 
+                FROM Orders WHERE OrderID = @id;
+
+                -- 2. Cập nhật trạng thái Order thành Đang giao
+                UPDATE Orders SET Status = N'Đang giao' WHERE OrderID = @id;
+                
+                COMMIT TRANSACTION;
+            `);
+
+        res.json({ message: 'Đã tạo hóa đơn và chuyển sang đang giao', success: true });
+    } catch (err) {
+        console.error("Lỗi khi tạo hóa đơn:", err);
+        res.status(500).json({ message: 'Lỗi server' });
+    }
+});
+
+// BỔ SUNG 2: API Up ảnh và chuyển sang Đã giao
+// Dùng upload.single('deliveryProofImage') để bắt file ảnh từ frontend
+router.put('/:id/confirm-delivery', upload.single('deliveryProofImage'), async (req, res) => {
+    try {
+        let pool = await sql.connect(sqlConfig);
+        const orderId = req.params.id;
+        
+        // Lấy đường dẫn file ảnh vừa upload (trong thực tế có thể up lên Cloudinary/S3)
+        // Ở đây lưu giả lập đường dẫn file local
+        const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+        if (!imagePath) {
+            return res.status(400).json({ message: 'Thiếu hình ảnh xác nhận' });
+        }
+
+        await pool.request()
+            .input('id', sql.Int, orderId)
+            .input('imagePath', sql.NVarChar, imagePath)
+            .query(`
+                UPDATE Orders 
+                SET Status = N'Đã giao', DeliveryProofImage = @imagePath 
+                WHERE OrderID = @id
+            `);
+
+        res.json({ message: 'Xác nhận giao hàng thành công', success: true });
+    } catch (err) {
+        console.error("Lỗi khi xác nhận giao hàng:", err);
+        res.status(500).json({ message: 'Lỗi server' });
+    }
+});
+// BỔ SUNG 3: API Hủy đơn hàng (Kèm Lý do và Người thực hiện)
+router.put('/:id/cancel', async (req, res) => {
+    try {
+        let pool = await sql.connect(sqlConfig);
+        const orderId = req.params.id;
+        const { reason, updatedBy } = req.body;
+
+        await pool.request()
+            .input('id', sql.Int, orderId)
+            .input('reason', sql.NVarChar, reason)
+            .input('updatedBy', sql.Int, updatedBy)
+            .query(`
+                UPDATE Orders 
+                SET Status = N'Đã hủy', 
+                    CancellationReason = @reason, 
+                    StatusUpdatedBy = @updatedBy
+                WHERE OrderID = @id
+            `);
+
+        res.json({ message: 'Đã hủy đơn hàng thành công', success: true });
+    } catch (err) {
+        console.error("Lỗi khi hủy đơn:", err);
+        res.status(500).json({ message: 'Lỗi server khi hủy đơn' });
+    }
+});
+
+// BỔ SUNG 4: API Cập nhật chi tiết đơn hàng (Giảm giá và Note)
+router.put('/:id/details', async (req, res) => {
+    try {
+        let pool = await sql.connect(sqlConfig);
+        const orderId = req.params.id;
+        const { discount, note, updatedBy } = req.body;
+
+        // Tính toán lại Total = SubTotal - Discount
+        // (Lưu ý: Nếu có bảng Note riêng thì insert thêm vào bảng đó, ở đây ví dụ update trực tiếp)
+        await pool.request()
+            .input('id', sql.Int, orderId)
+            .input('discount', sql.Decimal(18, 2), discount || 0)
+            .input('updatedBy', sql.Int, updatedBy)
+            .query(`
+                UPDATE Orders 
+                SET DiscountAmount = @discount, 
+                    Total = SubTotal - @discount,
+                    StatusUpdatedBy = @updatedBy
+                WHERE OrderID = @id
+            `);
+
+        res.json({ message: 'Đã cập nhật chi tiết đơn hàng', success: true });
+    } catch (err) {
+        console.error("Lỗi khi cập nhật chi tiết đơn:", err);
+        res.status(500).json({ message: 'Lỗi server khi cập nhật đơn' });
+    }
+});
 module.exports = router;

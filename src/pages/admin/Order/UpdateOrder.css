@@ -1,0 +1,63 @@
+/* src/pages/admin/Order/UpdateOrder.css */
+
+/* Tùy chỉnh phông nền trang */
+.bg-light.min-vh-100 {
+    background-color: #f4f6f8 !important;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Bo góc và tạo bóng đổ mềm mại cho các khối (Card) */
+.card.shadow-sm {
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04) !important;
+}
+
+.card-header {
+    padding: 16px 20px;
+    border-bottom-color: #f0f2f5 !important;
+}
+
+.card-header h5 {
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+/* Làm đẹp box hiển thị trạng thái (Đủ điều kiện, Cập nhật ảnh...) */
+.border-info {
+    border-color: #17a2b8 !important;
+    background-color: #f0f9fa !important;
+}
+
+.border-warning {
+    border-color: #ffc107 !important;
+    background-color: #fffdf6 !important;
+}
+
+/* Bảng chi tiết sản phẩm */
+.table-light th {
+    background-color: #f8f9fa !important;
+    color: #495057;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* Nút bấm (Button) */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-lg {
+    padding: 10px 24px;
+    font-size: 16px;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
