@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingBag, Search, Menu, X, Heart, User, LogOut, Settings, Package, Gift } from "lucide-react";
+import { ShoppingBag, Search, Menu, X, User, LogOut, Settings, Package, Gift } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -66,9 +66,7 @@ const Header = () => {
             <Link to="/shop" className="p-2 text-foreground hover:text-muted-foreground transition-colors">
               <Search size={20} />
             </Link>
-            <button className="p-2 text-foreground hover:text-muted-foreground transition-colors hidden md:block">
-              <Heart size={20} />
-            </button>
+
             <button
               onClick={() => setIsCartOpen(true)}
               className="p-2 text-foreground hover:text-muted-foreground transition-colors relative"
@@ -96,14 +94,15 @@ const Header = () => {
                     <>
                       <div className="px-4 py-4 border-b bg-gray-50">
                         <p className="font-medium text-foreground">{user.fullName || user.username}</p>
-                        <p className="text-xs text-muted-foreground">{user.role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {user.role === "admin" ? "Quản trị viên" : "Khách hàng"}
+                        </p>
                       </div>
-                      
-                      {/* Menu items */}
+
                       <div className="py-2">
                         <button
                           onClick={() => {
-                            navigate('/profile');
+                            navigate("/profile");
                             setUserMenuOpen(false);
                           }}
                           className="w-full text-left px-4 py-3 hover:bg-gray-100 text-sm flex items-center gap-3 transition-colors"
@@ -111,10 +110,10 @@ const Header = () => {
                           <Settings size={16} />
                           <span>Thông tin cá nhân</span>
                         </button>
-                        
+
                         <button
                           onClick={() => {
-                            navigate('/orders');
+                            navigate("/orders");
                             setUserMenuOpen(false);
                           }}
                           className="w-full text-left px-4 py-3 hover:bg-gray-100 text-sm flex items-center gap-3 transition-colors"
@@ -122,10 +121,10 @@ const Header = () => {
                           <Package size={16} />
                           <span>Lịch sử mua hàng</span>
                         </button>
-                        
+
                         <button
                           onClick={() => {
-                            navigate('/vouchers');
+                            navigate("/vouchers");
                             setUserMenuOpen(false);
                           }}
                           className="w-full text-left px-4 py-3 hover:bg-gray-100 text-sm flex items-center gap-3 transition-colors"
@@ -135,12 +134,12 @@ const Header = () => {
                         </button>
                       </div>
 
-                      {user.role === 'admin' && (
+                      {user.role === "admin" && (
                         <>
                           <div className="border-t"></div>
                           <button
                             onClick={() => {
-                              navigate('/admin');
+                              navigate("/admin");
                               setUserMenuOpen(false);
                             }}
                             className="w-full text-left px-4 py-3 hover:bg-gray-100 text-sm font-medium text-primary"
