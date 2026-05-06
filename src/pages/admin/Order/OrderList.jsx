@@ -13,7 +13,7 @@ import {
   Modal
 } from "react-bootstrap";
 import moment from "moment";
-import { FaEdit, FaEye, FaSearch, FaFilter } from "react-icons/fa";
+import { FaEdit, FaEye, FaSearch, FaFilter, FaShoppingCart, FaHourglassHalf, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 import PaginationproductStore from "../../../components/PaginationproductStore";
@@ -35,12 +35,7 @@ export default function OrderList() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // 2. STATE THỐNG KÊ
-  const [stats, setStats] = useState({ 
-    total: 0, pending: 0, shipping: 0, delivered: 0, cancelled: 0, revenueData: [] 
-  });
-
-  // 3. TRUYỀN CÁC BIẾN VÀO HOOK
+   // 2. GỌI HOOK Ở ĐÂY (Trong file Component, không phải file Hook)
   const { orderData, page, setPage, updateOrderInList } = useOrderList({
     search: searchId,
     status: statusFilter,
@@ -48,34 +43,14 @@ export default function OrderList() {
     endDate: endDate
   });
 
+  // 3. KHAI BÁO BIẾN STATS Ở ĐÂY
+  const stats = orderData?.stats || { total: 0, pending: 0, shipping: 0, delivered: 0, cancelled: 0 };
+  
   // Hàm xử lý khi bấm nút "Lọc"
   const handleFilter = (e) => {
     e.preventDefault();
     setPage(1); // Trở về trang 1 khi lọc
-  };
-
-  // Tính toán thống kê dựa trên dữ liệu hiện có
-  useEffect(() => {
-    let p = 0, s = 0, d = 0, c = 0;
-    const orders = orderData.orders || [];
-    
-    orders.forEach(o => {
-      const st = o.orderStatus?.text || o.status;
-      if (st === 'Chờ xác nhận') p++;
-      else if (st === 'Đang giao') s++;
-      else if (st === 'Đã giao') d++;
-      else if (st === 'Đã hủy') c++;
-    });
-
-    setStats({ 
-      total: orders.length, pending: p, shipping: s, delivered: d, cancelled: c, 
-      // Dữ liệu biểu đồ giả định (Thực tế lấy từ API Backend)
-      revenueData: [
-        { name: 'Tuần 1', DoanhThu: 12000000 }, { name: 'Tuần 2', DoanhThu: 19000000 },
-        { name: 'Tuần 3', DoanhThu: 15000000 }, { name: 'Tuần 4', DoanhThu: 25000000 }
-      ]
-    });
-  }, [orderData.orders]);
+  }; 
 
   const { showModal: showDetailModal, setShowModal: setShowDetailModal, orderDetail, fetchOrderDetail } = useAdminOrderDetail();
 
@@ -95,82 +70,105 @@ export default function OrderList() {
           </h2>
 
           {/* === PHẦN 1: THỐNG KÊ (CARDS) === */}
-          <Row className="mb-4">
+          {/* === PHẦN 1: THỐNG KÊ (CARDS MỚI) === */}
+          <Row className="mb-4 g-4">
+            {/* Thẻ Tổng đơn */}
             <Col md={3}>
-              <Card className="stat-card bg-primary text-white text-center p-3">
-                <h5 className="mb-1">Tổng đơn</h5><h2 className="mb-0 fw-bold">{stats.total}</h2>
-              </Card>
-            </Col>
-            <Col md={3}>
-              <Card className="stat-card bg-info text-white text-center p-3">
-                <h5 className="mb-1">Chờ xác nhận</h5><h2 className="mb-0 fw-bold">{stats.pending}</h2>
-              </Card>
-            </Col>
-            <Col md={3}>
-              <Card className="stat-card bg-success text-white text-center p-3">
-                <h5 className="mb-1">Đã giao</h5><h2 className="mb-0 fw-bold">{stats.delivered}</h2>
-              </Card>
-            </Col>
-            <Col md={3}>
-              <Card className="stat-card bg-danger text-white text-center p-3">
-                <h5 className="mb-1">Đã hủy</h5><h2 className="mb-0 fw-bold">{stats.cancelled}</h2>
-              </Card>
-            </Col>
-          </Row>
-
-          {/* === PHẦN 2: BIỂU ĐỒ DOANH THU === */}
-          <Row className="mb-4">
-            <Col md={12}>
-              <Card className="shadow-sm border-0 p-3">
-                <h5 className="mb-3 fw-bold text-secondary">Biểu đồ Doanh thu (Đã giao)</h5>
-                <div style={{ height: 250 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={stats.revenueData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => format.formatPrice(value)} />
-                      <Bar dataKey="DoanhThu" fill="#10b981" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+              <Card className="stat-card p-3 border-0">
+                <div className="d-flex justify-content-between align-items-center">
+                  <div>
+                    <p className="text-muted mb-1 fw-semibold fs-6">Tổng đơn</p>
+                    <h3 className="mb-0 fw-bold text-dark fs-2">{stats.total}</h3>
+                  </div>
+                  <div className="stat-icon-box bg-blue-soft">
+                    <FaShoppingCart />
+                  </div>
                 </div>
               </Card>
             </Col>
-          </Row>
+
+            {/* Thẻ Chờ xác nhận */}
+            <Col md={3}>
+              <Card className="stat-card p-3 border-0">
+                <div className="d-flex justify-content-between align-items-center">
+                  <div>
+                    <p className="text-muted mb-1 fw-semibold fs-6">Chờ xác nhận</p>
+                    <h3 className="mb-0 fw-bold text-dark fs-2">{stats.pending}</h3>
+                  </div>
+                  <div className="stat-icon-box bg-orange-soft">
+                    <FaHourglassHalf />
+                  </div>
+                </div>
+              </Card>
+            </Col>
+
+            {/* Thẻ Đã giao */}
+            <Col md={3}>
+              <Card className="stat-card p-3 border-0">
+                <div className="d-flex justify-content-between align-items-center">
+                  <div>
+                    <p className="text-muted mb-1 fw-semibold fs-6">Đã giao</p>
+                    <h3 className="mb-0 fw-bold text-dark fs-2">{stats.delivered}</h3>
+                  </div>
+                  <div className="stat-icon-box bg-green-soft">
+                    <FaCheckCircle />
+                  </div>
+                </div>
+              </Card>
+            </Col>
+
+            {/* Thẻ Đã hủy */}
+            <Col md={3}>
+              <Card className="stat-card p-3 border-0">
+                <div className="d-flex justify-content-between align-items-center">
+                  <div>
+                    <p className="text-muted mb-1 fw-semibold fs-6">Đã hủy</p>
+                    <h3 className="mb-0 fw-bold text-dark fs-2">{stats.cancelled}</h3>
+                  </div>
+                  <div className="stat-icon-box bg-red-soft">
+                    <FaTimesCircle />
+                  </div>
+                </div>
+              </Card>
+            </Col>
+          </Row> 
 
           {/* === PHẦN 3: BỘ LỌC TÌM KIẾM === */}
           <Form className="filter-bar d-flex gap-3 align-items-end flex-wrap" onSubmit={handleFilter}>
-            <Form.Group>
-              <Form.Label className="fw-bold fs-6 mb-1">Mã đơn hàng</Form.Label>
-              <div className="input-group">
-                <span className="input-group-text bg-white"><FaSearch className="text-muted"/></span>
-                <Form.Control type="text" placeholder="#ORD-..." value={searchId} onChange={(e) => setSearchId(e.target.value)} />
-              </div>
-            </Form.Group>
-            
-            <Form.Group>
-              <Form.Label className="fw-bold fs-6 mb-1">Trạng thái</Form.Label>
-              <Form.Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                <option value="">Tất cả trạng thái</option>
-                <option value="Chờ xác nhận">Chờ xác nhận</option>
-                <option value="Đang giao">Đang giao</option>
-                <option value="Đã giao">Đã giao</option>
-                <option value="Đã hủy">Đã hủy</option>
-              </Form.Select>
-            </Form.Group>
+              {/* Thêm flex-grow-1 vào đây */}
+              <Form.Group className="flex-grow-1">
+                <Form.Label className="fw-bold fs-6 mb-1">Mã đơn hàng</Form.Label>
+                <div className="input-group">
+                  <span className="input-group-text bg-white"><FaSearch className="text-muted"/></span>
+                  <Form.Control type="text" placeholder="#ORD-..." value={searchId} onChange={(e) => setSearchId(e.target.value)} />
+                </div>
+              </Form.Group>
+              
+              {/* Thêm flex-grow-1 vào đây */}
+              <Form.Group className="flex-grow-1">
+                <Form.Label className="fw-bold fs-6 mb-1">Trạng thái</Form.Label>
+                <Form.Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                  <option value="">Tất cả trạng thái</option>
+                  <option value="Chờ xác nhận">Chờ xác nhận</option>
+                  <option value="Đang giao">Đang giao</option>
+                  <option value="Đã giao">Đã giao</option>
+                  <option value="Đã hủy">Đã hủy</option>
+                </Form.Select>
+              </Form.Group>
 
-            <Form.Group>
-              <Form.Label className="fw-bold fs-6 mb-1">Từ ngày</Form.Label>
-              <Form.Control type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-            </Form.Group>
+              {/* Thêm flex-grow-1 vào đây */}
+              <Form.Group className="flex-grow-1">
+                <Form.Label className="fw-bold fs-6 mb-1">Từ ngày</Form.Label>
+                <Form.Control type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+              </Form.Group>
 
-            <Form.Group>
-              <Form.Label className="fw-bold fs-6 mb-1">Đến ngày</Form.Label>
-              <Form.Control type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-            </Form.Group>
+              {/* Thêm flex-grow-1 vào đây */}
+              <Form.Group className="flex-grow-1">
+                <Form.Label className="fw-bold fs-6 mb-1">Đến ngày</Form.Label>
+                <Form.Control type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+              </Form.Group>
 
-            <Button variant="dark" type="submit" className="px-4 py-2"><FaFilter className="me-2"/> Lọc kết quả</Button>
-          </Form>
+              </Form>
 
           {/* === PHẦN 4: BẢNG DANH SÁCH === */}
           <div className="admin-content-body">

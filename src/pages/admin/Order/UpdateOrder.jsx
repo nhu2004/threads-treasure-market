@@ -186,7 +186,14 @@ const UpdateOrder = () => {
                 <div className="text-center p-3 alert alert-success mb-0">Đơn hàng đã được giao thành công. Không thể chỉnh sửa.</div>
               )}
               {currentStatusText === "Đã hủy" && (
-                <div className="text-center p-3 alert alert-danger mb-0">Đơn hàng đã bị hủy.</div>
+                <div className="text-center p-3 alert alert-danger mb-0"> 
+                  {/* HIỂN THỊ LÝ DO HỦY TỪ DATABASE Ở ĐÂY */}
+                  {(orderDetail?.CancellationReason || orderDetail?.cancellationReason) && (
+                    <p className="fw-bold mb-2 text-danger" style={{fontSize: '16px', fontWeight: '500'}}>
+                      Lý do: {orderDetail.CancellationReason || orderDetail.cancellationReason}
+                    </p>
+                  )}
+                </div>
               )}
             </Card.Body>
           </Card>
@@ -278,6 +285,7 @@ const UpdateOrder = () => {
               <option value="Hết hàng">Shop hết hàng</option>
               <option value="Khách đổi ý">Khách hàng liên lạc lại không muốn mua</option>
               <option value="Không liên lạc được">Gọi khách hàng không bắt máy</option>
+              <option value="Hàng lỗi">Sản phẩm bị lỗi</option> 
               <option value="Lý do khác">Lý do khác...</option>
             </Form.Control>
           </Form.Group>

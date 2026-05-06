@@ -11,22 +11,30 @@ export const useOrderList = (filters = {}) => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // 2. Rải thêm các tham số lọc (...filters) vào object params gửi đi
-        const { data, pagination } = await orderApi.getAll({
+        
+        // CHỈ GỌI API 1 LẦN DUY NHẤT Ở ĐÂY
+        const { data, pagination, stats } = await orderApi.getAll({
           page: page,
           limit: 10,
           ...filters 
         });
+        
         setLoading(false);
-        setOrderData({ orders: data, totalPage: pagination.totalPage });
+        
+        // Lưu toàn bộ dữ liệu (bao gồm cả stats) vào state
+        setOrderData({ 
+          orders: data, 
+          totalPage: pagination.totalPage, 
+          stats: stats 
+        }); 
+        
       } catch (error) {
         setLoading(false);
         console.log(error);
       }
     };
     fetchData();
-  // 3. Đưa các biến lọc vào mảng dependency để API tự động gọi lại khi người dùng thay đổi bộ lọc
-  }, [page, filters.search, filters.status, filters.startDate, filters.endDate]);
+  }, [page, filters.search, filters.status, filters.startDate, filters.endDate]); 
 
   const updateOrderInList = (orderId, updates) => {
     setOrderData((pre) => {

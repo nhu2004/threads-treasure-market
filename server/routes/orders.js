@@ -77,12 +77,23 @@ router.get('/', async (req, res) => {
 
         // Câu lệnh SQL động
         let query = `
+            -- 1. Lấy danh sách phân trang
             SELECT * FROM Orders 
             ${whereClause}
             ORDER BY OrderDate DESC 
             OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY;
             
+            -- 2. Đếm tổng số record
             SELECT COUNT(*) as total FROM Orders ${whereClause};
+
+            -- 3. Thống kê số lượng từng trạng thái của TOÀN BỘ danh sách
+            SELECT 
+                COUNT(OrderID) as TotalOrders,
+                SUM(CASE WHEN Status = N'Chờ xác nhận' OR Status IS NULL THEN 1 ELSE 0 END) as Pending,
+                SUM(CASE WHEN Status = N'Đang giao' THEN 1 ELSE 0 END) as Shipping,
+                SUM(CASE WHEN Status = N'Đã giao' THEN 1 ELSE 0 END) as Delivered,
+                SUM(CASE WHEN Status = N'Đã hủy' THEN 1 ELSE 0 END) as Cancelled
+            FROM Orders ${whereClause};
         `;
 
         request.input('offset', sql.Int, offset);
@@ -93,7 +104,7 @@ router.get('/', async (req, res) => {
             
         const totalRecords = result.recordsets[1][0].total;
         const totalPage = Math.ceil(totalRecords / limit);
-
+        const statsRow = result.recordsets[2][0]; // Lấy dòng kết quả thống kê thứ 3
         const formattedOrders = result.recordsets[0].map(order => ({
             _id: order.OrderID, 
             orderDate: order.OrderDate,
@@ -110,11 +121,18 @@ router.get('/', async (req, res) => {
             CancellationReason: order.CancellationReason 
         }));
 
-        res.json({ 
+        res.json({
             orders: formattedOrders, 
             totalPage: totalPage,
-            total: totalRecords
-        });
+            total: totalRecords,
+            stats: {
+                total: statsRow.TotalOrders || 0,
+                pending: statsRow.Pending || 0,
+                shipping: statsRow.Shipping || 0,
+                delivered: statsRow.Delivered || 0,
+                cancelled: statsRow.Cancelled || 0
+        }
+    });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Lỗi server' });
@@ -187,6 +205,7 @@ router.get('/:id', async (req, res) => {
             subTotal: order.SubTotal || order.Total,
             discount: order.DiscountAmount || 0,
             status: order.Status || "Chờ xác nhận",
+            CancellationReason: order.CancellationReason,
             paymentStatus: "Thanh toán khi nhận hàng",   // Đã bỏ cột PaymentStatus gây lỗi
             delivery: {
                 fullName: order.FullName,

@@ -12,7 +12,7 @@
   font-size: 22px;
   font-weight: 700;
   color: #2c3e50;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   padding-bottom: 15px;
   border-bottom: 2px solid #f1f2f6;
   text-transform: uppercase;
@@ -58,7 +58,9 @@
 
 /* Tùy chỉnh cột Tiến độ đơn hàng */
 .progress-cell {
-  min-width: 180px;
+  min-width: 250px; /* Tăng chiều rộng để thanh tiến trình không bị chèn ép */
+  text-align: center; /* Đảm bảo nội dung luôn ở giữa */
+  vertical-align: middle; /* Căn giữa theo chiều dọc */
 }
 
 /* Tùy chỉnh Badge (Trạng thái thanh toán) */
@@ -101,13 +103,32 @@
 }
 
 /* Thống kê Card */
+/* === NÂNG CẤP GIAO DIỆN CARD THỐNG KÊ (SAAS STYLE) === */
 .stat-card {
-  border-radius: 10px;
-  border: none;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-  transition: transform 0.2s;
+  border-radius: 16px !important; /* Bo góc to hơn, mềm mại hơn */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important; /* Bóng đổ cực mờ tạo chiều sâu */
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  background-color: #ffffff;
 }
 
 .stat-card:hover { 
-  transform: translateY(-3px); 
+  transform: translateY(-5px); 
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important; /* Hiệu ứng nổi lên khi di chuột */
 }
+
+/* Khung chứa Icon */
+.stat-icon-box {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+/* Các màu nền nhạt (pastel) sang trọng cho Icon */
+.bg-blue-soft { background-color: #e0f2fe; color: #0284c7; }
+.bg-orange-soft { background-color: #fef3c7; color: #d97706; }
+.bg-green-soft { background-color: #d1fae5; color: #059669; }
+.bg-red-soft { background-color: #fee2e2; color: #dc2626; }

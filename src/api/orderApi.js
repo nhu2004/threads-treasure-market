@@ -21,7 +21,8 @@ const orderApi = {
         data: data.orders || [],
         pagination: {
           totalPage: data.totalPage || 1
-        }
+        },
+        stats: data.stats // <--- BỔ SUNG DÒNG NÀY ĐỂ TRUYỀN LÊN HOOK
       };
     } catch (err) { 
       return { count: 0, data: [], pagination: { totalPage: 1 } }; 
