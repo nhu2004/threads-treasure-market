@@ -82,3 +82,4 @@ npm install multer
 /SRC
 
 npm install bootstrap react-bootstrap
+npm install recharts

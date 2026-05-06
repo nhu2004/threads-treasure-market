@@ -1,8 +1,19 @@
 const orderApi = {
   getAll: async (params = {}) => {
     try {
-      const { page = 1, limit = 10 } = params;
-      const res = await fetch(`http://localhost:5000/api/orders?page=${page}&limit=${limit}`);
+      // Lấy thêm các biến lọc từ params
+      const { page = 1, limit = 10, search, status, startDate, endDate } = params;
+      
+      // Khởi tạo URL cơ bản
+      let url = `http://localhost:5000/api/orders?page=${page}&limit=${limit}`;
+
+      // Nối thêm các tham số nếu người dùng có nhập
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      if (status) url += `&status=${encodeURIComponent(status)}`;
+      if (startDate) url += `&startDate=${encodeURIComponent(startDate)}`;
+      if (endDate) url += `&endDate=${encodeURIComponent(endDate)}`;
+
+      const res = await fetch(url);
       const data = await res.json();
       
       return { 

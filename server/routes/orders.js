@@ -28,25 +28,68 @@ const getStatusCode = (statusText) => {
     }
 };
 
-// 1. Lấy danh sách đơn hàng có phân trang (Admin)
+// 1. Lấy danh sách đơn hàng có phân trang + TÍCH HỢP BỘ LỌC (Admin)
 router.get('/', async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const offset = (page - 1) * limit;
 
+        // Nhận các biến lọc từ Frontend
+        const { search, status, startDate, endDate } = req.query;
+
         let pool = await sql.connect(sqlConfig);
-        
-        let result = await pool.request()
-            .input('offset', sql.Int, offset)
-            .input('limit', sql.Int, limit)
-            .query(`
-                SELECT * FROM Orders 
-                ORDER BY OrderDate DESC 
-                OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY;
-                
-                SELECT COUNT(*) as total FROM Orders;
-            `);
+        let request = pool.request();
+
+        // Mảng chứa các điều kiện WHERE
+        let conditions = [];
+
+        // 1. Lọc theo Mã đơn hàng (Loại bỏ chữ #ORD- nếu admin gõ vào, chỉ lấy số)
+        if (search) {
+            const searchId = search.replace(/\D/g, ''); 
+            if (searchId) {
+                conditions.push("CAST(OrderID AS VARCHAR) LIKE '%' + @searchId + '%'");
+                request.input('searchId', sql.VarChar, searchId);
+            }
+        }
+
+        // 2. Lọc theo Trạng thái
+        if (status) {
+            conditions.push("Status = @status");
+            request.input('status', sql.NVarChar, status);
+        }
+
+        // 3. Lọc theo Từ ngày (>=)
+        if (startDate) {
+            conditions.push("OrderDate >= @startDate");
+            request.input('startDate', sql.Date, startDate);
+        }
+
+        // 4. Lọc theo Đến ngày (<=) 
+        // (Cộng thêm thời gian 23:59:59 để lấy trọn vẹn ngày đó)
+        if (endDate) {
+            conditions.push("OrderDate <= @endDate");
+            request.input('endDate', sql.DateTime, endDate + ' 23:59:59');
+        }
+
+        // Ghép nối các điều kiện lại (Nếu có)
+        let whereClause = conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
+
+        // Câu lệnh SQL động
+        let query = `
+            SELECT * FROM Orders 
+            ${whereClause}
+            ORDER BY OrderDate DESC 
+            OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY;
+            
+            SELECT COUNT(*) as total FROM Orders ${whereClause};
+        `;
+
+        request.input('offset', sql.Int, offset);
+        request.input('limit', sql.Int, limit);
+
+        // Thực thi query
+        let result = await request.query(query);
             
         const totalRecords = result.recordsets[1][0].total;
         const totalPage = Math.ceil(totalRecords / limit);
@@ -56,13 +99,15 @@ router.get('/', async (req, res) => {
             orderDate: order.OrderDate,
             totalPrice: order.Total, 
             paymentStatus: {
-                text: "Thanh toán khi nhận hàng", // Hardcode do DB không có cột này
+                text: "Thanh toán khi nhận hàng",
                 code: 0
             },
             orderStatus: {
                 text: order.Status || "Chờ xác nhận", 
                 code: getStatusCode(order.Status)     
-            }
+            },
+            // Trả về thêm lý do hủy để Frontend hiển thị
+            CancellationReason: order.CancellationReason 
         }));
 
         res.json({ 

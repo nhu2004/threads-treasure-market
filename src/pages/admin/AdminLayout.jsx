@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom"; 
-import { Menu, X, LogOut, Package, ShoppingCart, Users, Tag, Home, Settings } from "lucide-react"; 
+import { Menu, X, LogOut, Package, ShoppingCart, Users, Tag, Home, Settings, ListTree } from "lucide-react"; 
 import { useAuth } from "@/contexts/AuthContext";
 
 export const AdminLayout = ({ children }) => {
@@ -13,13 +13,21 @@ export const AdminLayout = ({ children }) => {
     navigate("/");
   };
 
-const menuItems = [
+  // SỬA: Thêm subItems cho "Sản phẩm"
+  const menuItems = [
     { icon: Home, label: "Tổng quan", path: "/admin" },
-    { icon: Package, label: "Sản phẩm", path: "/admin/products" },
+    { 
+      icon: Package, label: "Sản phẩm", path: "/admin/products",
+      subItems: [
+        { label: "Danh sách sản phẩm", path: "/admin/products" },
+        { label: "Quản lý danh mục", path: "/admin/categories" } // Menu con quản lý danh mục
+      ]
+    },
     { icon: ShoppingCart, label: "Đơn hàng", path: "/admin/orders" },
     { icon: Users, label: "Khách hàng", path: "/admin/users" },
     { icon: Tag, label: "Voucher", path: "/admin/vouchers" },  
   ];
+
   return (
     <div className="flex h-screen bg-white">
       {/* Sidebar */}
@@ -28,7 +36,6 @@ const menuItems = [
           sidebarOpen ? "w-64" : "w-20"
         } bg-foreground text-white transition-all duration-300 overflow-hidden flex flex-col border-r`}
       >
-        {/* Logo */}
         <div className="p-6 flex items-center justify-between border-b border-white/10">
           <Link to="/admin" className={`font-display text-xl font-bold tracking-tight ${!sidebarOpen && "hidden"}`}>
             MAISON
@@ -41,7 +48,6 @@ const menuItems = [
           </button>
         </div>
 
-        {/* User Info */}
         <div className={`p-4 border-b border-white/10 ${!sidebarOpen && "hidden"}`}>
           <p className="text-sm opacity-75">Xin chào,</p>
           <p className="font-medium text-base">{user?.fullName || user?.username}</p>
@@ -53,21 +59,36 @@ const menuItems = [
           {menuItems.map((item) => {
             const Icon = item.icon;
             return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/80 hover:text-white group"
-              >
-                <Icon size={20} />
-                <span className={`text-sm font-medium ${!sidebarOpen && "hidden"}`}>
-                  {item.label}
-                </span>
-              </Link>
+              <div key={item.path} className="group relative">
+                <Link
+                  to={item.path}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white/80 hover:text-white"
+                >
+                  <Icon size={20} />
+                  <span className={`text-sm font-medium ${!sidebarOpen && "hidden"}`}>
+                    {item.label}
+                  </span>
+                </Link>
+                
+                {/* SỬA: Menu con xổ xuống khi Hover */}
+                {item.subItems && sidebarOpen && (
+                  <div className="hidden group-hover:flex flex-col pl-12 pr-4 py-2 space-y-3 bg-black/20 rounded-b-lg">
+                    {item.subItems.map(sub => (
+                      <Link 
+                        key={sub.path} 
+                        to={sub.path} 
+                        className="text-sm text-white/60 hover:text-white transition-colors flex items-center gap-2"
+                      >
+                         <ListTree size={14} /> {sub.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
 
-        {/* Logout */}
         <div className="p-4 border-t border-white/10 space-y-2">
           <button
             onClick={handleLogout}
@@ -81,13 +102,13 @@ const menuItems = [
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto bg-gray-50">
-        <div className="sticky top-0 bg-white border-b border-border px-8 py-4 flex items-center justify-between">
+        <div className="sticky top-0 z-10 bg-white border-b border-border px-8 py-4 flex items-center justify-between shadow-sm">
           <h1 className="text-2xl font-display font-bold text-foreground">Bảng điều khiển</h1>
           <button className="p-2 hover:bg-gray-100 rounded transition-colors">
             <Settings size={20} />
           </button>
         </div>
-        <div className="p-2">{children}</div>
+        <div className="p-6">{children}</div>
       </main>
     </div>
   );

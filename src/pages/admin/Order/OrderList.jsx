@@ -223,7 +223,10 @@ export default function OrderList() {
                           </Badge>
                         </td>
                         <td className="progress-cell">
-                          <OrderProgress currentStep={item.orderStatus?.code} />
+                          <OrderProgress 
+                            currentStatusText={item.orderStatus?.text || item.status} 
+                            orderStatusCode={item.orderStatus?.code} 
+                          />
                         </td>
                         <td className="text-center">
                           <div className="d-flex gap-2 justify-content-center action-buttons">
@@ -260,9 +263,9 @@ export default function OrderList() {
                 <Col xl={12}>
                   {orderData.totalPage > 1 ? (
                     <PaginationproductStore
-                      totalPage={orderData.totalPage}
+                      totalPages={orderData.totalPage}   /* Thêm chữ 's' */
                       currentPage={page}
-                      onChangePage={handleChangePage}
+                      onPageChange={handleChangePage}    /* Đổi thành onPageChange */
                     />
                   ) : null}
                 </Col>
