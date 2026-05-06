@@ -28,7 +28,7 @@ import Loading from "../../../components/Loading";
 import useDashboardCards from "../../../hooks/admin/useDashboardCards";
 import useRevenueChart from "../../../hooks/admin/useRevenueChart";
 import useAnalyticsCharts from "../../../hooks/admin/useAnalyticsCharts";
-import voucherApi from '../../../api/voucherApi'; // Nhớ kiểm tra đúng đường dẫn của bạn
+import voucherApi from '../../../api/voucherApi';
 
 // Đăng ký các thành phần của Chart.js
 ChartJS.register(
@@ -54,20 +54,16 @@ function RealTimeClock() {
 
 // --- MAIN COMPONENT ---
 function AnalyticsPage() {
-  // 1. States cho biểu đồ doanh thu
   const [revenueTime, setRevenueTime] = useState({ value: 0, text: "Tất cả" });
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 14; 
 
-  // 2. State cho Top Vouchers
   const [topVouchers, setTopVouchers] = useState([]);
 
-  // 3. Gọi Hooks lấy dữ liệu
   const { cardData, loading: cardsLoading } = useDashboardCards();
   const { revenueChartData, loading: revenueLoading } = useRevenueChart(revenueTime);
   const { bestSellerChartData, orderStatusData = [], loading: analyticsLoading } = useAnalyticsCharts();
 
-  // 4. Fetch Vouchers
   useEffect(() => {
     const fetchTopVouchers = async () => {
       try {
@@ -80,7 +76,6 @@ function AnalyticsPage() {
     fetchTopVouchers();
   }, []);
 
-  // 5. Logic phân trang biểu đồ ngang
   useEffect(() => {
     setCurrentPage(0);
   }, [revenueTime.value]);
@@ -97,7 +92,6 @@ function AnalyticsPage() {
     }))
   } : {};
 
-  // 6. Cấu hình Chart.js
   const lineOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -123,7 +117,6 @@ function AnalyticsPage() {
     plugins: { legend: { position: "bottom" } },
   };
 
-  // 7. Dữ liệu thẻ thống kê (Khớp với Dashboard.jsx cũ)
   const stats = [
     { label: "Tổng sản phẩm", value: cardData.product || "0", color: "bg-blue-500", icon: Package, trend: "Cập nhật thực tế" },
     { label: "Tổng đơn hàng", value: cardData.order || "0", color: "bg-emerald-500", icon: ShoppingCart, trend: "Từ database" },
@@ -132,51 +125,56 @@ function AnalyticsPage() {
     { label: "Voucher phát hành", value: cardData.totalVouchers || "5", color: "bg-rose-500", icon: Tag, trend: "Mã đang kích hoạt" },
   ];
 
-  // 8. Render
   if (cardsLoading || revenueLoading || analyticsLoading) {
     return <Loading />;
   }
 
   return (
-    // Sử dụng Tailwind CSS để tái tạo khung nền chuẩn của Admin
-    <div className="space-y-6 bg-slate-50 min-h-screen p-4 md:p-6 font-sans">
+    // Đã thu hẹp space-y-6 thành space-y-4 để giảm khoảng trắng dọc
+    <div className="space-y-4 bg-slate-50 min-h-screen p-4 md:p-6 font-sans">
       
       {/* HEADER BẢNG ĐIỀU KHIỂN & ĐỒNG HỒ */}
-      <div className="flex flex-col sm:flex-row justify-between items-center bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+      {/* Đã giảm padding từ p-4 xuống py-3 px-4 */}
+      <div className="flex flex-col sm:flex-row justify-between items-center bg-white py-3 px-4 rounded-lg shadow-sm border border-gray-200">
         <h2 className="text-xl font-bold text-gray-800 mb-2 sm:mb-0">Bảng điều khiển</h2>
         <RealTimeClock />
       </div>
 
       {/* DÒNG 1: 5 THẺ THỐNG KÊ */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      {/* Tối ưu grid hiển thị và khoảng cách */}
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-4">
         {stats.map((stat, idx) => {
           const Icon = stat.icon;
           return (
-            <div key={idx} className="bg-white rounded-lg p-5 shadow-sm border border-gray-200 flex flex-col justify-between hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">{stat.label}</p>
-                  <p className="text-2xl font-bold mt-2 text-gray-800 truncate">{stat.value}</p>
+            // Đã giảm padding từ p-5 xuống p-4
+            <div key={idx} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 flex flex-col justify-between hover:shadow-md transition-shadow">
+              {/* Thêm gap-3 để tách biệt chữ và Icon */}
+              <div className="flex items-start justify-between gap-3">
+                {/* Thêm flex-1 và min-w-0 để đoạn text tự động co lại thay vì đẩy Icon đi */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-500 truncate">{stat.label}</p>
+                  {/* Thay text-2xl bằng text-xl để vừa vặn hơn, thêm title để xem đầy đủ khi hover */}
+                  <p className="text-xl font-bold mt-1 text-gray-800 truncate" title={stat.value}>{stat.value}</p>
                 </div>
-                <div className={`${stat.color} p-2.5 rounded-lg text-white shadow-sm`}>
+                {/* Thêm flex-shrink-0 để Icon luôn giữ nguyên kích thước */}
+                <div className={`${stat.color} p-2 rounded-lg text-white shadow-sm flex-shrink-0`}>
                   <Icon size={20} />
                 </div>
               </div>
-              <p className="text-xs text-emerald-600 mt-4">{stat.trend}</p>
+              <p className="text-xs text-emerald-600 mt-3 truncate">{stat.trend}</p>
             </div>
           );
         })}
       </div>
 
-      {/* DÒNG 2 & 3: LƯỚI BỐ CỤC (TRÁI 2 CỘT - PHẢI 1 CỘT) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* DÒNG 2 & 3: LƯỚI BỐ CỤC */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         
         {/* === CỘT BÊN TRÁI === */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4">
             
-            {/* Biểu đồ doanh thu (Line Chart Chart.js) */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-200">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                 <h3 className="text-lg font-bold text-gray-800">Doanh thu theo ngày</h3>
                 <select 
                   className="px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-700 focus:outline-none focus:border-blue-500" 
@@ -194,7 +192,7 @@ function AnalyticsPage() {
                 </select>
               </div>
 
-              <div style={{ height: "320px" }}>
+              <div style={{ height: "300px" }}>
                 {paginatedRevenueData.labels?.length > 0 ? (
                   <Line options={lineOptions} data={paginatedRevenueData} />
                 ) : (
@@ -202,7 +200,6 @@ function AnalyticsPage() {
                 )}
               </div>
 
-              {/* Phân trang biểu đồ */}
               {totalPages > 1 && (
                 <div className="flex justify-center items-center mt-4 gap-3">
                   <Button variant="outline-secondary" size="sm" disabled={currentPage === 0} onClick={() => setCurrentPage(prev => prev - 1)}><FaChevronLeft /></Button>
@@ -212,9 +209,8 @@ function AnalyticsPage() {
               )}
             </div>
 
-            {/* Top Vouchers */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-              <div className="flex justify-between items-center mb-6">
+            <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-200">
+              <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-bold text-gray-800">Voucher được sử dụng nhiều nhất</h3>
                   <Link to="/admin/vouchers" className="text-sm text-blue-600 hover:underline font-medium">
                       Xem tất cả
@@ -230,7 +226,7 @@ function AnalyticsPage() {
                               <Tag size={24} className="text-rose-500 mb-2" />
                               <p className="font-bold text-sm text-gray-800">{voucher.Code}</p>
                               <p className="text-xs text-gray-500 mt-1 truncate w-full">{voucher.Name}</p>
-                              <div className="mt-3 px-3 py-1 bg-white rounded-full border text-xs font-medium text-gray-700 shadow-sm">
+                              <div className="mt-2 px-3 py-1 bg-white rounded-full border text-xs font-medium text-gray-700 shadow-sm">
                                   Lượt dùng: <span className="font-bold">{voucher.UsageCount}</span>
                               </div>
                           </div>
@@ -241,12 +237,11 @@ function AnalyticsPage() {
         </div>
 
         {/* === CỘT BÊN PHẢI === */}
-        <div className="space-y-6">
+        <div className="space-y-4">
             
-            {/* Top Sản Phẩm Bán Chạy (Pie Chart Chart.js) */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+            <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-200">
               <h3 className="text-lg font-bold text-gray-800 mb-4">Sản phẩm bán chạy</h3>
-              <div style={{ height: "300px" }}>
+              <div style={{ height: "260px" }}>
                 {bestSellerChartData.labels ? (
                   <Pie options={pieOptions} data={bestSellerChartData} />
                 ) : (
@@ -255,10 +250,9 @@ function AnalyticsPage() {
               </div>
             </div>
 
-            {/* Trạng thái đơn hàng (Progress Bars) */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-              <h3 className="text-lg font-bold text-gray-800 mb-6">Trạng thái đơn hàng</h3>
-              <div className="space-y-5">
+            <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-200">
+              <h3 className="text-lg font-bold text-gray-800 mb-5">Trạng thái đơn hàng</h3>
+              <div className="space-y-4">
                   {[
                   { label: "Chờ xác nhận", color: "bg-amber-500", key: "Chờ xác nhận" },
                   { label: "Đang giao", color: "bg-blue-500", key: "Đang giao" },
@@ -270,7 +264,7 @@ function AnalyticsPage() {
                   const percentage = (count / (cardData.order || 1)) * 100;
 
                   return (
-                      <div key={status.key} className="space-y-2">
+                      <div key={status.key} className="space-y-1.5">
                         <div className="flex items-center justify-between">
                             <span className="text-sm font-medium text-gray-700">{status.label}</span>
                             <span className="font-bold text-sm text-gray-900">{count}</span>
