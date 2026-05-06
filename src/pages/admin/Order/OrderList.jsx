@@ -1,24 +1,24 @@
 // Client/src/pages/Admin/Order/OrderList.js
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./OrderList.css";
 import {
   Row,
   Col,
   Table,
-  Modal,
   Badge,
   Button,
-  Form
+  Form,
+  Card,
+  Modal
 } from "react-bootstrap";
 import moment from "moment";
-import { FaEdit, FaEye } from "react-icons/fa";
+import { FaEdit, FaEye, FaSearch, FaFilter } from "react-icons/fa";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 import PaginationproductStore from "../../../components/PaginationproductStore";
 import OrderProgress from "../../../components/OrderProgress";
 import OrderDetail from "../../../components/OrderDetail";
-
-import steps from "../../../components/OrderProgressBar/enum";
 import format from "../../../helper/format";
 import {
   useOrderList,
@@ -29,167 +29,150 @@ import {
 export default function OrderList() {
   const navigate = useNavigate(); 
 
-  const { orderData, page, setPage, updateOrderInList } = useOrderList();
+  // 1. BIẾN LƯU TRỮ GIÁ TRỊ LỌC
+  const [searchId, setSearchId] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
-  // Thêm state để quản lý ảnh upload
-  const [proofImage, setProofImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  // 2. STATE THỐNG KÊ
+  const [stats, setStats] = useState({ 
+    total: 0, pending: 0, shipping: 0, delivered: 0, cancelled: 0, revenueData: [] 
+  });
 
-  const {
-    showModal: showDetailModal,
-    setShowModal: setShowDetailModal,
-    orderDetail,
-    setOrderDetail,
-    fetchOrderDetail,
-  } = useAdminOrderDetail();
+  // 3. TRUYỀN CÁC BIẾN VÀO HOOK
+  const { orderData, page, setPage, updateOrderInList } = useOrderList({
+    search: searchId,
+    status: statusFilter,
+    startDate: startDate,
+    endDate: endDate
+  });
 
-  const handleDetailUpdate = (updatedOrder) => {
-    setOrderDetail(updatedOrder);
-    updateOrderInList(updatedOrder._id || updatedOrder.id, {
-      orderStatus: updatedOrder.orderStatus,
-      status: updatedOrder.status,
-      paymentStatus: updatedOrder.paymentStatus,
+  // Hàm xử lý khi bấm nút "Lọc"
+  const handleFilter = (e) => {
+    e.preventDefault();
+    setPage(1); // Trở về trang 1 khi lọc
+  };
+
+  // Tính toán thống kê dựa trên dữ liệu hiện có
+  useEffect(() => {
+    let p = 0, s = 0, d = 0, c = 0;
+    const orders = orderData.orders || [];
+    
+    orders.forEach(o => {
+      const st = o.orderStatus?.text || o.status;
+      if (st === 'Chờ xác nhận') p++;
+      else if (st === 'Đang giao') s++;
+      else if (st === 'Đã giao') d++;
+      else if (st === 'Đã hủy') c++;
     });
-    // Reset ảnh khi cập nhật thành công
-    setProofImage(null);
-    setImagePreview(null);
-  };
 
-  // CẬP NHẬT Ở ĐÂY: Gọi đúng các hàm mới từ useUpdateOrderStatus
-  const {
-    showModal: showUpdateModal,
-    setShowModal: setShowUpdateModal,
-    loading: loadingUpdate,
-    openModal: openUpdateModal,
-    handlePrintInvoiceAndDeliver, 
-    handleConfirmDelivery
-  } = useUpdateOrderStatus(orderDetail, handleDetailUpdate);
+    setStats({ 
+      total: orders.length, pending: p, shipping: s, delivered: d, cancelled: c, 
+      // Dữ liệu biểu đồ giả định (Thực tế lấy từ API Backend)
+      revenueData: [
+        { name: 'Tuần 1', DoanhThu: 12000000 }, { name: 'Tuần 2', DoanhThu: 19000000 },
+        { name: 'Tuần 3', DoanhThu: 15000000 }, { name: 'Tuần 4', DoanhThu: 25000000 }
+      ]
+    });
+  }, [orderData.orders]);
 
-  const handleChangePage = useCallback(
-    (page) => {
-      setPage(page);
-    },
-    [setPage]
-  );
+  const { showModal: showDetailModal, setShowModal: setShowDetailModal, orderDetail, fetchOrderDetail } = useAdminOrderDetail();
 
-  // Xử lý khi người dùng chọn file ảnh
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setProofImage(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handleCloseUpdateModal = () => {
-    setShowUpdateModal(false);
-    setProofImage(null);
-    setImagePreview(null);
-  }
-
-  // Lấy text trạng thái hiện tại (hỗ trợ cả 2 định dạng trả về từ API)
-  const currentStatusText = orderDetail?.status || orderDetail?.orderStatus?.text;
+  const handleChangePage = useCallback((page) => { setPage(page); }, [setPage]);
 
   return (
     <Row>
-      {/* MODAL CẬP NHẬT TRẠNG THÁI MỚI */}
-      <Modal
-        dialogClassName="modal-w1100"
-        size="lg"
-        show={showUpdateModal}
-        onHide={handleCloseUpdateModal}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Cập nhật trạng thái đơn hàng</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {showUpdateModal && orderDetail && (
-            <div>
-              <p className="mb-4 text-center" style={{ fontSize: '18px' }}>
-                Trạng thái hiện tại: <b className="text-primary">{currentStatusText}</b>
-              </p>
-              
-              <div className="mb-4">
-                <OrderProgress current={orderDetail?.orderStatus?.code} />
-              </div>
-
-              {/* TRƯỜNG HỢP 1: CHỜ XÁC NHẬN */}
-              {currentStatusText === "Chờ xác nhận" && (
-                <div className="text-center mt-4">
-                  <div className="alert alert-info">
-                    Đơn hàng đủ điều kiện. Bạn có muốn in hóa đơn và chuyển cho bộ phận giao hàng?
-                  </div>
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    disabled={loadingUpdate}
-                    onClick={handlePrintInvoiceAndDeliver}
-                  >
-                    {loadingUpdate ? "Đang xử lý..." : "In hóa đơn & Chuyển sang Đang giao"}
-                  </Button>
-                </div>
-              )}
-
-              {/* TRƯỜNG HỢP 2: ĐANG GIAO */}
-              {currentStatusText === "Đang giao" && (
-                <div className="mt-4 p-4 border rounded bg-light">
-                  <h5 className="text-warning mb-3">
-                    <FaEdit /> Xác nhận giao hàng
-                  </h5>
-                  <p className="text-muted">Quản lý đóng vai trò Shipper. Vui lòng cung cấp hình ảnh xác nhận.</p>
-                  
-                  <Form.Group className="mb-3">
-                    <Form.Label className="fw-bold">Tải lên ảnh (Delivery Proof):</Form.Label>
-                    <Form.Control type="file" accept="image/*" onChange={handleImageChange} />
-                  </Form.Group>
-                  
-                  {imagePreview && (
-                    <div className="text-center mb-3">
-                      <img 
-                        src={imagePreview} 
-                        alt="Preview" 
-                        style={{ maxHeight: '250px', borderRadius: '8px', border: '1px solid #ccc' }} 
-                      />
-                    </div>
-                  )}
-                  
-                  <Button
-                    variant="success"
-                    size="lg"
-                    className="w-100 mt-2"
-                    disabled={loadingUpdate || !proofImage}
-                    onClick={() => handleConfirmDelivery(proofImage)}
-                  >
-                    {loadingUpdate ? "Đang xử lý..." : "Xác nhận Đã giao hàng thành công"}
-                  </Button>
-                </div>
-              )}
-
-              {/* TRƯỜNG HỢP KHÁC */}
-              {(currentStatusText !== "Chờ xác nhận" && currentStatusText !== "Đang giao") && (
-                <div className="text-center mt-4 alert alert-secondary">
-                  Đơn hàng ở trạng thái <b>{currentStatusText}</b> không cần cập nhật thêm thao tác này.
-                </div>
-              )}
-            </div>
-          )}
-        </Modal.Body>
-      </Modal>
-
-      {/* CHI TIẾT ĐƠN HÀNG */}
+      {/* CHI TIẾT ĐƠN HÀNG (Nếu vẫn dùng Modal xem nhanh) */}
       {showDetailModal && orderDetail && (
-        <OrderDetail 
-          data={orderDetail} 
-          onBack={() => setShowDetailModal(false)} 
-        />
+        <OrderDetail data={orderDetail} onBack={() => setShowDetailModal(false)} />
       )}
 
-      {/* BẢNG DANH SÁCH */}
       <Col xl={12}>
         <div className="admin-content-wrapper">
-          <h2 className="text-xl font-bold text-gray-800 mb-2 border-l-4 border-emerald-500 pl-3">
-            Danh sách đơn hàng
+          <h2 className="text-xl font-bold text-gray-800 mb-4 border-l-4 border-emerald-500 pl-3">
+            Tổng quan Đơn hàng
           </h2>
+
+          {/* === PHẦN 1: THỐNG KÊ (CARDS) === */}
+          <Row className="mb-4">
+            <Col md={3}>
+              <Card className="stat-card bg-primary text-white text-center p-3">
+                <h5 className="mb-1">Tổng đơn</h5><h2 className="mb-0 fw-bold">{stats.total}</h2>
+              </Card>
+            </Col>
+            <Col md={3}>
+              <Card className="stat-card bg-info text-white text-center p-3">
+                <h5 className="mb-1">Chờ xác nhận</h5><h2 className="mb-0 fw-bold">{stats.pending}</h2>
+              </Card>
+            </Col>
+            <Col md={3}>
+              <Card className="stat-card bg-success text-white text-center p-3">
+                <h5 className="mb-1">Đã giao</h5><h2 className="mb-0 fw-bold">{stats.delivered}</h2>
+              </Card>
+            </Col>
+            <Col md={3}>
+              <Card className="stat-card bg-danger text-white text-center p-3">
+                <h5 className="mb-1">Đã hủy</h5><h2 className="mb-0 fw-bold">{stats.cancelled}</h2>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* === PHẦN 2: BIỂU ĐỒ DOANH THU === */}
+          <Row className="mb-4">
+            <Col md={12}>
+              <Card className="shadow-sm border-0 p-3">
+                <h5 className="mb-3 fw-bold text-secondary">Biểu đồ Doanh thu (Đã giao)</h5>
+                <div style={{ height: 250 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={stats.revenueData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => format.formatPrice(value)} />
+                      <Bar dataKey="DoanhThu" fill="#10b981" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* === PHẦN 3: BỘ LỌC TÌM KIẾM === */}
+          <Form className="filter-bar d-flex gap-3 align-items-end flex-wrap" onSubmit={handleFilter}>
+            <Form.Group>
+              <Form.Label className="fw-bold fs-6 mb-1">Mã đơn hàng</Form.Label>
+              <div className="input-group">
+                <span className="input-group-text bg-white"><FaSearch className="text-muted"/></span>
+                <Form.Control type="text" placeholder="#ORD-..." value={searchId} onChange={(e) => setSearchId(e.target.value)} />
+              </div>
+            </Form.Group>
+            
+            <Form.Group>
+              <Form.Label className="fw-bold fs-6 mb-1">Trạng thái</Form.Label>
+              <Form.Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                <option value="">Tất cả trạng thái</option>
+                <option value="Chờ xác nhận">Chờ xác nhận</option>
+                <option value="Đang giao">Đang giao</option>
+                <option value="Đã giao">Đã giao</option>
+                <option value="Đã hủy">Đã hủy</option>
+              </Form.Select>
+            </Form.Group>
+
+            <Form.Group>
+              <Form.Label className="fw-bold fs-6 mb-1">Từ ngày</Form.Label>
+              <Form.Control type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            </Form.Group>
+
+            <Form.Group>
+              <Form.Label className="fw-bold fs-6 mb-1">Đến ngày</Form.Label>
+              <Form.Control type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+            </Form.Group>
+
+            <Button variant="dark" type="submit" className="px-4 py-2"><FaFilter className="me-2"/> Lọc kết quả</Button>
+          </Form>
+
+          {/* === PHẦN 4: BẢNG DANH SÁCH === */}
           <div className="admin-content-body">
             <Table responsive hover className="custom-order-table border-0">
               <thead>
@@ -206,9 +189,10 @@ export default function OrderList() {
               <tbody>
                 {orderData.orders && orderData.orders.length > 0 ? (
                   orderData.orders.map((item, index) => {
+                    const statusText = item.orderStatus?.text || item.status;
                     return (
                       <tr key={item._id || item.OrderID}> 
-                        <td className="text-center fw-bold">{index + 1}</td>
+                        <td className="text-center fw-bold">{(page - 1) * 10 + index + 1}</td>
                         <td className="fw-medium text-primary">#ORD-{item._id || item.OrderID}</td> 
                         <td>{moment(item.orderDate).format("DD/MM/YYYY HH:mm")}</td>
                         <td className="text-end fw-bold text-danger">
@@ -224,8 +208,10 @@ export default function OrderList() {
                         </td>
                         <td className="progress-cell">
                           <OrderProgress 
-                            currentStatusText={item.orderStatus?.text || item.status} 
+                            currentStatusText={statusText} 
                             orderStatusCode={item.orderStatus?.code} 
+                            cancellationReason={item.CancellationReason || item.cancellationReason}
+                            compact={true} 
                           />
                         </td>
                         <td className="text-center">
@@ -252,7 +238,7 @@ export default function OrderList() {
                 ) : (
                   <tr>
                     <td colSpan={7} className="text-center py-4 text-muted">
-                      Không có đơn hàng nào!
+                      Không tìm thấy đơn hàng phù hợp!
                     </td>
                   </tr>
                 )}
@@ -263,9 +249,9 @@ export default function OrderList() {
                 <Col xl={12}>
                   {orderData.totalPage > 1 ? (
                     <PaginationproductStore
-                      totalPages={orderData.totalPage}   /* Thêm chữ 's' */
+                      totalPages={orderData.totalPage}   
                       currentPage={page}
-                      onPageChange={handleChangePage}    /* Đổi thành onPageChange */
+                      onPageChange={handleChangePage}    
                     />
                   ) : null}
                 </Col>
@@ -276,4 +262,4 @@ export default function OrderList() {
       </Col>
     </Row>
   );
-}
+} 

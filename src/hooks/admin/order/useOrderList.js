@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import orderApi from "../../../api/orderApi";
 
-export const useOrderList = () => {
+// 1. Bổ sung tham số filters (mặc định là object rỗng để không bị lỗi nếu không truyền)
+export const useOrderList = (filters = {}) => {
   const [orderData, setOrderData] = useState({});
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -10,9 +11,11 @@ export const useOrderList = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        // 2. Rải thêm các tham số lọc (...filters) vào object params gửi đi
         const { data, pagination } = await orderApi.getAll({
           page: page,
           limit: 10,
+          ...filters 
         });
         setLoading(false);
         setOrderData({ orders: data, totalPage: pagination.totalPage });
@@ -22,7 +25,8 @@ export const useOrderList = () => {
       }
     };
     fetchData();
-  }, [page]);
+  // 3. Đưa các biến lọc vào mảng dependency để API tự động gọi lại khi người dùng thay đổi bộ lọc
+  }, [page, filters.search, filters.status, filters.startDate, filters.endDate]);
 
   const updateOrderInList = (orderId, updates) => {
     setOrderData((pre) => {
@@ -44,9 +48,3 @@ export const useOrderList = () => {
     updateOrderInList,
   };
 };
-
-
-
-
-
-
