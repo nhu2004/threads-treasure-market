@@ -57,5 +57,39 @@ router.get('/', async (req, res) => {
         res.status(500).json({ message: 'Lỗi kết nối database' });
     }
 });
+// API: Lấy chi tiết 1 sản phẩm theo ID
+router.get('/:id', async (req, res) => {
+    try {
+        let pool = await sql.connect(sqlConfig);
+        let result = await pool.request()
+            .input('id', sql.Int, req.params.id)
+            .query(`
+                SELECT p.*, c.Name AS CategoryName
+                FROM Products p
+                LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
+                WHERE p.ProductID = @id
+            `);
 
+        if (result.recordset.length === 0) return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
+
+        const p = result.recordset[0];
+        const formattedProduct = {
+            id: p.ProductID,
+            name: p.Name,
+            price: p.Price,
+            originalPrice: p.OriginalPrice,
+            image: p.ImageUrl,
+            description: p.Description,
+            badge: p.Badge,
+            colors: p.Colors ? JSON.parse(p.Colors) : [],
+            sizes: p.Sizes ? p.Sizes.split(',') : [],
+            category: p.CategoryName,
+            categoryId: p.CategoryID
+        };
+        res.json({ product: formattedProduct });
+    } catch (err) {
+        console.error("Lỗi lấy chi tiết SP:", err);
+        res.status(500).json({ message: 'Lỗi server' });
+    }
+});
 module.exports = router;

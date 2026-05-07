@@ -105,6 +105,16 @@ const orderApi = {
     });
     if (!res.ok) throw new Error("Failed to update details");
     return await res.json();
-  }
+  },
+  // THÊM HÀM NÀY VÀO ORDER API
+  create: async (data) => {
+    const res = await fetch(`http://localhost:5000/api/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error("Failed to create order");
+    return await res.json();
+  },
 };
 export default orderApi;

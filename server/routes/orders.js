@@ -419,4 +419,43 @@ router.put('/:id/ship', async (req, res) => {
         res.status(500).json({ message: 'Lỗi server' });
     }
 });
+
+// BỔ SUNG: API TẠO ĐƠN HÀNG MỚI (Từ trang Checkout)
+router.post('/', async (req, res) => {
+    try {
+        let pool = await sql.connect(sqlConfig);
+        const { customer, items, totalPrice, userId } = req.body;
+
+        // 1. Insert vào bảng Orders
+        let orderResult = await pool.request()
+            .input('userId', sql.Int, userId || null) // Truyền ID nếu user đã đăng nhập
+            .input('total', sql.Decimal(18,2), totalPrice)
+            .input('subTotal', sql.Decimal(18,2), totalPrice)
+            .query(`
+                INSERT INTO Orders (UserID, OrderDate, Status, Total, SubTotal, DiscountAmount)
+                OUTPUT INSERTED.OrderID
+                VALUES (@userId, GETDATE(), N'Chờ xác nhận', @total, @subTotal, 0);
+            `);
+
+        const newOrderId = orderResult.recordset[0].OrderID;
+
+        // 2. Insert vào bảng OrderDetails
+        for (let item of items) {
+            await pool.request()
+                .input('orderId', sql.Int, newOrderId)
+                .input('productId', sql.Int, item.product.id)
+                .input('quantity', sql.Int, item.quantity)
+                .input('price', sql.Decimal(18,2), item.product.price)
+                .query(`
+                    INSERT INTO OrderDetails (OrderID, ProductID, Quantity, Price)
+                    VALUES (@orderId, @productId, @quantity, @price)
+                `);
+        }
+
+        res.json({ message: 'Đặt hàng thành công', orderId: newOrderId, success: true });
+    } catch (err) {
+        console.error("Lỗi tạo đơn:", err);
+        res.status(500).json({ message: 'Lỗi server khi tạo đơn' });
+    }
+});
 module.exports = router;

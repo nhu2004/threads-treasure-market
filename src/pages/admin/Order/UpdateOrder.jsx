@@ -201,7 +201,7 @@ const UpdateOrder = () => {
               {currentStatusText === "Chờ xác nhận" && (
                 <div className="text-center p-4 bg-light rounded border border-info">
                   <h6 className="text-info fw-bold mb-3">Xác nhận Đơn hàng</h6>
-                  <p className="  mb-3">Kho đã đủ hàng. Bạn có muốn duyệt đơn và tạo Hóa đơn cho khách hàng?</p>
+                  <p className="  mb-3">Kho có đủ hàng. Bạn có muốn duyệt đơn và tạo Hóa đơn cho khách hàng?</p>
                   <Button variant="primary" size="lg-1" disabled={loading} onClick={handleConfirmAndCreateInvoice}>
                     {loading ? "Đang xử lý..." : "Xác nhận & Tạo hóa đơn "}
                   </Button>

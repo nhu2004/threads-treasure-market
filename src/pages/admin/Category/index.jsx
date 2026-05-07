@@ -146,11 +146,11 @@ function categoryList() {
             {/* Nút Xuất File linh hoạt đổi theo Tab đang mở */}
             {activeView === 'products' ? (
               <Button variant="primary" onClick={handleExport} disabled={exporting || categoryProducts.length === 0}>
-                <FaFileExport className="me-2" /> Xuất File SP ({categoryProducts.length})
+                <FaFileExport className="me-2" /> Xuất File Excel SP ({categoryProducts.length})
               </Button>
             ) : (
               <Button variant="success" onClick={handleExport} disabled={exporting || categoryOrders.length === 0}>
-                <FaFileExport className="me-2" /> Xuất File Đơn ({categoryOrders.length})
+                <FaFileExport className="me-2" /> Xuất File Excel Đơn ({categoryOrders.length})
               </Button>
             )}
           </div>

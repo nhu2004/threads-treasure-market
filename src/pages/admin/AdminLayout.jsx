@@ -20,7 +20,9 @@ export const AdminLayout = ({ children }) => {
       icon: Package, label: "Sản phẩm", path: "/admin/products",
       subItems: [
         { label: "Danh sách sản phẩm", path: "/admin/products" },
-        { label: "Quản lý danh mục", path: "/admin/categories" } // Menu con quản lý danh mục
+        { label: "Quản lý danh mục", path: "/admin/categories" }, // Menu con quản lý danh mục
+        { label: "Quản lý nhà cung cấp", path: "/admin/suppliers" } // Menu con quản lý nhà cung cấp
+
       ]
     },
     { icon: ShoppingCart, label: "Đơn hàng", path: "/admin/orders"  ,
