@@ -118,9 +118,9 @@ function AnalyticsPage() {
   };
 
   const stats = [
-    { label: "Tổng sản phẩm", value: cardData.product || "0", color: "bg-blue-500", icon: Package, trend: "Cập nhật thực tế" },
-    { label: "Tổng đơn hàng", value: cardData.order || "0", color: "bg-emerald-500", icon: ShoppingCart, trend: "Từ database" },
-    { label: "Khách hàng năm nay", value: cardData.customers || "0", color: "bg-purple-500", icon: Users, trend: "+8% từ tuần trước" }, 
+    { label: "Tổng sản phẩm", value: cardData.product || "0", color: "bg-blue-500", icon: Package, trend: " " },
+    { label: "Tổng đơn hàng", value: cardData.order || "0", color: "bg-emerald-500", icon: ShoppingCart, trend: "Cập nhật thực tế" },
+    { label: "Khách hàng năm nay", value: cardData.customers || "0", color: "bg-purple-500", icon: Users, trend: "" }, 
     { label: "Doanh thu", value: `${(cardData.revenue || 0).toLocaleString()}đ`, color: "bg-amber-500", icon: TrendingUp, trend: "Tổng cộng" },
     { label: "Voucher phát hành", value: cardData.totalVouchers || "5", color: "bg-rose-500", icon: Tag, trend: "Mã đang kích hoạt" },
   ];
@@ -255,6 +255,7 @@ function AnalyticsPage() {
               <div className="space-y-4">
                   {[
                   { label: "Chờ xác nhận", color: "bg-amber-500", key: "Chờ xác nhận" },
+                  { label: "Đang xử lý", color: "bg-cyan-500", key: "Đang xử lý" }, /* <--- BỔ SUNG DÒNG NÀY Ở ĐÂY */
                   { label: "Đang giao", color: "bg-blue-500", key: "Đang giao" },
                   { label: "Đã giao", color: "bg-emerald-500", key: "Đã giao" },
                   { label: "Đã hủy", color: "bg-red-500", key: "Đã hủy" }

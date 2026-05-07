@@ -45,56 +45,58 @@ router.get('/', async (req, res) => {
         // Mảng chứa các điều kiện WHERE
         let conditions = [];
 
-        // 1. Lọc theo Mã đơn hàng (Loại bỏ chữ #ORD- nếu admin gõ vào, chỉ lấy số)
+        // 1. Lọc theo Mã đơn hàng
         if (search) {
             const searchId = search.replace(/\D/g, ''); 
             if (searchId) {
-                conditions.push("CAST(OrderID AS VARCHAR) LIKE '%' + @searchId + '%'");
+                conditions.push("CAST(o.OrderID AS VARCHAR) LIKE '%' + @searchId + '%'"); // Thêm o.
                 request.input('searchId', sql.VarChar, searchId);
             }
         }
 
         // 2. Lọc theo Trạng thái
         if (status) {
-            conditions.push("Status = @status");
+            conditions.push("o.Status = @status"); // Thêm o.
             request.input('status', sql.NVarChar, status);
         }
 
         // 3. Lọc theo Từ ngày (>=)
         if (startDate) {
-            conditions.push("OrderDate >= @startDate");
+            conditions.push("o.OrderDate >= @startDate"); // Thêm o.
             request.input('startDate', sql.Date, startDate);
         }
 
         // 4. Lọc theo Đến ngày (<=) 
-        // (Cộng thêm thời gian 23:59:59 để lấy trọn vẹn ngày đó)
         if (endDate) {
-            conditions.push("OrderDate <= @endDate");
+            conditions.push("o.OrderDate <= @endDate"); // Thêm o.
             request.input('endDate', sql.DateTime, endDate + ' 23:59:59');
         }
 
         // Ghép nối các điều kiện lại (Nếu có)
         let whereClause = conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
 
-        // Câu lệnh SQL động
+        // Câu lệnh SQL động (Đã fix lỗi đồng bộ alias 'o' cho toàn bộ)
         let query = `
             -- 1. Lấy danh sách phân trang
-            SELECT * FROM Orders 
+            SELECT o.*, u.FullName, u.Phone, u.Address 
+            FROM Orders o
+            LEFT JOIN Users u ON o.UserID = u.UserID
             ${whereClause}
-            ORDER BY OrderDate DESC 
+            ORDER BY o.OrderDate DESC 
             OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY;
             
-            -- 2. Đếm tổng số record
-            SELECT COUNT(*) as total FROM Orders ${whereClause};
+            -- 2. Đếm tổng số record (Gán alias 'o' để khớp whereClause)
+            SELECT COUNT(*) as total FROM Orders o ${whereClause};
 
-            -- 3. Thống kê số lượng từng trạng thái của TOÀN BỘ danh sách
+            -- 3. Thống kê số lượng (Gán alias 'o' để khớp whereClause)
             SELECT 
-                COUNT(OrderID) as TotalOrders,
-                SUM(CASE WHEN Status = N'Chờ xác nhận' OR Status IS NULL THEN 1 ELSE 0 END) as Pending,
-                SUM(CASE WHEN Status = N'Đang giao' THEN 1 ELSE 0 END) as Shipping,
-                SUM(CASE WHEN Status = N'Đã giao' THEN 1 ELSE 0 END) as Delivered,
-                SUM(CASE WHEN Status = N'Đã hủy' THEN 1 ELSE 0 END) as Cancelled
-            FROM Orders ${whereClause};
+                COUNT(o.OrderID) as TotalOrders,
+                SUM(CASE WHEN o.Status = N'Chờ xác nhận' OR o.Status IS NULL THEN 1 ELSE 0 END) as Pending,
+                SUM(CASE WHEN o.Status = N'Đang xử lý' THEN 1 ELSE 0 END) as Processing,
+                SUM(CASE WHEN o.Status = N'Đang giao' THEN 1 ELSE 0 END) as Shipping,
+                SUM(CASE WHEN o.Status = N'Đã giao' THEN 1 ELSE 0 END) as Delivered,
+                SUM(CASE WHEN o.Status = N'Đã hủy' THEN 1 ELSE 0 END) as Cancelled
+            FROM Orders o ${whereClause};
         `;
 
         request.input('offset', sql.Int, offset);
@@ -106,20 +108,22 @@ router.get('/', async (req, res) => {
         const totalRecords = result.recordsets[1][0].total;
         const totalPage = Math.ceil(totalRecords / limit);
         const statsRow = result.recordsets[2][0]; // Lấy dòng kết quả thống kê thứ 3
+        // Cập nhật lại formattedOrders để map dữ liệu người nhận:
         const formattedOrders = result.recordsets[0].map(order => ({
             _id: order.OrderID, 
             orderDate: order.OrderDate,
             totalPrice: order.Total, 
-            paymentStatus: {
-                text: "Thanh toán khi nhận hàng",
-                code: 0
-            },
             orderStatus: {
                 text: order.Status || "Chờ xác nhận", 
                 code: getStatusCode(order.Status)     
             },
-            // Trả về thêm lý do hủy để Frontend hiển thị
-            CancellationReason: order.CancellationReason 
+            CancellationReason: order.CancellationReason,
+            // THÊM ĐOẠN NÀY ĐỂ FRONTEND CÓ THÔNG TIN HIỂN THỊ
+            delivery: {
+                fullName: order.FullName || "Khách lẻ",
+                phone: order.Phone || "Không có SĐT",
+                address: order.Address || "Không có địa chỉ"
+            }
         }));
 
         res.json({
@@ -129,6 +133,7 @@ router.get('/', async (req, res) => {
             stats: {
                 total: statsRow.TotalOrders || 0,
                 pending: statsRow.Pending || 0,
+                processing: statsRow.Processing || 0,
                 shipping: statsRow.Shipping || 0,
                 delivered: statsRow.Delivered || 0,
                 cancelled: statsRow.Cancelled || 0
@@ -368,6 +373,50 @@ router.put('/:id/details', async (req, res) => {
     } catch (err) {
         console.error("Lỗi khi cập nhật chi tiết đơn:", err);
         res.status(500).json({ message: 'Lỗi server khi cập nhật đơn' });
+    }
+});
+
+// BỔ SUNG 1: API Xác nhận đơn, Tạo Hóa đơn và chuyển sang "Đang xử lý"
+router.post('/:id/process-and-invoice', async (req, res) => {
+    try {
+        let pool = await sql.connect(sqlConfig);
+        const orderId = req.params.id;
+
+        // Transaction đảm bảo tính toàn vẹn: Vừa tạo Invoice vừa cập nhật Order
+        let result = await pool.request()
+            .input('id', sql.Int, orderId)
+            .query(`
+                BEGIN TRANSACTION;
+                
+                -- 1. Tạo Hóa đơn (Invoices) dựa trên thông tin Đơn hàng
+                INSERT INTO Invoices (OrderID, TemplateID, InvoiceDate, TotalAmount, SubTotal, DiscountAmount)
+                SELECT OrderID, 1, GETDATE(), Total, SubTotal, DiscountAmount 
+                FROM Orders WHERE OrderID = @id AND NOT EXISTS (SELECT 1 FROM Invoices WHERE OrderID = @id);
+
+                -- 2. Chuyển trạng thái sang Đang xử lý
+                UPDATE Orders SET Status = N'Đang xử lý' WHERE OrderID = @id;
+                
+                COMMIT TRANSACTION;
+            `);
+
+        res.json({ message: 'Đã tạo hóa đơn và chuyển sang Đang xử lý', success: true });
+    } catch (err) {
+        console.error("Lỗi khi tạo hóa đơn:", err);
+        res.status(500).json({ message: 'Lỗi server' });
+    }
+});
+
+// BỔ SUNG 1.5: API Chuyển từ "Đang xử lý" sang "Đang giao" (Bàn giao cho Shipper)
+router.put('/:id/ship', async (req, res) => {
+    try {
+        let pool = await sql.connect(sqlConfig);
+        await pool.request()
+            .input('id', sql.Int, req.params.id)
+            .query(`UPDATE Orders SET Status = N'Đang giao' WHERE OrderID = @id`);
+        
+        res.json({ message: 'Đã bàn giao cho đơn vị vận chuyển', success: true });
+    } catch (err) {
+        res.status(500).json({ message: 'Lỗi server' });
     }
 });
 module.exports = router;

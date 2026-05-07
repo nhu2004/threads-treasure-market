@@ -44,7 +44,7 @@ export default function OrderList() {
   });
 
   // 3. KHAI BÁO BIẾN STATS Ở ĐÂY
-  const stats = orderData?.stats || { total: 0, pending: 0, shipping: 0, delivered: 0, cancelled: 0 };
+  const stats = orderData?.stats || { total: 0, pending: 0, processing: 0, shipping: 0, delivered: 0, cancelled: 0 };
   
   // Hàm xử lý khi bấm nút "Lọc"
   const handleFilter = (e) => {

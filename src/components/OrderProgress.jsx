@@ -1,13 +1,13 @@
 import React from 'react'; 
-import { FaClipboardList, FaTruck, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
-
+import { FaClipboardList, FaBoxOpen, FaTruck, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+// THÊM BƯỚC ĐANG XỬ LÝ VÀO ĐÂY
 const STEPS = [
   { code: 0, text: 'Chờ xác nhận', icon: <FaClipboardList /> },
-  { code: 1, text: 'Đang giao', icon: <FaTruck /> },
-  { code: 2, text: 'Đã giao', icon: <FaCheckCircle /> }
+  { code: 1, text: 'Đang xử lý', icon: <FaBoxOpen /> }, // <-- Thêm Icon Đóng hộp
+  { code: 2, text: 'Đang giao', icon: <FaTruck /> },
+  { code: 3, text: 'Đã giao', icon: <FaCheckCircle /> }
 ];
 
-// Thêm props: cancellationReason và compact (để thu nhỏ trong bảng)
 const OrderProgress = ({ currentStatusText, orderStatusCode, cancellationReason, compact = false }) => {
   let currentStepIndex = 0;
   let isCancelled = currentStatusText === 'Đã hủy';
@@ -21,8 +21,8 @@ const OrderProgress = ({ currentStatusText, orderStatusCode, cancellationReason,
     currentStepIndex = foundStep !== -1 ? foundStep : 0;
   }
 
-  // Nếu là chế độ thu nhỏ (trong bảng), scale nhỏ lại 
-const scaleStyle = compact ? { transform: 'scale(0.9)', transformOrigin: 'center center', margin: '0 auto' } : {};
+  const scaleStyle = compact ? { transform: 'scale(0.9)', transformOrigin: 'center center', margin: '0 auto' } : {};
+  
   return (
     <> 
     <style>
@@ -32,9 +32,9 @@ const scaleStyle = compact ? { transform: 'scale(0.9)', transformOrigin: 'center
         .progress-bar-bg { position: absolute; top: 20px; left: 0; width: 100%; height: 4px; background-color: #e9ecef; z-index: 1; }
         .progress-bar-fill { position: absolute; top: 20px; left: 0; height: 4px; background-color: #28a745; transition: width 0.4s ease; z-index: 2; }
         .steps-wrapper { z-index: 3; }
-        .step-item { width: 33.33%; position: relative; z-index: 3; }
+        .step-item { width: 25%; position: relative; z-index: 3; } /* SỬA THÀNH 25% VÌ CÓ 4 BƯỚC */
         .step-icon { width: 44px; height: 44px; background-color: #e9ecef; color: #adb5bd; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 20px; border: 4px solid #fff; }
-        .step-text { font-size: 9px; color: #6c757d; white-space: nowrap; }
+        .step-text { font-size: 11px; color: #6c757d; white-space: nowrap; margin-top: 8px;}
         .step-item.completed .step-icon { background-color: #28a745; color: #fff; }
         .step-item.completed .step-text { color: #28a745; }
         .step-item.active .step-icon { box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.25); transform: scale(1.1); }
