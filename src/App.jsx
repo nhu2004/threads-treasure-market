@@ -8,7 +8,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import CartDrawer from "@/components/CartDrawer";
+import CartDrawer from "@/components/CartDrawer"; 
 import { LoginRegisterModal } from "@/components/LoginRegisterModal";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
@@ -51,19 +51,25 @@ function AppContent() {
   }, [isAdminPage, user, navigate]);
 
   return (
-    <>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        {!isAdminPage && <CartProvider>
-          <Header />
-          <CartDrawer />
-        </CartProvider>}
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      
+      {/* BAO BỌC TOÀN BỘ BẰNG CARTPROVIDER (Đã sửa lỗi) */}
+      <CartProvider>
+        {!isAdminPage && (
+          <>
+            <Header />
+            <CartDrawer />
+          </>
+        )}
+
         <LoginRegisterModal
           isOpen={loginModalOpen}
           onClose={() => setLoginModalOpen(false)}
           onLoginSuccess={handleLoginSuccess}
         />
+
         <main className={!isAdminPage ? "min-h-screen" : ""}>
           <Routes>
             <Route path="/" element={<Index />} />
@@ -77,14 +83,15 @@ function AppContent() {
             <Route path="*" element={<NotFound />} /> 
           </Routes>
         </main>
+
         {!isAdminPage && (
           <>
             <Footer />
             <ChatBot />
           </>
         )}
-      </TooltipProvider>
-    </>
+      </CartProvider>
+    </TooltipProvider>
   );
 }
 

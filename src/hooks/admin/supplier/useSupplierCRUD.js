@@ -6,7 +6,8 @@ export const usesupplierCRUD = (onSuccess) => {
 
   // Create
   const [showAddModal, setShowAddModal] = useState(false);
-  const [addsupplier, setAddsupplier] = useState({ name: "" });
+  // Đã sửa: Bổ sung thêm description vào state mặc định
+  const [addsupplier, setAddsupplier] = useState({ name: "", description: "" });
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -14,9 +15,9 @@ export const usesupplierCRUD = (onSuccess) => {
       setLoading(true);
       await supplierApi.create(addsupplier);
       setLoading(false);
-      alert("Thêm nhà xuất bản thành công!");
+      alert("Thêm nhà cung cấp thành công!"); // Đã sửa tên thông báo
       setShowAddModal(false);
-      setAddsupplier({ name: "" });
+      setAddsupplier({ name: "", description: "" }); // Reset form đầy đủ
       if (onSuccess) onSuccess();
     } catch (error) {
       setLoading(false);
@@ -94,11 +95,3 @@ export const usesupplierCRUD = (onSuccess) => {
     handleDelete,
   };
 };
-
-
-
-
-
-
-
-

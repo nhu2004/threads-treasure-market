@@ -12,20 +12,16 @@ export const usesupplierList = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const query = {
-          name: { $regex: searchString, $options: "i" },
-        };
+        // Đã sửa: Truyền thẳng searchString thay vì dùng object $regex
         const { data, pagination } = await supplierApi.getAll({
-          query,
+          search: searchString,
           page: page,
-          limit: 10,
-          sortByDate: "desc",
         });
         setLoading(false);
-        setsupplierData({ suppliers: data, totalPage: pagination.totalPage });
+        setsupplierData({ suppliers: data, totalPage: pagination?.totalPage || 1 });
       } catch (error) {
         setLoading(false);
-        console.log(error);
+        console.log("Lỗi tải dữ liệu nhà cung cấp:", error);
       }
     };
     fetchData();
@@ -38,7 +34,7 @@ export const usesupplierList = () => {
 
   const refreshList = () => {
     setSearchString(searchString + " ");
-    setTimeout(() => setSearchString(searchString), 100);
+    setTimeout(() => setSearchString(searchString.trim()), 100);
   };
 
   return {
@@ -52,11 +48,3 @@ export const usesupplierList = () => {
     refreshList,
   };
 };
-
-
-
-
-
-
-
-
