@@ -14,7 +14,7 @@ const ProductCard = ({ product, index = 0 }) => {
       transition={{ duration: 0.4, delay: index * 0.1 }}
     >
       <Link to={`/product/${product.id}`} className="group block">
-        <div className="relative overflow-hidden bg-secondary aspect-[3/4] mb-4">
+        <div className="relative overflow-hidden bg-gray-100 text-gray-900 aspect-[3/4] mb-4">
           <img
             src={product.image}
             alt={product.name}
@@ -22,7 +22,7 @@ const ProductCard = ({ product, index = 0 }) => {
             loading="lazy"
           />
           {product.badge && (
-            <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-[10px] font-body font-semibold uppercase tracking-widest px-3 py-1">
+            <span className="absolute top-3 left-3 bg-zinc-950 text-primary-foreground text-[10px] font-body font-semibold uppercase tracking-widest px-3 py-1">
               {product.badge}
             </span>
           )}

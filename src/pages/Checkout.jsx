@@ -47,7 +47,7 @@ const Checkout = () => {
           </p>
           <Link
             to="/"
-            className="inline-block bg-primary text-primary-foreground px-8 py-4 font-body text-sm font-semibold uppercase tracking-widest"
+            className="inline-block bg-zinc-950 text-primary-foreground px-8 py-4 font-body text-sm font-semibold uppercase tracking-widest"
           >
             Về trang chủ
           </Link>
@@ -123,7 +123,7 @@ const Checkout = () => {
 
             <button
               type="submit"
-              className="w-full bg-primary text-primary-foreground py-4 font-body text-sm font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity"
+              className="w-full bg-zinc-950 text-primary-foreground py-4 font-body text-sm font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity"
             >
               Đặt hàng — {formatPrice(totalPrice + shippingFee)}
             </button>
@@ -131,7 +131,7 @@ const Checkout = () => {
 
           {/* Order summary */}
           <div className="lg:col-span-2">
-            <div className="bg-secondary p-6 sticky top-32">
+            <div className="bg-gray-100 text-gray-900 p-6 sticky top-32">
               <h2 className="font-display text-xl font-semibold text-foreground mb-6">Đơn hàng</h2>
               <div className="space-y-4 mb-6">
                 {items.map((item) => (

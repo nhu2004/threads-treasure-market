@@ -55,12 +55,23 @@ const orderApi = {
       return { orders: [] };
     }
   },
-  printInvoiceAndShip: async (id) => {
-    const res = await fetch(`http://localhost:5000/api/orders/${id}/invoice-and-ship`, {
+  // BỔ SUNG 1: API Xác nhận đơn và tạo hóa đơn (Chuyển sang Đang xử lý)
+  processAndInvoice: async (id) => {
+    const res = await fetch(`http://localhost:5000/api/orders/${id}/process-and-invoice`, {
       method: "POST",
       headers: { "Content-Type": "application/json" }
     });
-    if (!res.ok) throw new Error("Failed to print invoice and ship");
+    if (!res.ok) throw new Error("Failed to process and invoice");
+    return await res.json();
+  },
+
+  // BỔ SUNG 1.5: API Bàn giao Shipper (Chuyển sang Đang giao)
+  shipOrder: async (id) => {
+    const res = await fetch(`http://localhost:5000/api/orders/${id}/ship`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" }
+    });
+    if (!res.ok) throw new Error("Failed to ship order");
     return await res.json();
   },
 

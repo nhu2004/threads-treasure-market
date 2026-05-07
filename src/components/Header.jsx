@@ -29,7 +29,7 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
       {/* Top bar */}
-      <div className="bg-primary text-primary-foreground text-center py-2 text-xs font-body tracking-widest uppercase">
+      <div className="bg-zinc-950 text-primary-foreground text-center py-2 text-xs font-body tracking-widest uppercase">
         Miễn phí vận chuyển cho đơn hàng từ 1.000.000đ
       </div>
 
@@ -76,7 +76,7 @@ const Header = () => {
             >
               <ShoppingBag size={20} />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-zinc-950 text-primary-foreground text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
                   {totalItems}
                 </span>
               )}

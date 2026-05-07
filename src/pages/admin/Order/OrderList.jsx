@@ -13,7 +13,7 @@ import {
   Modal
 } from "react-bootstrap";
 import moment from "moment";
-import { FaEdit, FaEye, FaSearch, FaFilter, FaShoppingCart, FaHourglassHalf, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { FaEdit, FaEye, FaSearch, FaFilter, FaShoppingCart, FaClipboardList, FaBoxOpen, FaTruck, FaCheckCircle, FaTimesCircle, FaHourglassHalf } from "react-icons/fa";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 import PaginationproductStore from "../../../components/PaginationproductStore";
@@ -101,7 +101,34 @@ export default function OrderList() {
                 </div>
               </Card>
             </Col>
-
+            {/* Thẻ Đang xử lý */}
+            <Col md={3}>
+              <Card className="stat-card p-3 border-0">
+                <div className="d-flex justify-content-between align-items-center">
+                  <div>
+                    <p className="text-muted mb-1 fw-semibold fs-6">Đang xử lý</p>
+                                <h3 className="mb-0 fw-bold text-dark fs-2">{stats.processing}</h3>
+                              </div>
+                              <div className="stat-icon-box bg-blue-soft">
+                                <FaBoxOpen />
+                              </div>
+                            </div>
+                          </Card>
+                        </Col>
+                        {/* Thẻ Đang giao */}
+            <Col md={3}>
+              <Card className="stat-card p-3 border-0">
+                <div className="d-flex justify-content-between align-items-center">
+                  <div>
+                    <p className="text-muted mb-1 fw-semibold fs-6">Đang giao</p>
+                                <h3 className="mb-0 fw-bold text-dark fs-2">{stats.shipping}</h3>
+                              </div>
+                              <div className="stat-icon-box bg-green-soft">
+                                <FaTruck />
+                              </div>
+                            </div>
+                          </Card>
+                        </Col>
             {/* Thẻ Đã giao */}
             <Col md={3}>
               <Card className="stat-card p-3 border-0">
@@ -150,6 +177,7 @@ export default function OrderList() {
                 <Form.Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                   <option value="">Tất cả trạng thái</option>
                   <option value="Chờ xác nhận">Chờ xác nhận</option>
+                  <option value="Đang xử lý">Đang xử lý</option> {/* THÊM DÒNG NÀY */}
                   <option value="Đang giao">Đang giao</option>
                   <option value="Đã giao">Đã giao</option>
                   <option value="Đã hủy">Đã hủy</option>
@@ -179,7 +207,8 @@ export default function OrderList() {
                   <th>Mã đơn hàng</th>
                   <th>Ngày đặt hàng</th>
                   <th className="text-end">Tổng tiền</th> 
-                  <th className="text-center">Trạng thái thanh toán</th> 
+                  {/* ĐỔI TÊN CỘT Ở ĐÂY */}
+                  <th className="text-start">Thông tin giao hàng</th> 
                   <th className="text-center">Tiến độ giao hàng</th> 
                   <th className="text-center">Thao tác</th>
                 </tr>
@@ -196,19 +225,23 @@ export default function OrderList() {
                         <td className="text-end fw-bold text-danger">
                           {format.formatPrice(item.totalPrice || item.total)} 
                         </td>
-                        <td className="text-center">
-                          <Badge 
-                            className="custom-badge"
-                            bg={item.paymentStatus?.code === 2 ? "success" : "warning"}
-                          >
-                            {item.paymentStatus?.text || (item.paymentStatus === "Chưa hỗ trợ DB" ? "Thanh toán khi nhận hàng" : item.paymentStatus)}
-                          </Badge>
+                        
+                        {/* THAY THẾ CỘT THANH TOÁN BẰNG THÔNG TIN GIAO HÀNG */}
+                        <td className="text-start">
+                          <div className="d-flex flex-column">
+                            <span className="fw-bold text-dark">{item.delivery?.fullName}</span>
+                            <span className="text-muted" style={{fontSize: "13px"}}>{item.delivery?.phone}</span>
+                            <span className="text-muted text-truncate" style={{maxWidth: "150px", fontSize: "12px"}} title={item.delivery?.address}>
+                              {item.delivery?.address}
+                            </span>
+                          </div>
                         </td>
+
+                        {/* CỘT TIẾN ĐỘ */}
                         <td className="progress-cell">
                           <OrderProgress 
                             currentStatusText={statusText} 
                             orderStatusCode={item.orderStatus?.code} 
-                            cancellationReason={item.CancellationReason || item.cancellationReason}
                             compact={true} 
                           />
                         </td>
@@ -219,14 +252,14 @@ export default function OrderList() {
                               size="sm"
                               onClick={() => fetchOrderDetail(item._id || item.OrderID)}
                             >
-                              <FaEye /> Xem
+                              <FaEye />  
                             </Button>
                             <Button
                               variant="outline-warning"
                               size="sm"
                               onClick={() => navigate(`/admin/orders/update/${item._id || item.OrderID}`)}
                             >
-                              <FaEdit /> Cập nhật
+                              <FaEdit />  
                             </Button>
                           </div>
                         </td>

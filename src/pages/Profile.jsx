@@ -158,7 +158,7 @@ const Profile = () => {
             <div className="flex gap-4 pt-4 border-t">
               <Button
                 onClick={handleSave}
-                className="flex-1 bg-primary text-white hover:bg-primary/90"
+                className="flex-1 bg-zinc-950 text-white hover:bg-zinc-950/90"
               >
                 <Save size={16} className="mr-2" />
                 Lưu thay đổi

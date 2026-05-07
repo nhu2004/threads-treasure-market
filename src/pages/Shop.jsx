@@ -33,7 +33,7 @@ const Shop = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="bg-secondary py-12 text-center">
+      <div className="bg-gray-100 text-gray-900 py-12 text-center">
         <h1 className="text-4xl font-bold uppercase">Thời Trang Nam</h1>
         <p className="mt-2">{products.length} sản phẩm sẵn sàng</p>
       </div>
@@ -45,7 +45,7 @@ const Shop = () => {
               key={cat.id}
               onClick={() => setSearchParams({ category: cat.id })}
               className={`px-6 py-2 whitespace-nowrap transition-colors ${
-                activeCategory === cat.id ? "bg-primary text-white" : "bg-gray-100"
+                activeCategory === cat.id ? "bg-zinc-950 text-white" : "bg-gray-100"
               }`}
             >
               {cat.name}

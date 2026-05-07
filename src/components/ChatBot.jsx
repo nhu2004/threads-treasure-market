@@ -96,7 +96,7 @@ const ChatBot = () => {
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-opacity hover:opacity-90"
+            className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-zinc-950 text-primary-foreground shadow-lg transition-opacity hover:opacity-90"
             aria-label="Mở chatbot"
           >
             <MessageCircle size={24} />
@@ -113,7 +113,7 @@ const ChatBot = () => {
             transition={{ duration: 0.2 }}
             className="fixed bottom-6 right-6 z-50 flex h-[520px] max-h-[calc(100vh-3rem)] w-[380px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-lg border border-border bg-background shadow-2xl"
           >
-            <div className="flex shrink-0 items-center justify-between bg-primary px-4 py-3 text-primary-foreground">
+            <div className="flex shrink-0 items-center justify-between bg-zinc-950 px-4 py-3 text-primary-foreground">
               <div className="flex items-center gap-2">
                 <Bot size={18} />
                 <div>
@@ -140,7 +140,7 @@ const ChatBot = () => {
                   }`}
                 >
                   {msg.role === "assistant" && (
-                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-950 text-primary-foreground">
                       <Bot size={14} />
                     </div>
                   )}
@@ -148,8 +148,8 @@ const ChatBot = () => {
                   <div
                     className={`max-w-[75%] rounded-lg px-3 py-2 font-body text-sm ${
                       msg.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-secondary-foreground"
+                        ? "bg-zinc-950 text-primary-foreground"
+                        : "bg-gray-100 text-gray-900"
                     }`}
                   >
                     {msg.role === "assistant" ? (
@@ -171,10 +171,10 @@ const ChatBot = () => {
 
               {isLoading && messages[messages.length - 1]?.role === "user" && (
                 <div className="flex gap-2">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-950 text-primary-foreground">
                     <Bot size={14} />
                   </div>
-                  <div className="rounded-lg bg-secondary px-3 py-2 text-secondary-foreground">
+                  <div className="rounded-lg bg-gray-100 text-gray-900 px-3 py-2 bg-gray-100 text-gray-900">
                     <div className="flex gap-1">
                       <span
                         className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground"
@@ -209,7 +209,7 @@ const ChatBot = () => {
               <button
                 onClick={sendMessage}
                 disabled={!input.trim() || isLoading}
-                className="rounded bg-primary p-2 text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
+                className="rounded bg-zinc-950 p-2 text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
               >
                 <Send size={16} />
               </button>

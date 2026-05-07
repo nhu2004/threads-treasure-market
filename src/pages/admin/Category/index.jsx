@@ -176,7 +176,7 @@ function categoryList() {
                         <td>{p['Mã SP']}</td><td className="fw-semibold">{p['Tên Sản Phẩm']}</td>
                         <td>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p['Giá Bán'] || 0)}</td>
                         <td className="text-center">
-                          <span className={`badge ${p['Tồn Kho'] > 0 ? 'bg-primary' : 'bg-danger'}`}>{p['Tồn Kho']}</span>
+                          <span className={`badge ${p['Tồn Kho'] > 0 ? 'bg-zinc-950' : 'bg-danger'}`}>{p['Tồn Kho']}</span>
                         </td>
                         <td>{p['Kích cỡ']}</td><td>{p['Màu sắc']}</td>
                       </tr>

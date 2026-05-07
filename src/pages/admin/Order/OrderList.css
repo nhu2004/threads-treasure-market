@@ -58,9 +58,12 @@
 
 /* Tùy chỉnh cột Tiến độ đơn hàng */
 .progress-cell {
-  min-width: 250px; /* Tăng chiều rộng để thanh tiến trình không bị chèn ép */
-  text-align: center; /* Đảm bảo nội dung luôn ở giữa */
-  vertical-align: middle; /* Căn giữa theo chiều dọc */
+  min-width: 320px; /* Tăng từ 250px lên 320px để có chỗ thở cho chữ */
+  width: 320px;
+  text-align: center;
+  vertical-align: middle;
+  padding-left: 15px !important;
+  padding-right: 15px !important;
 }
 
 /* Tùy chỉnh Badge (Trạng thái thanh toán) */

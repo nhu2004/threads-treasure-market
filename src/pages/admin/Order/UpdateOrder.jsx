@@ -4,6 +4,7 @@ import { Form, Button, Card, Spinner, Row, Col, Table, Badge, Modal } from "reac
 import { FaUser, FaTruck, FaMoneyBillWave, FaEdit, FaBan } from "react-icons/fa";
 import orderApi from "../../../api/orderApi";
 import OrderProgress from "../../../components/OrderProgress"; 
+import 'bootstrap/dist/css/bootstrap.min.css';
 import "./UpdateOrder.css"; 
 const UpdateOrder = () => {
   const { id } = useParams();
@@ -65,7 +66,30 @@ const UpdateOrder = () => {
       alert("Có lỗi xảy ra!");
     } finally { setLoading(false); }
   };
+// THAY THẾ CÁC HÀM XỬ LÝ API CŨ BẰNG CÁC HÀM SAU:
+  const handleConfirmAndCreateInvoice = async () => {
+    try {
+      setLoading(true);
+      // Gọi API BỔ SUNG 1 ở trên
+      await orderApi.processAndInvoice(id); 
+      alert("Đã tạo hóa đơn và chuyển sang trạng thái Đang xử lý!");
+      fetchOrder();
+    } catch (error) {
+      alert("Có lỗi xảy ra khi tạo hóa đơn!");
+    } finally { setLoading(false); }
+  };
 
+  const handleShipOrder = async () => {
+    try {
+      setLoading(true);
+      // Gọi API BỔ SUNG 1.5 ở trên
+      await orderApi.shipOrder(id); 
+      alert("Đã bàn giao cho đơn vị vận chuyển!");
+      fetchOrder();
+    } catch (error) {
+      alert("Lỗi cập nhật trạng thái!");
+    } finally { setLoading(false); }
+  };
   const handleConfirmDelivery = async () => {
     if (!proofImage) return alert("Vui lòng tải ảnh lên!");
     try {
@@ -155,29 +179,49 @@ const UpdateOrder = () => {
               {/* Box xử lý tương ứng trạng thái */}
               {currentStatusText === "Chờ xác nhận" && (
                 <div className="text-center p-4 bg-light rounded border border-info">
-                  <h6 className="text-info fw-bold mb-3">Đơn hàng đủ điều kiện kho.</h6>
-                  <p>Bạn có muốn xuất hóa đơn và bắt đầu giao hàng?</p>
-                  <Button variant="primary" size="lg" disabled={loading} onClick={handlePrintInvoiceAndDeliver}>
-                    {loading ? "Đang xử lý..." : "In hóa đơn & Chuyển sang Đang giao"}
+                  <h6 className="text-info fw-bold mb-3">Xác nhận Đơn hàng</h6>
+                  <p className="  mb-3">Kho đã đủ hàng. Bạn có muốn duyệt đơn và tạo Hóa đơn cho khách hàng?</p>
+                  <Button variant="primary" size="lg-1" disabled={loading} onClick={handleConfirmAndCreateInvoice}>
+                    {loading ? "Đang xử lý..." : "Xác nhận & Tạo hóa đơn "}
                   </Button>
                 </div>
               )}
 
+              {currentStatusText === "Đang xử lý" && (
+                <div className="text-center p-4 bg-light rounded border border-primary">
+                  <h6 className="text-primary fw-bold mb-3">Đơn hàng đang được đóng gói</h6>
+                  <p>Hóa đơn đã được tạo trên hệ thống. Hãy in hóa đơn để dán lên kiện hàng.</p>
+                  <div className="d-flex justify-content-center gap-3">
+                    <Button variant="outline-dark" size="lg" onClick={() => window.print()}>
+                       In Hóa Đơn (Bill)
+                    </Button>
+                    <Button variant="success" size="lg" disabled={loading} onClick={handleShipOrder}>
+                      {loading ? "Đang xử lý..." : "Bàn giao Shipper (Đang giao)"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+              {/* THÊM MỚI BOX NÀY DÀNH CHO TRẠNG THÁI ĐANG GIAO */}
               {currentStatusText === "Đang giao" && (
-                <div className="p-4 border border-warning rounded bg-light mx-auto" style={{ maxWidth: '600px' }}>
-                  <h6 className="text-warning fw-bold mb-3">Xác nhận giao hàng (Shipper Mode)</h6>
-                  <Form.Group className="mb-3">
-                    <Form.Label className="fw-semibold">Cung cấp hình ảnh xác nhận (Delivery Proof):</Form.Label>
-                    <Form.Control type="file" accept="image/*" onChange={handleImageChange} />
-                  </Form.Group>
-                  {imagePreview && (
-                    <div className="text-center mb-3">
-                      <img src={imagePreview} alt="Proof" style={{ maxHeight: '200px', borderRadius: '8px', border: '1px solid #ccc' }} />
-                    </div>
-                  )}
-                  <Button variant="success" className="w-100" disabled={loading || !proofImage} onClick={handleConfirmDelivery}>
-                    {loading ? "Đang xử lý..." : "Xác nhận Đã giao hàng thành công"}
-                  </Button>
+                <div className="text-center p-4 bg-light rounded border border-warning">
+                  <h6 className="text-warning fw-bold mb-3">Xác nhận Đã Giao Hàng Thành Công</h6>
+                  <p>Vui lòng tải lên hình ảnh xác minh (chữ ký khách hàng hoặc hình gói hàng tại địa chỉ đích) để hoàn tất đơn.</p>
+                  
+                  <div className="d-flex flex-column align-items-center">
+                    <Form.Group className="mb-3 w-50">
+                      <Form.Control type="file" accept="image/*" onChange={handleImageChange} />
+                    </Form.Group>
+                    
+                    {imagePreview && (
+                      <div className="mb-3">
+                        <img src={imagePreview} alt="Minh chứng" style={{ maxWidth: "200px", borderRadius: "8px", border: "1px solid #ddd" }} />
+                      </div>
+                    )}
+
+                    <Button variant="warning" size="lg" disabled={loading} onClick={handleConfirmDelivery}>
+                      {loading ? "Đang cập nhật..." : "Xác nhận Đã giao"}
+                    </Button>
+                  </div>
                 </div>
               )}
 

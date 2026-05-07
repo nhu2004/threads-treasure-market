@@ -45,7 +45,7 @@ const ProductDetail = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {/* Images */}
           <motion.div>
-            <div className="aspect-[3/4] bg-secondary overflow-hidden mb-3">
+            <div className="aspect-[3/4] bg-gray-100 text-gray-900 overflow-hidden mb-3">
               <img src={product.images?.[selectedImage] || product.image} alt={product.name} className="w-full h-full object-cover" />
             </div>
             {/* Hiển thị danh sách ảnh nhỏ từ DB */}
@@ -76,7 +76,7 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            <button onClick={handleAddToCart} className="w-full bg-primary text-white py-4 font-bold uppercase tracking-widest">
+            <button onClick={handleAddToCart} className="w-full bg-zinc-950 text-white py-4 font-bold uppercase tracking-widest">
               Thêm vào giỏ hàng
             </button>
           </div>
@@ -112,7 +112,7 @@ const ProductDetail = () => {
                     onClick={() => setSelectedSize(size)}
                     className={`min-w-[44px] h-11 px-3 font-body text-sm border transition-colors ${
                       selectedSize === size
-                        ? "bg-primary text-primary-foreground border-primary"
+                        ? "bg-zinc-950 text-primary-foreground border-primary"
                         : "bg-background text-foreground border-border hover:border-foreground"
                     }`}
                   >
@@ -126,7 +126,7 @@ const ProductDetail = () => {
             <button
               onClick={handleAddToCart}
               disabled={!selectedSize || !selectedColor}
-              className="w-full bg-primary text-primary-foreground py-4 font-body text-sm font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed mb-6"
+              className="w-full bg-zinc-950 text-primary-foreground py-4 font-body text-sm font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed mb-6"
             >
               Thêm vào giỏ
             </button>

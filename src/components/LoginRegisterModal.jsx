@@ -185,7 +185,7 @@ export const LoginRegisterModal = ({ isOpen, onClose, onLoginSuccess }) => {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary text-white hover:bg-primary/90"
+              className="w-full bg-zinc-950 text-white hover:bg-zinc-950/90"
             >
               {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </Button>
@@ -247,7 +247,7 @@ export const LoginRegisterModal = ({ isOpen, onClose, onLoginSuccess }) => {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary text-white hover:bg-primary/90"
+              className="w-full bg-zinc-950 text-white hover:bg-zinc-950/90"
             >
               {loading ? 'Đang đăng ký...' : 'Đăng ký'}
             </Button>

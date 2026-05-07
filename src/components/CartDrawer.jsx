@@ -54,7 +54,7 @@ const CartDrawer = () => {
                       <img
                         src={item.product.image}
                         alt={item.product.name}
-                        className="w-20 h-24 object-cover bg-secondary flex-shrink-0"
+                        className="w-20 h-24 object-cover bg-gray-100 text-gray-900 flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0">
                         <h3 className="font-body text-sm font-medium text-foreground truncate">{item.product.name}</h3>
@@ -69,7 +69,7 @@ const CartDrawer = () => {
                             onClick={() =>
                               updateQuantity(item.product.id, item.size, item.color, item.quantity - 1)
                             }
-                            className="p-1 border border-border text-foreground hover:bg-secondary"
+                            className="p-1 border border-border text-foreground hover:bg-gray-100 text-gray-900"
                           >
                             <Minus size={12} />
                           </button>
@@ -78,7 +78,7 @@ const CartDrawer = () => {
                             onClick={() =>
                               updateQuantity(item.product.id, item.size, item.color, item.quantity + 1)
                             }
-                            className="p-1 border border-border text-foreground hover:bg-secondary"
+                            className="p-1 border border-border text-foreground hover:bg-gray-100 text-gray-900"
                           >
                             <Plus size={12} />
                           </button>
@@ -106,7 +106,7 @@ const CartDrawer = () => {
                 <Link
                   to="/checkout"
                   onClick={() => setIsCartOpen(false)}
-                  className="block w-full bg-primary text-primary-foreground text-center py-4 font-body text-sm font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity"
+                  className="block w-full bg-zinc-950 text-primary-foreground text-center py-4 font-body text-sm font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity"
                 >
                   Thanh toán
                 </Link>

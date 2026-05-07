@@ -89,7 +89,7 @@ const Index = () => {
             </p>
             <Link
               to="/shop"
-              className="inline-flex items-center gap-3 bg-primary-foreground text-primary px-8 py-4 font-body text-sm font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity"
+              className="inline-flex items-center gap-3 bg-zinc-950-foreground text-primary-foreground px-8 py-4 font-body text-sm font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity"
             >
               Khám phá ngay
               <ArrowRight size={16} />
@@ -140,7 +140,7 @@ const Index = () => {
       </section>
 
       {/* Featured */}
-      <section className="py-20 bg-secondary">
+      <section className="py-20 bg-gray-100 text-gray-900">
         <div className="container mx-auto px-4">
           <div className="flex items-end justify-between mb-14">
             <div>
@@ -178,17 +178,17 @@ const Index = () => {
           className="max-w-2xl mx-auto"
         >
           <p className="font-body text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">
-            Ưu đãi đặc biệt
+            Ưu đãi dành riêng cho khách hàng mới
           </p>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-6 italic">
-            Giảm đến 30%
+            Giảm đến 20%
           </h2>
           <p className="font-body text-muted-foreground mb-8">
-            Áp dụng cho toàn bộ sản phẩm mùa mới. Số lượng có hạn.
+            cho đơn hàng đầu tiên từ 1.000.000đ. Hãy nhanh tay sở hữu những món đồ thời trang đẳng cấp với ưu đãi hấp dẫn này!
           </p>
           <Link
             to="/shop"
-            className="inline-flex items-center gap-3 bg-primary text-primary-foreground px-8 py-4 font-body text-sm font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-3 bg-zinc-950 text-primary-foreground px-8 py-4 font-body text-sm font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity"
           >
             Mua ngay
             <ArrowRight size={16} />
