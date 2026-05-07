@@ -263,7 +263,7 @@ function SupplierList() {
                     return (
                       <tr key={item._id}>
                         <td className="text-center align-middle">{(1 && page - 1) * 10 + (index + 1)}</td>
-                        <td className="align-middle fw-bold text-primary" style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => handleViewSupplier(item)} title="Click để xem chi tiết">
+                        <td className="align-middle fw-bold text-primary" style={{ cursor: "pointer" }} onClick={() => handleViewSupplier(item)} title="Click để xem chi tiết">
                           {item.name}
                         </td>
                         <td className="text-center align-middle">
