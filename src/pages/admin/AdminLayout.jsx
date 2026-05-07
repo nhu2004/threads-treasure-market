@@ -25,7 +25,7 @@ export const AdminLayout = ({ children }) => {
     },
     { icon: ShoppingCart, label: "Đơn hàng", path: "/admin/orders"  ,
     subItems: [ 
-        { label: "Hóa Đơn của Khách hàng", path: "/admin/invoices" } // Menu con quản lý đơn hàng
+        { label: "Hóa Đơn bán lẻ", path: "/admin/invoices" } // Menu con quản lý đơn hàng
       ]
     },
     { icon: Users, label: "Khách hàng", path: "/admin/users" },

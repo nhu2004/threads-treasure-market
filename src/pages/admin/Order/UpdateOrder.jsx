@@ -166,6 +166,25 @@ const UpdateOrder = () => {
           </Card>
         </Col>
 
+      {/* ===== BỔ SUNG: THÔNG TIN NGƯỜI GIAO HÀNG (CHỈ HIỆN KHI ĐANG GIAO HOẶC ĐÃ GIAO) ===== */}
+        {(currentStatusText === "Đang giao" || currentStatusText === "Đã giao") && (
+          <Col md={12} className="mb-4">
+            <Card className="shadow-sm border-0 " style={{ borderLeft: "5px solid #a47b00" }}>
+              <Card.Header className="bg-white border-bottom">
+                <h5 className="mb-0 text-warning"><FaTruck className="me-2"/>Thông tin người giao hàng (Shipper)</h5>
+              </Card.Header>
+              <Card.Body>
+                <Row>
+                  <Col md={4}><p><strong>Họ và tên:</strong> Nguyễn Văn A </p></Col>
+                  <Col md={4}><p><strong>Số điện thoại:</strong> 0987 654 321</p></Col>
+                  <Col md={4}><p><strong>Biển số xe:</strong> 59-D1 123.45</p></Col>
+                  <Col md={12}><p className="mb-0"><strong>Đơn vị vận chuyển:</strong> Giao hàng hỏa tốc SPX Express</p></Col>
+                </Row>
+              </Card.Body>
+            </Card>
+          </Col>
+        )}
+
         {/* PHẦN 2: TRẠNG THÁI & HÀNH ĐỘNG */}
         <Col md={12} className="mb-4">
           <Card className="shadow-sm border-0">
@@ -297,11 +316,11 @@ const UpdateOrder = () => {
             
             {/* THAO TÁC CẬP NHẬT/HỦY */}
             <Card.Footer className="bg-white d-flex gap-2 justify-content-end p-3">
-              {currentStatusText !== "Đã giao" && currentStatusText !== "Đã hủy" && (
+              {/* {currentStatusText !== "Đã giao" && currentStatusText !== "Đã hủy" && (
                 <Button variant="outline-primary" onClick={() => setShowUpdateModal(true)}>
                   <FaEdit className="me-1"/> Cập nhật chi tiết & Giảm giá
                 </Button>
-              )}
+              )} */}
               {canCancel && (
                 <Button variant="outline-danger" onClick={() => setShowCancelModal(true)}>
                   <FaBan className="me-1"/> Hủy đơn hàng
