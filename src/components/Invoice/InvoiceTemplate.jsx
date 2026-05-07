@@ -16,7 +16,7 @@ const InvoiceTemplate = ({ orderDetail }) => {
       <div className="invoice-header">
         <div className="store-info">
           <h2 className="store-name">MAISON THỜI TRANG NAM</h2>
-          <p>Địa chỉ: 123 Đường Fashion, Quận 1, TP. HCM</p>
+          <p>Địa chỉ: 123 Đường Nguyễn Huệ, Quận 1, TP. HCM</p>
           <p>Điện thoại: 0909 123 456 - Website: maison.vn</p>
         </div>
         <div className="invoice-title-block">
@@ -61,7 +61,12 @@ const InvoiceTemplate = ({ orderDetail }) => {
             <th width="40%" className="text-left pl-2">Tên sản phẩm</th>
             <th width="10%" className="text-center">SL</th>
             <th width="20%" className="text-right">Đơn giá</th>
-            <th width="20%" className="text-right">Thành tiền</th>
+            <th width="20%" className="text-right">
+                Thành tiền <br />
+                <span style={{ fontSize: '11px', fontWeight: 'normal', fontStyle: 'italic' }}>
+                    (Đã bao gồm VAT)
+                </span>
+                </th>
           </tr>
         </thead>
         <tbody>
@@ -84,7 +89,7 @@ const InvoiceTemplate = ({ orderDetail }) => {
           <span>{totalQuantity} sản phẩm</span>
         </div>
         <div className="summary-row">
-          <span>Tổng tiền hàng:</span>
+          <span>Tổng tiền (sản phẩm):</span>
           <span>{orderDetail.subTotal?.toLocaleString()}đ</span>
         </div>
         {orderDetail.discount > 0 && (
@@ -94,7 +99,7 @@ const InvoiceTemplate = ({ orderDetail }) => {
           </div>
         )}
         <div className="summary-row total">
-          <span>PHẢI THANH TOÁN:</span>
+          <span>Phải thanh toán:</span>
           <span>{orderDetail.total?.toLocaleString()}đ</span>
         </div>
       </div>
