@@ -20,6 +20,8 @@ import Vouchers from "./pages/Vouchers";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import ChatBot from "@/components/ChatBot"; 
+import 'bootstrap/dist/css/bootstrap.min.css';
+import "./App.css";
 
 const queryClient = new QueryClient();
 

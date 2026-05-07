@@ -23,7 +23,11 @@ export const AdminLayout = ({ children }) => {
         { label: "Quản lý danh mục", path: "/admin/categories" } // Menu con quản lý danh mục
       ]
     },
-    { icon: ShoppingCart, label: "Đơn hàng", path: "/admin/orders" },
+    { icon: ShoppingCart, label: "Đơn hàng", path: "/admin/orders"  ,
+    subItems: [ 
+        { label: "Hóa Đơn của Khách hàng", path: "/admin/invoices" } // Menu con quản lý đơn hàng
+      ]
+    },
     { icon: Users, label: "Khách hàng", path: "/admin/users" },
     { icon: Tag, label: "Voucher", path: "/admin/vouchers" },  
   ];

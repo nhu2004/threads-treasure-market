@@ -3,9 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Form, Button, Card, Spinner, Row, Col, Table, Badge, Modal } from "react-bootstrap";
 import { FaUser, FaTruck, FaMoneyBillWave, FaEdit, FaBan } from "react-icons/fa";
 import orderApi from "../../../api/orderApi";
-import OrderProgress from "../../../components/OrderProgress";
-import "./UpdateOrder.css";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import OrderProgress from "../../../components/OrderProgress"; 
+import "./UpdateOrder.css"; 
 const UpdateOrder = () => {
   const { id } = useParams();
   const navigate = useNavigate();

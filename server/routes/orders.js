@@ -21,9 +21,10 @@ const sqlConfig = {
 const getStatusCode = (statusText) => {
     switch(statusText) {
         case "Chờ xác nhận": return 0;
-        case "Đang giao": return 1;
-        case "Đã giao": return 2;
-        case "Đã hủy": return 3;
+        case "Đang xử lý": return 1;
+        case "Đang giao": return 2;
+        case "Đã giao": return 3;
+        case "Đã hủy": return 4;
         default: return 0;
     }
 };
