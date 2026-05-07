@@ -167,6 +167,7 @@ function SupplierList() {
       </Modal>
 
       {/* 2. MODAL CẬP NHẬT NHÀ CUNG CẤP */}
+      {/* 2. MODAL CẬP NHẬT NHÀ CUNG CẤP */}
       <Modal size="lg" show={showUpdateModal} onHide={() => setShowUpdateModal(false)}>
         <Modal.Header closeButton><Modal.Title>Cập nhật nhà cung cấp</Modal.Title></Modal.Header>
         <Modal.Body>
@@ -184,7 +185,11 @@ function SupplierList() {
                   className="form-control" rows="4" 
                   placeholder="Nhập mô tả về nhà cung cấp..."
                   value={selectedsupplier?.Description || selectedsupplier?.description || ""} 
-                  onChange={(e) => setSelectedsupplier((prev) => ({ ...prev, description: e.target.value }))} 
+                  onChange={(e) => setSelectedsupplier((prev) => ({ 
+                      ...prev, 
+                      Description: e.target.value, // Cập nhật để hiển thị ngay trên UI
+                      description: e.target.value  // Cập nhật để gửi xuống API
+                  }))} 
                 />
               </Col>
             </Row>
@@ -211,8 +216,11 @@ function SupplierList() {
                 <textarea 
                   className="form-control" rows="4" 
                   placeholder="Nhập mô tả về nhà cung cấp..."
-                  value={addsupplier?.description || ""} 
-                  onChange={(e) => setAddsupplier((prev) => ({ ...prev, description: e.target.value }))} 
+                  value={addsupplier?.description || ""} // Sử dụng addsupplier thay vì selectedsupplier
+                  onChange={(e) => setAddsupplier((prev) => ({ 
+                      ...prev, 
+                      description: e.target.value 
+                  }))} 
                 />
               </Col>
             </Row>
@@ -220,7 +228,7 @@ function SupplierList() {
           </form>
         </Modal.Body>
         <Modal.Footer><Button variant="secondary" onClick={() => setShowAddModal(false)}>Hủy</Button></Modal.Footer>
-      </Modal>
+      </Modal> 
 
       {/* 4. MODAL XÓA NHÀ CUNG CẤP */}
       <Modal size="lg" show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>

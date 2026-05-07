@@ -6,7 +6,6 @@ export const usesupplierCRUD = (onSuccess) => {
 
   // Create
   const [showAddModal, setShowAddModal] = useState(false);
-  // Đã sửa: Bổ sung thêm description vào state mặc định
   const [addsupplier, setAddsupplier] = useState({ name: "", description: "" });
 
   const handleCreate = async (e) => {
@@ -15,9 +14,9 @@ export const usesupplierCRUD = (onSuccess) => {
       setLoading(true);
       await supplierApi.create(addsupplier);
       setLoading(false);
-      alert("Thêm nhà cung cấp thành công!"); // Đã sửa tên thông báo
+      alert("Thêm nhà cung cấp thành công!"); 
       setShowAddModal(false);
-      setAddsupplier({ name: "", description: "" }); // Reset form đầy đủ
+      setAddsupplier({ name: "", description: "" }); 
       if (onSuccess) onSuccess();
     } catch (error) {
       setLoading(false);
@@ -31,7 +30,13 @@ export const usesupplierCRUD = (onSuccess) => {
   const [selectedsupplier, setSelectedsupplier] = useState({});
 
   const openUpdateModal = (supplier) => {
-    setSelectedsupplier(supplier);
+    // ĐÃ SỬA: Chuẩn hóa dữ liệu sang chữ thường và xóa key chữ hoa
+    // Điều này giúp giao diện form sửa Mô tả nhận đúng ký tự bạn gõ!
+    setSelectedsupplier({
+        ...supplier,
+        description: supplier.Description || supplier.description || "",
+        Description: undefined 
+    });
     setShowUpdateModal(true);
   };
 
