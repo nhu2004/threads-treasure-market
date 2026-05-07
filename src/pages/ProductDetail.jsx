@@ -1,39 +1,60 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom"; 
 import { useCart } from "@/contexts/CartContext";
 import { Star, ChevronLeft, Truck, RotateCcw, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import ProductCard from "@/components/ProductCard";
+import productApi from "../api/productApi";
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const product = products.find((p) => p.id === id);
   const { addItem } = useCart();
+  
+  const [product, setProduct] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedImage, setSelectedImage] = useState(0);
 
-  if (!product) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="font-body text-muted-foreground mb-4">Sản phẩm không tồn tại</p>
-          <Link to="/shop" className="font-body text-sm underline text-foreground">
-            Quay lại cửa hàng
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  // GỌI API THẬT
+  useEffect(() => {
+    const fetchProductData = async () => {
+      try {
+        setLoading(true);
+        // Lấy chi tiết sản phẩm
+        const res = await productApi.getById(id);
+        const fetchedProduct = res.product;
+        setProduct(fetchedProduct);
 
-  const relatedProducts = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
+        // Lấy sản phẩm liên quan (Tìm theo từ khóa danh mục)
+        if (fetchedProduct?.category) {
+            const relatedRes = await productApi.getAll({ search: fetchedProduct.category });
+            const filtered = (relatedRes.products || []).filter(p => p.id !== parseInt(id)).slice(0, 4);
+            setRelatedProducts(filtered);
+        }
+      } catch (error) {
+        console.error("Lỗi tải chi tiết:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProductData();
+  }, [id]);
 
   const handleAddToCart = () => {
-    if (!selectedSize || !selectedColor) return;
+    if (!selectedSize || !selectedColor || !product) return;
     addItem(product, selectedSize, selectedColor);
   };
+
+  const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+
+  if (loading) return <div className="text-center py-20">Đang tải sản phẩm...</div>;
+  if (!product) return <div className="text-center py-20">Sản phẩm không tồn tại</div>;
+
+  // Xử lý list ảnh (nếu ImageUrl chứa nhiều link cách nhau bằng phẩy)
+  const imagesList = product.image ? product.image.split(',') : [];
 
   return (
     <div className="min-h-screen">
@@ -45,17 +66,18 @@ const ProductDetail = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {/* Images */}
           <motion.div>
-            <div className="aspect-[3/4] bg-gray-100 text-gray-900 overflow-hidden mb-3">
-              <img src={product.images?.[selectedImage] || product.image} alt={product.name} className="w-full h-full object-cover" />
+            <div className="aspect-[3/4] bg-gray-100 overflow-hidden mb-3">
+              <img src={imagesList[selectedImage] || product.image} alt={product.name} className="w-full h-full object-cover" />
             </div>
-            {/* Hiển thị danh sách ảnh nhỏ từ DB */}
-            <div className="flex gap-2">
-              {product.images?.map((img, i) => (
-                <button key={i} onClick={() => setSelectedImage(i)} className={`w-16 h-20 border-2 ${i === selectedImage ? "border-black" : "border-transparent"}`}>
-                  <img src={img} alt="" className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
+            {imagesList.length > 1 && (
+              <div className="flex gap-2">
+                {imagesList.map((img, i) => (
+                  <button key={i} onClick={() => setSelectedImage(i)} className={`w-16 h-20 border-2 ${i === selectedImage ? "border-black" : "border-transparent"}`}>
+                    <img src={img} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </motion.div>
 
           {/* Info */}
@@ -64,35 +86,17 @@ const ProductDetail = () => {
             <p className="text-2xl font-bold text-primary mb-6">{formatPrice(product.price)}</p>
             <p className="text-muted-foreground mb-8">{product.description}</p>
 
-            {/* Sizes & Colors lấy từ API */}
-            <div className="mb-6">
-              <p className="text-sm font-medium mb-3">Kích thước:</p>
-              <div className="flex gap-2">
-                {product.sizes?.map(size => (
-                  <button key={size} onClick={() => setSelectedSize(size)} className={`px-4 py-2 border ${selectedSize === size ? "bg-black text-white" : ""}`}>
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <button onClick={handleAddToCart} className="w-full bg-zinc-950 text-white py-4 font-bold uppercase tracking-widest">
-              Thêm vào giỏ hàng
-            </button>
-          </div>
             {/* Colors */}
             <div className="mb-6">
-              <p className="font-body text-sm font-medium text-foreground mb-3">
-                Màu sắc: <span className="text-muted-foreground font-normal">{selectedColor || "Chọn màu"}</span>
+              <p className="font-body text-sm font-medium mb-3">
+                Màu sắc: <span className="text-muted-foreground">{selectedColor || "Chọn màu"}</span>
               </p>
               <div className="flex gap-2">
-                {product.colors.map((color) => (
+                {(product.colors || []).map((color) => (
                   <button
                     key={color.name}
                     onClick={() => setSelectedColor(color.name)}
-                    className={`w-8 h-8 rounded-full border-2 transition-all ${
-                      selectedColor === color.name ? "border-foreground scale-110" : "border-border"
-                    }`}
+                    className={`w-8 h-8 rounded-full border-2 ${selectedColor === color.name ? "border-black scale-110" : "border-gray-200"}`}
                     style={{ backgroundColor: color.hex }}
                     title={color.name}
                   />
@@ -102,19 +106,15 @@ const ProductDetail = () => {
 
             {/* Sizes */}
             <div className="mb-8">
-              <p className="font-body text-sm font-medium text-foreground mb-3">
-                Kích thước: <span className="text-muted-foreground font-normal">{selectedSize || "Chọn size"}</span>
+              <p className="font-body text-sm font-medium mb-3">
+                Kích thước: <span className="text-muted-foreground">{selectedSize || "Chọn size"}</span>
               </p>
               <div className="flex gap-2 flex-wrap">
-                {product.sizes.map((size) => (
+                {(product.sizes || []).map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`min-w-[44px] h-11 px-3 font-body text-sm border transition-colors ${
-                      selectedSize === size
-                        ? "bg-zinc-950 text-primary-foreground border-primary"
-                        : "bg-background text-foreground border-border hover:border-foreground"
-                    }`}
+                    className={`min-w-[44px] h-11 px-3 text-sm border ${selectedSize === size ? "bg-black text-white border-black" : "bg-white border-gray-300"}`}
                   >
                     {size}
                   </button>
@@ -122,18 +122,15 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* Add to cart */}
             <button
               onClick={handleAddToCart}
               disabled={!selectedSize || !selectedColor}
-              className="w-full bg-zinc-950 text-primary-foreground py-4 font-body text-sm font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed mb-6"
+              className="w-full bg-zinc-950 text-white py-4 font-bold uppercase tracking-widest disabled:opacity-40 mb-6"
             >
               Thêm vào giỏ
             </button>
 
-            {/* Benefits */}
-            <motion.div>
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border">
+            <div className="grid grid-cols-3 gap-4 pt-6 border-t">
               {[
                 { icon: Truck, text: "Miễn phí ship" },
                 { icon: RotateCcw, text: "Đổi trả 30 ngày" },
@@ -141,21 +138,18 @@ const ProductDetail = () => {
               ].map(({ icon: Icon, text }) => (
                 <div key={text} className="text-center">
                   <Icon size={18} className="mx-auto text-muted-foreground mb-1" />
-                  <p className="font-body text-[10px] text-muted-foreground">{text}</p>
+                  <p className="text-[10px] text-muted-foreground">{text}</p>
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         </div>
 
-        {/* Related */}
         {relatedProducts.length > 0 && (
           <div className="mt-24 mb-12">
-            <h2 className="font-display text-2xl font-bold text-foreground mb-8">Sản phẩm liên quan</h2>
+            <h2 className="text-2xl font-bold mb-8">Sản phẩm liên quan</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {relatedProducts.map((p, i) => (
-                <ProductCard key={p.id} product={p} index={i} />
-              ))}
+              {relatedProducts.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
             </div>
           </div>
         )}
@@ -163,5 +157,4 @@ const ProductDetail = () => {
     </div>
   );
 };
-
 export default ProductDetail;

@@ -1,6 +1,7 @@
 // src/pages/Index.jsx
 import { useState, useEffect, useRef } from "react";
 import productApi from "../api/productApi"; // Gọi API từ Backend
+import categoryApi from "../api/categoryApi"; // THÊM: Gọi API Category
 import ProductCard from "@/components/ProductCard";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -8,6 +9,7 @@ import { ArrowRight } from "lucide-react";
 
 const Index = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [categories, setCategories] = useState([]); // THÊM: State lưu danh mục
   const [loading, setLoading] = useState(true);
   
   // Trạng thái để xác định khi nào video kết thúc
@@ -19,20 +21,35 @@ const Index = () => {
   };
 
   useEffect(() => {
-    const fetchFeaturedProducts = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
+        // 1. Lấy sản phẩm nổi bật
         const res = await productApi.getAll({ featured: true, limit: 4 }); 
         const productsArray = res.products || []; 
         setFeaturedProducts(productsArray.slice(0, 4));
+
+        // 2. Lấy danh mục từ Database
+        const catRes = await categoryApi.getAll();
+        setCategories(catRes.data || []);
       } catch (error) {
-        console.error("Lỗi khi lấy sản phẩm nổi bật:", error);
+        console.error("Lỗi khi lấy dữ liệu:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchFeaturedProducts();
+    fetchData();
   }, []);
+
+  // HÀM MAP ẢNH: Ghép CategoryID từ Database với ảnh tĩnh trong thư mục /assets
+  const getCategoryImage = (categoryId) => {
+    // Ép kiểu về số để so sánh chính xác
+    const id = parseInt(categoryId);
+    if (id === 1) return "/assets/ao_bia.jpg";
+    if (id === 2) return "/assets/quan_bia.jpg";
+    if (id === 4) return "/assets/phukien_bia.jpg";
+    return "/assets/ao_bia.jpg"; // Ảnh mặc định nếu không khớp
+  };
 
   return (
     <div className="min-h-screen">
@@ -89,7 +106,7 @@ const Index = () => {
             </p>
             <Link
               to="/shop"
-              className="inline-flex items-center gap-3 bg-zinc-950-foreground text-primary-foreground px-8 py-4 font-body text-sm font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity"
+              className="inline-flex items-center gap-3 bg-zinc-950 text-primary-foreground px-8 py-4 font-body text-sm font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity"
             >
               Khám phá ngay
               <ArrowRight size={16} />
@@ -108,35 +125,36 @@ const Index = () => {
         >
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground">Danh mục nổi bật</h2>
         </motion.div>
-        <div className="grid grid-cols-3 md:grid-cols-3 gap-3">
-          {[
-          
-            { name: "Áo Sơ Mi", category: "ao", img: "/assets/ao_bia.jpg" },
-            { name: "Quần Tây ", category: "quan", img: "/assets/quan_bia.jpg" },
-            { name: "Phụ kiện", category: "phu-kien", img: "/assets/phukien_bia.jpg" },
-          ].map((cat, i) => (
-            <motion.div
-              key={cat.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-            >
-              <Link to={`/shop?category=${cat.category}`} className="group block relative overflow-hidden aspect-[3/4]">
-                <img
-                  src={cat.img}
-                  alt={cat.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-foreground/20 group-hover:bg-foreground/30 transition-colors" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h3 className="font-display text-xl font-bold text-primary-foreground">{cat.name}</h3>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+        
+        {loading ? (
+           <p className="text-center">Đang tải danh mục...</p>
+        ) : (
+          <div className="grid grid-cols-3 md:grid-cols-3 gap-3">
+            {categories.slice(0, 3).map((cat, i) => (
+              <motion.div
+                key={cat._id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+              >
+                {/* Sửa lại link để truyền CategoryID thay vì chữ cứng */}
+                <Link to={`/shop?category=${cat._id}`} className="group block relative overflow-hidden aspect-[3/4]">
+                  <img
+                    src={getCategoryImage(cat._id)}
+                    alt={cat.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-foreground/20 group-hover:bg-foreground/30 transition-colors" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <h3 className="font-display text-xl font-bold text-primary-foreground">{cat.name}</h3>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Featured */}

@@ -20,8 +20,7 @@ const Header = () => {
   const navLinks = [
     { to: "/", label: "Trang chủ" },
     { to: "/shop", label: "Cửa hàng" },
-    { to: "/shop?category=ao", label: "Áo" },
-    { to: "/shop?category=dam", label: "Đầm" },
+    { to: "/shop?category=ao", label: "Áo" }, 
     { to: "/shop?category=quan", label: "Quần" },
     { to: "/shop?category=phu-kien", label: "Phụ kiện" },
   ];

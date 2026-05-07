@@ -16,9 +16,18 @@ const Admin = () => {
     <AdminLayout>
       <Routes>
         <Route path="/" element={<Analytics />} /> 
+        
+        {/* Đăng ký cả 2 đường dẫn (có 's' và không có 's') để chống lỗi màn hình trắng */}
         <Route path="/products" element={<ProductList />} />
+        <Route path="/product" element={<ProductList />} />
+        
         <Route path="/products/add" element={<AddProduct />} />
+        <Route path="/product/add" element={<AddProduct />} />
+        <Route path="/product/addproduct" element={<AddProduct />} /> {/* Dự phòng cho ảnh 3 */}
+        
         <Route path="/products/update/:id" element={<UpdateProduct />} />
+        <Route path="/product/update/:id" element={<UpdateProduct />} />
+        
         <Route path="/categories" element={<Category />} />
         <Route path="/suppliers" element={<Supplier />} />
         <Route path="/orders" element={<Order />} />

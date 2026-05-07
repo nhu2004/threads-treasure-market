@@ -15,7 +15,7 @@ const Footer = () => {
           <div>
             <h4 className="font-body text-sm font-semibold uppercase tracking-widest mb-4">Cửa hàng</h4>
             <ul className="space-y-2">
-              {["Áo", "Quần", "Đầm", "Phụ kiện"].map((item) => (
+              {["Áo", "Quần",  "Phụ kiện"].map((item) => (
                 <li key={item}>
                   <Link to="/shop" className="text-sm opacity-70 hover:opacity-100 transition-opacity font-body">
                     {item}

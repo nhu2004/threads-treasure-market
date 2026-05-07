@@ -1,40 +1,48 @@
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext"; 
+import { useAuth } from "@/contexts/AuthContext"; // THÊM: Import useAuth để lấy ID người dùng
 import { Link } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 import orderApi from "../api/orderApi";
 
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCart();
+  const { user } = useAuth(); // THÊM: Lấy thông tin user đang đăng nhập
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    address: "",
+    name: user?.fullName || "", // THÊM: Tự động điền tên nếu đã đăng nhập
+    phone: user?.phone || "",     // THÊM: Tự động điền SĐT nếu đã đăng nhập
+    email: user?.email || "",   // THÊM: Tự động điền Email
+    address: user?.address || "", // THÊM: Tự động điền Địa chỉ
     note: "",
   });
 
   const shippingFee = totalPrice >= 1000000 ? 0 : 30000;
 
+  // THÊM: Hàm format tiền tệ (Bị thiếu gây lỗi trắng trang)
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  };
+
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const orderData = {
-      customer: form,
-      items: items,
-      totalPrice: totalPrice + shippingFee,
-      status: 'pending',
-      createdAt: new Date()
-    };
-    
-    await orderApi.create(orderData); // Lưu vào Database
-    setSubmitted(true);
-    clearCart();
-  } catch (error) {
-    alert("Có lỗi khi đặt hàng, vui lòng thử lại!");
-  }
-};
+    e.preventDefault();
+    try {
+      const orderData = {
+        userId: user?.id || null, // THÊM: Truyền ID người dùng vào API
+        customer: form,
+        items: items,
+        totalPrice: totalPrice + shippingFee,
+        status: 'pending',
+        createdAt: new Date()
+      };
+      
+      await orderApi.create(orderData); // Lưu vào Database
+      setSubmitted(true);
+      clearCart();
+    } catch (error) {
+      alert("Có lỗi khi đặt hàng, vui lòng thử lại!");
+    }
+  };
 
   if (submitted) {
     return (
