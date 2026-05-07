@@ -61,16 +61,31 @@ export const usecategoryCRUD = (onSuccess) => {
 
   const handleDelete = async () => {
     try {
-      await categoryApi.delete(categoryDelete._id);
-      setShowDeleteModal(false);
-      alert("Xóa thành công!");
-      if (onSuccess) onSuccess();
+      setLoading(true);
+      const res = await categoryApi.delete(categoryDelete._id);
+      
+      // KIỂM TRA PHẢN HỒI TỪ BACKEND
+      if (res.success || res.message === 'Xóa thành công!') {
+          // Chỉ hiện thông báo thành công khi backend thực sự xóa được
+          alert(res.message); 
+          // Hoặc dùng toast.success(res.message) nếu bạn đang dùng thư viện toast
+          
+          setShowDeleteModal(false);
+          refreshList(); // Gọi lại danh sách
+      } else {
+          // Nếu backend trả về báo lỗi (ví dụ: có sản phẩm bên trong)
+          alert(res.message); 
+          // Hoặc dùng toast.error(res.message)
+      }
     } catch (error) {
-      alert("Xóa thất bại!");
-      setShowDeleteModal(false);
+      // Bắt lỗi nếu API trả về status 400 hoặc 500
+      // Thông thường axios hoặc fetch sẽ ném lỗi vào đây nếu status không phải 2xx
+      const errorMessage = error.response?.data?.message || "Xóa thất bại! Do danh mục này đang chứa sản phẩm.";
+      alert(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
-
   return {
     loading,
     // Create

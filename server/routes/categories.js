@@ -73,21 +73,42 @@ router.put('/:id', async (req, res) => {
 
 // 4. API XÓA DANH MỤC (DELETE /api/categories/:id) -> GIẢI QUYẾT LỖI XÓA THẤT BẠI
 router.delete('/:id', async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    try {
-        let pool = await sql.connect(sqlConfig);
-        
-        // Lưu ý: Nếu database có ràng buộc khóa ngoại (Foreign Key), bạn không thể xóa danh mục đang có sản phẩm.
-        await pool.request()
-            .input('id', sql.Int, id)
-            .query('DELETE FROM Categories WHERE CategoryID = @id');
-            
-        res.json({ message: 'Xóa thành công' });
-    } catch (err) {
-        console.error("Lỗi xóa danh mục:", err);
-        res.status(500).json({ message: 'Xóa thất bại! Có thể do danh mục này đang chứa sản phẩm.' });
+  try {
+    let pool = await sql.connect(sqlConfig);
+
+    // BƯỚC 1: KIỂM TRA CÓ SẢN PHẨM NÀO ĐANG NẰM TRONG DANH MỤC NÀY KHÔNG
+    let checkResult = await pool.request()
+      .input('id', sql.Int, id)
+      .query('SELECT COUNT(*) as ProductCount FROM Products WHERE CategoryID = @id');
+
+    const productCount = checkResult.recordset[0].ProductCount;
+
+    // NẾU CÓ SẢN PHẨM -> BÁO LỖI (STATUS 400) VÀ CHẶN LẠI NGAY
+    if (productCount > 0) {
+      return res.status(400).json({ 
+        message: `Xóa thất bại! Danh mục này đang chứa ${productCount} sản phẩm. Vui lòng chuyển các sản phẩm sang danh mục khác trước khi xóa.` 
+      });
     }
+
+    // BƯỚC 2: NẾU SỐ SẢN PHẨM = 0 -> TIẾN HÀNH XÓA DANH MỤC
+    let deleteResult = await pool.request()
+      .input('id', sql.Int, id)
+      .query('DELETE FROM Categories WHERE CategoryID = @id');
+
+    // Kiểm tra xem có thực sự xóa được dòng nào không
+    if (deleteResult.rowsAffected[0] === 0) {
+        return res.status(404).json({ message: 'Không tìm thấy danh mục để xóa!' });
+    }
+
+    // Trả về thành công
+    res.json({ message: 'Xóa thành công!', success: true });
+
+  } catch (err) {
+    console.error("Lỗi xóa danh mục:", err);
+    res.status(500).json({ message: 'Lỗi server khi xóa danh mục.' });
+  }
 });
 // 5. API XUẤT DANH SÁCH SẢN PHẨM THUỘC DANH MỤC
 router.get('/:id/export-products', async (req, res) => {

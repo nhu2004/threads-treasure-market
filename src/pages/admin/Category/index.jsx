@@ -201,7 +201,7 @@ function categoryList() {
                   <tbody>
                     {categoryOrders.length > 0 ? categoryOrders.map((o, i) => (
                       <tr key={i}>
-                        <td>{o['Mã Đơn Hàng']}</td><td>{o['Ngày Đặt']}</td>
+                        <td>{o['Mã Đơn Hàng'] || o['Mã Đơn'] || o['OrderID'] || o['_id']}</td><td>{o['Ngày Đặt']}</td>
                         <td className="fw-semibold">{o['Tên Sản Phẩm']}</td>
                         <td className="text-center"><span className="badge bg-success">{o['Số Lượng Bán']}</span></td>
                         <td>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(o['Đơn Giá Lúc Bán'] || 0)}</td>
