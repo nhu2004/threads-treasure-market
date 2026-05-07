@@ -4,6 +4,7 @@ import { Form, Button, Card, Spinner, Row, Col, Table, Badge, Modal } from "reac
 import { FaUser, FaTruck, FaMoneyBillWave, FaEdit, FaBan } from "react-icons/fa";
 import orderApi from "../../../api/orderApi";
 import OrderProgress from "../../../components/OrderProgress"; 
+import InvoiceTemplate from "../../../components/Invoice/InvoiceTemplate";  
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "./UpdateOrder.css"; 
 const UpdateOrder = () => {
@@ -138,6 +139,7 @@ const UpdateOrder = () => {
   const canCancel = currentStatusText === "Chờ xác nhận" || currentStatusText === "Đang giao";
 
   return (
+    
     <div className="p-4 bg-light min-vh-100">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h3 className="mb-0 fw-bold">Chi tiết đơn hàng #{id}</h3>
@@ -189,8 +191,8 @@ const UpdateOrder = () => {
 
               {currentStatusText === "Đang xử lý" && (
                 <div className="text-center p-4 bg-light rounded border border-primary">
-                  <h6 className="text-primary fw-bold mb-3">Đơn hàng đang được đóng gói</h6>
-                  <p>Hóa đơn đã được tạo trên hệ thống. Hãy in hóa đơn để dán lên kiện hàng.</p>
+                  <h6 className="text-primary fw-bold mb-3 ">Đơn hàng đang được đóng gói</h6>
+                  <p className="text-muted mb-3">Hóa đơn đã được tạo trên hệ thống. Hãy in hóa đơn để dán lên kiện hàng.</p>
                   <div className="d-flex justify-content-center gap-3">
                     <Button variant="outline-dark" size="lg" onClick={() => window.print()}>
                        In Hóa Đơn (Bill)
@@ -362,6 +364,7 @@ const UpdateOrder = () => {
           <Button variant="primary" disabled={loading} onClick={handleUpdateDetails}>Lưu thay đổi</Button>
         </Modal.Footer>
       </Modal>
+      <InvoiceTemplate orderDetail={orderDetail} />
     </div>
   );
 };

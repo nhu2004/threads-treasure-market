@@ -83,3 +83,4 @@ npm install multer
 
 npm install bootstrap react-bootstrap
 npm install recharts
+npm install react-barcode

@@ -1,7 +1,6 @@
 const API_URL = 'http://localhost:5000/api/suppliers';
 
 const supplierApi = {
-  // Lấy danh sách tất cả nhà cung cấp
   getAll: async (params) => {
     try {
       const queryParams = new URLSearchParams();
@@ -10,56 +9,45 @@ const supplierApi = {
       
       const res = await fetch(`${API_URL}?${queryParams.toString()}`);
       const json = await res.json();
+      
+      // Map lại trường dữ liệu cho khớp Frontend
+      const formattedData = (json.data || json.suppliers || []).map(sup => ({
+          ...sup,
+          _id: sup.SupplierID, // Gán id
+          name: sup.Name,      // Gán tên
+          productCount: sup.ProductCount // Số lượng SP
+      }));
+
       return {
-        data: json.data || json.suppliers || [],
-        pagination: json.pagination || { page: 1, total: 0 }
+        data: formattedData,
+        pagination: json.pagination || { page: 1, total: Math.ceil(formattedData.length/10) || 1 }
       };
     } catch (err) {
-      console.error('Lỗi lấy danh sách nhà cung cấp:', err);
-      return { data: [], pagination: { page: 1, total: 0 } };
+      return { data: [], pagination: { page: 1, total: 1 } };
     }
   },
 
-  // Tạo nhà cung cấp mới
   create: async (data) => {
-    try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      return await res.json();
-    } catch (err) {
-      console.error('Lỗi tạo nhà cung cấp:', err);
-      throw err;
-    }
+    const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+    return await res.json();
   },
-
-  // Cập nhật nhà cung cấp
   update: async (id, data) => {
-    try {
-      const res = await fetch(`${API_URL}/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      return await res.json();
-    } catch (err) {
-      console.error('Lỗi cập nhật nhà cung cấp:', err);
-      throw err;
-    }
+    const res = await fetch(`${API_URL}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+    return await res.json();
   },
-
-  // Xóa nhà cung cấp
   delete: async (id) => {
-    try {
-      const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-      return await res.json();
-    } catch (err) {
-      console.error('Lỗi xóa nhà cung cấp:', err);
-      throw err;
-    }
-  }
+    const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+    return await res.json();
+  },
+  // Thêm 2 API Xuất File
+  exportProducts: async (id) => {
+    const res = await fetch(`${API_URL}/${id}/export-products`);
+    return await res.json();
+  },
+  exportOrders: async (id) => {
+    const res = await fetch(`${API_URL}/${id}/export-orders`);
+    return await res.json();
+  },
 };
 
 export default supplierApi;
