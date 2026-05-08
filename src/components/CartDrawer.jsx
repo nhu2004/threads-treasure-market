@@ -3,6 +3,10 @@ import { useCart } from "@/contexts/CartContext";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
+
+const formatPrice = (price) => {
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+};
 const CartDrawer = () => {
   const { items, isCartOpen, setIsCartOpen, removeItem, updateQuantity, totalPrice, totalItems } = useCart();
 
