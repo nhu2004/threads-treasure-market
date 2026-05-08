@@ -117,20 +117,29 @@ export default function OrderDetail({ orderId, data, onBack }) {
           Thông tin nhận hàng
         </h3>
         <div className="bg-gray-50/50 p-4 rounded-lg border border-gray-100">
-            <p className="text-sm mb-2"><span className="text-gray-600 inline-block w-28">Người nhận:</span> <span className="text-gray-900 font-medium">{fullName || 'N/A'}</span></p>
-            <p className="text-sm mb-2"><span className="text-gray-600 inline-block w-28">Điện thoại:</span> <span className="text-gray-900 font-medium">{phone || 'N/A'}</span></p>
-            <p className="text-sm"><span className="text-gray-600 inline-block w-28">Địa chỉ:</span> <span className="text-gray-900">{address || 'N/A'}</span></p>
+            <p className="text-sm mb-2">
+              <span className="text-gray-600 inline-block w-28">Người nhận:</span> 
+              <span className="text-gray-900 font-medium">{fullName || 'N/A'}</span>
+            </p>
+            <p className="text-sm mb-2">
+              <span className="text-gray-600 inline-block w-28">Điện thoại:</span> 
+              <span className="text-gray-900 font-medium">{phone || 'N/A'}</span>
+            </p>
+            {/* Thêm mb-2 nếu có ghi chú để tạo khoảng cách, không có thì bỏ trống */}
+            <p className={`text-sm ${orderDetail.note ? 'mb-2' : ''}`}>
+              <span className="text-gray-600 inline-block w-28">Địa chỉ:</span> 
+              <span className="text-gray-900">{address || 'N/A'}</span>
+            </p>
+            
+            {/* --- DÒNG GHI CHÚ ĐƯỢC ĐƯA VÀO CHUNG KHUNG --- */}
+            {orderDetail.note && (
+              <p className="text-sm">
+                <span className="text-gray-600 inline-block w-28">Ghi chú:</span> 
+                <span className="text-gray-900 italic font-medium">{orderDetail.note}</span>
+              </p>
+            )}
+            {/* --------------------------------------------- */}
         </div>
-
-        {/* --- DÁN ĐOẠN CODE HIỂN THỊ GHI CHÚ VÀO ĐÂY --- */}
-        {orderDetail.note && (
-          <div className="mt-4 p-4 bg-yellow-50/80 rounded-lg border border-yellow-200">
-            <span className="font-semibold text-yellow-800 text-sm">Ghi chú của khách hàng:</span>
-            <p className="text-yellow-900 mt-1 text-sm italic">{orderDetail.note}</p>
-          </div>
-        )}
-        {/* --------------------------------------------- */}
-
       </div>
 
       {/* Danh sách sản phẩm */}

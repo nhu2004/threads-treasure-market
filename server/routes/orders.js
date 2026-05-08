@@ -450,28 +450,27 @@ router.put('/:id/ship', async (req, res) => {
         res.status(500).json({ message: 'Lỗi server' });
     }
 });
-
-// BỔ SUNG: API TẠO ĐƠN HÀNG MỚI (Từ trang Checkout)
-// API: TẠO ĐƠN HÀNG MỚI (Dùng chung cho cả khách lẻ và thành viên)
+// BỔ SUNG: API TẠO ĐƠN HÀNG MỚI (Từ trang Checkout - Đã bao gồm Ghi Chú)
 router.post('/', async (req, res) => {
     try {
         let pool = await sql.connect(sqlConfig);
         const { customer, items, totalPrice, userId } = req.body;
 
-        // Bắt đầu 1 Transaction để đảm bảo nếu lưu chi tiết lỗi thì sẽ hủy luôn đơn hàng
+        // Bắt đầu 1 Transaction để đảm bảo tính toàn vẹn dữ liệu
         const transaction = new sql.Transaction(pool);
         await transaction.begin();
 
         try {
-            // 1. Chèn vào bảng Orders
+            // 1. Chèn vào bảng Orders (ĐÃ BỔ SUNG CỘT NOTE)
             let orderResult = await transaction.request()
                 .input('userId', sql.Int, userId || null) 
                 .input('total', sql.Decimal(18,2), totalPrice)
                 .input('subTotal', sql.Decimal(18,2), totalPrice)
+                .input('note', sql.NVarChar, customer.note || '') // Bắt lấy ghi chú từ form
                 .query(`
-                    INSERT INTO Orders (UserID, OrderDate, Status, Total, SubTotal, DiscountAmount)
+                    INSERT INTO Orders (UserID, OrderDate, Status, Total, SubTotal, DiscountAmount, Note)
                     OUTPUT INSERTED.OrderID
-                    VALUES (@userId, GETDATE(), N'Chờ xác nhận', @total, @subTotal, 0);
+                    VALUES (@userId, GETDATE(), N'Chờ xác nhận', @total, @subTotal, 0, @note);
                 `);
 
             const newOrderId = orderResult.recordset[0].OrderID;
@@ -495,64 +494,12 @@ router.post('/', async (req, res) => {
                     `);
             }
 
+            // Lưu thành công
             await transaction.commit();
             res.json({ message: 'Đặt hàng thành công', orderId: newOrderId, success: true });
 
         } catch (innerError) {
-            await transaction.rollback();
-            throw innerError;
-        }
-    } catch (err) {
-        console.error("Lỗi tạo đơn:", err);
-        res.status(500).json({ message: 'Lỗi server khi tạo đơn' });
-    }
-});
-// API: Tạo đơn hàng mới
-router.post('/', async (req, res) => {
-    try {
-        let pool = await sql.connect(sqlConfig);
-        const { customer, items, totalPrice, userId } = req.body;
-
-        const transaction = new sql.Transaction(pool);
-        await transaction.begin();
-
-        try {
-            // 1. Chèn vào bảng Orders (Kèm theo Note)
-            let orderResult = await transaction.request()
-                .input('userId', sql.Int, userId || null) 
-                .input('total', sql.Decimal(18,2), totalPrice)
-                .input('subTotal', sql.Decimal(18,2), totalPrice)
-                .input('note', sql.NVarChar, customer.note || '') // <--- Lấy Note từ Frontend
-                .query(`
-                    INSERT INTO Orders (UserID, OrderDate, Status, Total, SubTotal, DiscountAmount, Note)
-                    OUTPUT INSERTED.OrderID
-                    VALUES (@userId, GETDATE(), N'Chờ xác nhận', @total, @subTotal, 0, @note);
-                `);
-
-            const newOrderId = orderResult.recordset[0].OrderID;
-
-            // 2. Chèn vào bảng OrderDetails và Cập nhật kho
-            for (let item of items) {
-                await transaction.request()
-                    .input('orderId', sql.Int, newOrderId)
-                    .input('productId', sql.Int, item.product.id)
-                    .input('quantity', sql.Int, item.quantity)
-                    .input('price', sql.Decimal(18,2), item.product.price)
-                    .query(`
-                        INSERT INTO OrderDetails (OrderID, ProductID, Quantity, Price)
-                        VALUES (@orderId, @productId, @quantity, @price);
-
-                        UPDATE Products 
-                        SET StockQuantity = StockQuantity - @quantity 
-                        WHERE ProductID = @productId;
-                    `);
-            }
-
-            await transaction.commit();
-            res.json({ message: 'Đặt hàng thành công', orderId: newOrderId, success: true });
-
-        } catch (innerError) {
-            await transaction.rollback();
+            await transaction.rollback(); // Có lỗi thì hủy bỏ
             throw innerError;
         }
     } catch (err) {
