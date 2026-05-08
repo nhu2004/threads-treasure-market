@@ -1,36 +1,24 @@
+// Client/src/hooks/admin/invoice/useInvoiceList.js
 import { useState, useEffect } from "react";
 import invoiceApi from "../../../api/invoicesAPI";
 
-export const useInvoiceList = () => {
-  const [invoiceData, setInvoiceData] = useState({ invoices: [], totalPage: 1 });
+// Bên trong file useInvoiceList.js
+export const useInvoiceList = ({ search, status, startDate, endDate }) => {
+  const [invoiceData, setInvoiceData] = useState({});
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  
-  // Tách biệt ô nhập liệu và từ khóa thực sự gửi đi để tránh lỗi gõ phím
-  const [searchInput, setSearchInput] = useState("");
-  const [searchString, setSearchString] = useState("");
 
   useEffect(() => {
-    const fetchInvoices = async () => {
+    const fetchData = async () => {
       setLoading(true);
-      const { data, pagination } = await invoiceApi.getAll({ 
-          search: searchString, 
-          page: page 
-      });
-      setInvoiceData({ invoices: data, totalPage: pagination.totalPage });
+      // Gọi API kèm tham số
+      const res = await invoiceApi.getAll({ page, search, status, startDate, endDate });
+      setInvoiceData(res);
       setLoading(false);
     };
-    fetchInvoices();
-  }, [page, searchString]);
+    
+    fetchData();
+  }, [page, search, status, startDate, endDate]); // Chạy lại khi page hoặc filter thay đổi
 
-  // Hàm được gọi khi bấm nút tìm kiếm
-  const handleSearch = () => {
-    setSearchString(searchInput);
-    setPage(1);
-  };
-
-  return { 
-    invoiceData, page, setPage, loading, 
-    searchInput, setSearchInput, handleSearch 
-  };
+  return { invoiceData, page, setPage, loading };
 };

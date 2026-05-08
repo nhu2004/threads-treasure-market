@@ -1,190 +1,136 @@
-/* Giao diện hóa đơn trên màn hình web */
-.invoice-print-container {
-  display: none; 
+/* Client/src/components/Invoice/InvoiceTemplate.css */
+.receipt-container {
+    font-family: 'Times New Roman', serif; /* Hóa đơn thường dùng font có chân */
+    color: #000;
+    background: #fff;
+    padding: 20px 30px;
+    margin: 0 auto;
+    max-width: 800px; /* Độ rộng vừa phải giống khổ A5/A4 */
 }
 
-/* =========================================
-   KHI BẤM NÚT IN (CTRL+P hoặc window.print)
-   ========================================= */
-@media print {
-  body * {
-    visibility: hidden;
-  }
-
-  .invoice-print-container, 
-  .invoice-print-container * {
-    visibility: visible;
-  }
-
-  .invoice-print-container {
-    display: block !important;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 0; /* Bỏ padding thừa của container */
-    background: white;
-    color: black;
-    font-family: 'Times New Roman', Times, serif;
-    line-height: 1.3; /* Ép khoảng cách dòng nhỏ lại để các chữ sát nhau hơn */
-  }
-
-  /* --- HEADER --- */
-  .invoice-header {
+.receipt-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px; /* Thu gọn khoảng cách dưới header */
-  }
+    margin-bottom: 20px;
+}
 
-  .store-name {
-    font-size: 18px;
+.store-name, .invoice-title {
     font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
     text-transform: uppercase;
-    margin-bottom: 4px;
-  }
+}
 
-  .store-info p, .invoice-title-block p {
-    margin: 2px 0; /* Kéo các dòng chữ địa chỉ, sdt sát lại với nhau */
-  }
-
-  .invoice-title-block {
+.invoice-info {
     text-align: right;
-  }
+}
 
-  .invoice-title {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 4px;
-  }
+.receipt-header p {
+    margin: 2px 0;
+    font-size: 0.9rem;
+}
 
-  .divider {
-    border: none;
+.border-top {
     border-top: 1px dashed #000;
-    margin: 8px 0; /* Thu gọn khoảng cách đường kẻ đứt */
-  }
+    margin: 15px 0;
+}
 
-  /* --- THÔNG TIN KHÁCH HÀNG --- */
-  .info-row {
-    margin-bottom: 3px; /* Kéo sát các dòng thông tin khách */
-    font-size: 13px; /* Giảm size chữ 1 xíu cho gọn */
-  }
-
-  .info-row .label {
-    display: inline-block;
-    width: 85px; /* Rút gọn khoảng cách giữa tiêu đề (Khách hàng:) và Tên */
+.receipt-subtitle {
     font-weight: bold;
-  }
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
 
-  /* --- BẢNG SẢN PHẨM --- */
-  .invoice-table {
+.customer-info {
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+}
+
+.info-row {
+    display: flex;
+    margin-bottom: 5px;
+}
+
+.info-row .label {
+    width: 120px;
+    font-weight: bold;
+}
+
+.receipt-table {
     width: 100%;
+    margin-bottom: 20px;
     border-collapse: collapse;
-    margin: 10px 0; /* Thu gọn khoảng cách trên dưới của bảng */
-    font-size: 13px;
-  }
+}
 
-  .invoice-table th, .invoice-table td {
-    padding: 6px 4px; /* Ép các ô trong bảng hẹp lại */
-  }
-
-  .invoice-table th {
+.receipt-table th {
+    border-top: 2px solid #000;
     border-bottom: 2px solid #000;
-  }
+    padding: 10px 5px;
+    font-size: 0.9rem;
+}
 
-  .invoice-table td {
+.receipt-table td {
+    padding: 8px 5px;
+    font-size: 0.95rem;
     border-bottom: 1px dashed #ccc;
-  }
+}
 
-  .text-center { text-align: center !important; }
-  .text-right { text-align: right !important; }
-  .text-left { text-align: left !important; }
-  .fw-bold { font-weight: bold !important; }
-  .pl-2 { padding-left: 8px !important; }
-
-  /* --- TỔNG KẾT --- */
-  .invoice-summary {
-    width: 55%; /* Tăng width để các chữ (Tổng tiền hàng, Giảm giá) không bị ép rớt dòng */
+.receipt-summary {
+    width: 50%;
     float: right;
-    margin-top: 5px;
-  }
+    font-size: 0.95rem;
+}
 
-  .summary-row {
+.summary-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 4px; /* Kéo sát các dòng tổng tiền */
-    font-size: 13px;
-  }
+    margin-bottom: 5px;
+}
 
-  .discount-row {
-    font-style: italic;
-    font-weight: 600;
-    margin-top: 2px;
-  }
+.discount-row {
+    font-weight: normal;
+}
 
-  .summary-row.total {
-    font-size: 16px;
-    font-weight: bold;
+.receipt-divider {
     border-top: 2px solid #000;
-    padding-top: 6px;
-    margin-top: 4px;
-  }
+    margin: 10px 0;
+}
 
-  /* --- FOOTER & MÃ VẠCH --- */
-  .invoice-footer {
-    clear: both;
+.final-total {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.receipt-footer {
+    clear: both; /* Đẩy xuống dưới phần float right */
     text-align: center;
-    margin-top: 25px; /* Đã giảm từ 60px xuống 25px để sửa lỗi khoảng trắng khổng lồ ở giữa giấy */
-    font-size: 11px;
-    font-style: italic;
-  }
-  
-  .invoice-footer p {
-    margin: 2px 0;
-  }
+    padding-top: 40px;
+    font-size: 0.85rem;
+}
 
-  .barcode-real {
-    margin-top: 10px;
+.barcode-container {
+    margin-top: 15px;
     display: flex;
     justify-content: center;
-    align-items: center;
-    width: 100%;
-  }
-
-  .barcode-real svg {
-    max-width: 80%; /* Ép mã vạch nhỏ lại 1 chút cho cân đối */
-    height: auto;
-  }
-
-  /* --- CẤU HÌNH TRANG IN (Bắt buộc để thu hẹp lề trắng ngoài cùng) --- */
-  @page {
-    size: A5 portrait;
-    margin: 5mm; /* Ép lề tờ giấy nhỏ lại (chỉ chừa 5 milimet viền ngoài) */
-  }
-  /* Style cho dòng chữ HÓA ĐƠN BÁN LẺ mới thêm */
-.retail-label-container {
-  text-align: center;
-  margin-top: 5px;
-  margin-bottom: 10px;
 }
 
-.retail-invoice-text {
-  font-size: 16px;
-  font-weight: bold; 
-  text-transform: uppercase;
-  margin: 0;
-  letter-spacing: 1px;
-}
-
-/* Đảm bảo bảng không bị dính chữ */
-.pl-2 {
-  padding-left: 15px !important;
-}
-
+/* KHI NHẤN NÚT IN (CTRL+P) SẼ ÁP DỤNG CSS NÀY */
 @media print {
-  /* Ép các dòng thông tin khách hàng sát lại một chút để dành chỗ cho tiêu đề mới */
-  .info-row {
-    margin-bottom: 2px;
-  }
-}
+    body * {
+        visibility: hidden; /* Ẩn toàn bộ trang web */
+    }
+    #invoice-print-area, #invoice-print-area * {
+        visibility: visible; /* Chỉ hiện vùng hóa đơn */
+    }
+    #invoice-print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 0;
+    }
+    /* Ẩn các nút X trên Modal khi in */
+    .modal-header .btn-close {
+        display: none !important;
+    }
 }

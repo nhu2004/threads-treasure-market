@@ -88,3 +88,70 @@
   transform: scale(1.05);
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
+.filter-section {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.filter-section .form-label {
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.table thead th {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.8em;
+}
+
+@media print {
+    /* 1. Ẩn mọi thứ trên web */
+    body * {
+        visibility: hidden !important;
+    }
+
+    /* 2. Chỉ hiển thị duy nhất vùng hóa đơn */
+    #invoice-print-area, #invoice-print-area * {
+        visibility: visible !important;
+    }
+
+    /* 3. Neo hóa đơn lên góc trái cùng của tờ giấy */
+    #invoice-print-area {
+        position: absolute !important;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* 4. ĐÂY LÀ PHẦN QUAN TRỌNG NHẤT: Xóa bỏ mọi giới hạn chiều cao của Modal */
+    .modal, .modal-dialog, .modal-content, .modal-body {
+        position: static !important; /* Hủy bỏ fixed/absolute của Bootstrap */
+        overflow: visible !important; /* Hiển thị toàn bộ nội dung, không cắt */
+        height: auto !important; /* Để chiều cao tự giãn theo nội dung */
+        max-height: none !important;
+        background-color: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* 5. Ẩn luôn Header (có nút X) và Footer (có nút In/Đóng) */
+    .modal-header, .modal-footer, .modal-backdrop {
+        display: none !important;
+    }
+
+    /* 6. Cho phép trang web tự do dài ra theo khổ giấy */
+    html, body {
+        height: auto !important;
+        overflow: visible !important;
+        background-color: #fff !important;
+    }
+}
