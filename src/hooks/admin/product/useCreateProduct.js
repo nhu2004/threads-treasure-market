@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import productApi from "../../../api/productApi";
 
 export const useCreateProduct = () => {
@@ -8,50 +7,41 @@ export const useCreateProduct = () => {
   const navigate = useNavigate();
 
   const createProduct = async (formValues) => {
-    const {
-      productId, name, price, originalPrice, discount,
+    const {  name, price, originalPrice,
       description, sizes, colors, stockQuantity,
-      categoryId, supplierId, image
+      categoryId, supplierId, image, badge
     } = formValues;
 
     try {
       setLoading(true);
-      const formData = new FormData();
-      formData.append("file", image);
-      formData.append("upload_preset", "clothingstore"); //[cite: 23]
+      
+      // KHÔNG CÒN AXIOS / CLOUDINARY NỮA
+      // Gửi trực tiếp link ảnh (biến image) về Backend
+      await productApi.create({ 
+        name: name,
+        price: price,
+        originalPrice: originalPrice || price,
+        description: description,
+        // Chuyển đổi chuỗi thành mảng để Backend dễ xử lý
+        sizes: typeof sizes === 'string' ? sizes.split(',').map(s => s.trim()).filter(s => s !== "") : sizes,
+        colors: typeof colors === 'string' ? colors.split(',').map(c => c.trim()).filter(c => c !== "") : colors,
+        stockQuantity: stockQuantity,
+        categoryId: categoryId,
+        supplierId: supplierId,
+        imageUrl: image,  
+        badge: badge || "MỚI",
+        createdBy: 1 
+      });
 
-      // Upload ảnh lên Cloudinary
-      const resCloudinary = await axios.post(
-        "https://api.cloudinary.com/v1_1/clothingstore/image/upload",
-        formData
-      );
+      setLoading(false);
+      alert("Thêm sản phẩm thành công!");
+      navigate(`/admin/products?refresh=${Date.now()}`);
 
-      const { secure_url, public_id } = resCloudinary.data;
-
-      if (secure_url) {
-        await productApi.create({
-          ProductID: productId,
-          Name: name,
-          Price: price,
-          OriginalPrice: originalPrice || price,
-          Discount: discount,
-          Description: description,
-          Sizes: Array.isArray(sizes) ? sizes.join(',') : sizes,
-          Colors: JSON.stringify(colors),
-          StockQuantity: stockQuantity,
-          CategoryID: categoryId,
-          SupplierID: supplierId,
-          ImageUrl: secure_url,
-          PublicId: public_id,
-        });
-
-        setLoading(false);
-        alert("Thêm sản phẩm thời trang thành công!");
-        navigate(`/admin/product?refresh=${Date.now()}`);
-      }
     } catch (error) {
       setLoading(false);
-      alert("Thất bại: " + (error.response?.data?.message || error.message));
+      console.error("Lỗi khi tạo sản phẩm:", error);
+      // Hiển thị lỗi từ Backend (ví dụ: lỗi trùng mã sản phẩm)
+      alert(error.message || "Đăng sản phẩm thất bại. Vui lòng kiểm tra lại!");
     }
   };
 

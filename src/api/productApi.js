@@ -29,6 +29,37 @@ getById: async (id) => {
         console.error(error);
         return { product: null };
       }
+    }, 
+create: async (data) => {
+        const response = await fetch(`http://localhost:5000/api/products`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+        return await response.json();
     },
+
+    update: async (id, data) => {
+        const response = await fetch(`http://localhost:5000/api/products/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+        return await response.json();
+    },
+
+    delete: async (id) => {
+        const response = await fetch(`http://localhost:5000/api/products/${id}`, {
+            method: "DELETE",
+        });
+        return await response.json();
+    },
+
+    // Hàm kiểm tra xem sản phẩm đã bị khóa bởi đơn hàng nào chưa
+    checkIsOrdered: async (id) => {
+        const response = await fetch(`http://localhost:5000/api/products/${id}/check-ordered`);
+        return await response.json();
+    }
 };
+
 export default productApi;

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const sql = require('mssql');
-
+const productController = require('../controllers/productController');
 const sqlConfig = {
     user: 'sa', password: '123', database: 'ThreadsTreasureDB',
     server: 'NHI\\SQL1', 
@@ -92,4 +92,23 @@ router.get('/:id', async (req, res) => {
         res.status(500).json({ message: 'Lỗi server' });
     }
 });
+
+// --- BỔ SUNG CÁC ROUTE THAO TÁC (QUAN TRỌNG) ---
+router.post('/', productController.createProduct); // Fix lỗi 404 khi Đăng sản phẩm
+router.put('/:id', productController.updateProduct);
+router.delete('/:id', productController.deleteProduct);
+
+// API kiểm tra sản phẩm đã có đơn hàng chưa (phục vụ việc xóa)
+router.get('/:id/check-ordered', async (req, res) => {
+    try {
+        let pool = await sql.connect(sqlConfig);
+        let result = await pool.request()
+            .input('id', sql.Int, req.params.id)
+            .query(`SELECT TOP 1 OrderDetailID FROM OrderDetails WHERE ProductID = @id`);
+        res.json({ data: result.recordset });
+    } catch (err) {
+        res.status(500).json({ message: 'Lỗi kiểm tra đơn hàng' });
+    }
+});
+
 module.exports = router;

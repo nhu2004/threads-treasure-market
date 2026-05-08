@@ -138,6 +138,11 @@ const UpdateOrder = () => {
   const currentStatusText = orderDetail.status || orderDetail?.orderStatus?.text;
   const canCancel = currentStatusText === "Chờ xác nhận" || currentStatusText === "Đang giao";
 
+  // BỔ SUNG: KIỂM TRA TỒN KHO CHO ĐƠN HÀNG "CHỜ XÁC NHẬN"
+  const outOfStockItems = orderDetail.products?.filter(p => p.quantity > p.stockQuantity) || [];
+  const isOutOfStock = outOfStockItems.length > 0;
+
+  
   return (
     
     <div className="p-4 bg-light min-vh-100">
@@ -199,12 +204,39 @@ const UpdateOrder = () => {
               
               {/* Box xử lý tương ứng trạng thái */}
               {currentStatusText === "Chờ xác nhận" && (
-                <div className="text-center p-4 bg-light rounded border border-info">
-                  <h6 className="text-info fw-bold mb-3">Xác nhận Đơn hàng</h6>
-                  <p className="  mb-3">Kho có đủ hàng. Bạn có muốn duyệt đơn và tạo Hóa đơn cho khách hàng?</p>
-                  <Button variant="primary" size="lg-1" disabled={loading} onClick={handleConfirmAndCreateInvoice}>
-                    {loading ? "Đang xử lý..." : "Xác nhận & Tạo hóa đơn "}
-                  </Button>
+                <div className={`text-center p-4 bg-light rounded border ${isOutOfStock ? 'border-danger' : 'border-info'}`}>
+                  <h6 className={`fw-bold mb-3 ${isOutOfStock ? 'text-danger' : 'text-info'}`}>
+                    {isOutOfStock ? "Cảnh báo: Không đủ tồn kho" : "Xác nhận Đơn hàng"}
+                  </h6>
+                  
+                  {isOutOfStock ? (
+                    // GIAO DIỆN KHI THIẾU HÀNG TRONG KHO
+                    <>
+                      <p className="text-danger mb-2">Hệ thống phát hiện một số sản phẩm trong đơn không đủ số lượng để xuất kho:</p>
+                      <ul className="text-start text-danger mb-3 d-inline-block" style={{textAlign: 'left'}}>
+                        {outOfStockItems.map((item, idx) => (
+                          <li key={idx}>
+                            <strong>{item.name}</strong> (Khách đặt: {item.quantity} | Tồn kho: {item.stockQuantity})
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="text-muted mb-0">Vui lòng nhập thêm hàng hoặc liên hệ khách để thỏa thuận Hủy/Đổi đơn.</p>
+                      {/* Có thể thêm nút tắt báo hết hàng hoặc chặn thao tác */}
+                      <div className="mt-3">
+                        <Button variant="secondary" disabled>
+                          Không thể duyệt đơn này
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    // GIAO DIỆN KHI ĐỦ HÀNG (BÌNH THƯỜNG)
+                    <>
+                      <p className="mb-3">Kho có đủ hàng. Bạn có muốn duyệt đơn và tạo Hóa đơn cho khách hàng?</p>
+                      <Button variant="primary" size="lg" disabled={loading} onClick={handleConfirmAndCreateInvoice}>
+                        {loading ? "Đang xử lý..." : "Xác nhận & Tạo hóa đơn"}
+                      </Button>
+                    </>
+                  )}
                 </div>
               )}
 

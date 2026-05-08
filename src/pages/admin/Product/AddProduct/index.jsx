@@ -34,6 +34,7 @@ function Addproduct() {
   } = useAddSupplier();
 
   const { formik, loading: createLoading } = useAddProductForm(supplierList);
+console.log("Formik Errors:", formik.errors); // Dòng này giúp bạn thấy Form đang bị kẹt ở đâu trong Console (F12)
 
   return (
     <Row>
@@ -62,20 +63,24 @@ function Addproduct() {
           <div className="admin-content-header">Thêm Sản Phẩm Thời Trang Mới</div>
           <div className="admin-content-body">
             <form onSubmit={formik.handleSubmit}>
-              <Row>
-                <Col xl={8}>
+              <Row> 
+                <Col xl={12}>
                   <div className="form-group">
                     <label className={styles.formLabel}>Tên sản phẩm</label>
-                    <input
+                    <Form.Control
                       type="text"
                       name="name"
-                      className={`form-control ${formik.errors.name && formik.touched.name ? "is-invalid" : ""}`}
-                      placeholder="Ví dụ: Áo Blazer Oversized"
+                      placeholder="Nhập tên sản phẩm..."
                       value={formik.values.name}
                       onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      isInvalid={!!formik.errors.name && formik.touched.name}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {formik.errors.name}
+                    </Form.Control.Feedback>
                   </div>
-                </Col>
+                </Col> 
                 <Col xl={4}>
                   <div className="form-group">
                     <label className={styles.formLabel}>Giá bán (VNĐ)</label>
@@ -160,27 +165,53 @@ function Addproduct() {
               <Row className="mt-4">
                 <Col xl={12}>
                   <label className={styles.formLabel}>Mô tả chi tiết sản phẩm</label>
-                  <CKEditor
-                    editor={ClassicEditor}
-                    data={formik.values.description}
-                    onChange={(event, editor) => formik.setFieldValue("description", editor.getData())}
+                  {/* Thay CKEditor bằng Form.Control textarea */}
+                  <Form.Control
+                    as="textarea"
+                    rows={5}
+                    name="description"
+                    placeholder="Nhập mô tả chi tiết sản phẩm tại đây..."
+                    value={formik.values.description}
+                    onChange={formik.handleChange}
+                    className={formik.errors.description && formik.touched.description ? "is-invalid" : ""}
                   />
+                  {formik.errors.description && formik.touched.description && (
+                    <div className="invalid-feedback">{formik.errors.description}</div>
+                  )}
                 </Col>
               </Row>
-
               <Row className="mt-4">
-                <Col xl={6}>
+                <Col xl={12}>
                   <div className="form-group">
-                    <label className={styles.formLabel}>Hình ảnh sản phẩm</label>
-                    <input
-                      type="file"
-                      className="form-control"
-                      onChange={(e) => formik.setFieldValue("image", e.target.files[0])}
+                    <label className={styles.formLabel}>Link hình ảnh sản phẩm (URL)</label>
+                    <Form.Control
+                      type="text"
+                      name="image" // Vẫn giữ name là image để khớp với formik
+                      placeholder="Ví dụ: https://img.com/ao-so-mi.jpg hoặc http://localhost:5000/images/ao.jpg"
+                      value={formik.values.image}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      isInvalid={!!formik.errors.image && formik.touched.image}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {formik.errors.image}
+                    </Form.Control.Feedback>
                   </div>
                 </Col>
-                <Col xl={6}>
-                  {formik.values.image && <PreviewImage file={formik.values.image} />}
+
+                <Col xl={12} className="mt-3 text-center">
+                  {/* Hiển thị ảnh xem trước trực tiếp từ link */}
+                  {formik.values.image && (
+                    <div className="image-preview-wrapper">
+                      <p className="small text-muted">Xem trước ảnh:</p>
+                      <img 
+                        src={formik.values.image} 
+                        alt="Preview" 
+                        style={{ maxWidth: '200px', borderRadius: '8px', border: '1px solid #ddd' }}
+                        onError={(e) => { e.target.src = 'https://via.placeholder.com/200?text=Link+ảnh+lỗi'; }}
+                      />
+                    </div>
+                  )}
                 </Col>
               </Row>
 

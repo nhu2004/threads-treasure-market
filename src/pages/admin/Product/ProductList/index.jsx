@@ -96,7 +96,7 @@ function ProductList() {
               <FaSearch /> Tìm kiếm
             </button>
           </div>
-          <Link to="/admin/product/add" className={styles.addBtn}>
+          <Link to="/admin/product/addproduct" className={styles.addBtn}>
             <FaPlus /> Thêm sản phẩm
           </Link>
         </div>

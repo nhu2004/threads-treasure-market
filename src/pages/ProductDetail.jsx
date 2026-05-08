@@ -44,8 +44,12 @@ const ProductDetail = () => {
   }, [id]);
 
   const handleAddToCart = () => {
-    if (!selectedSize || !selectedColor || !product) return;
+    if (!selectedSize || !selectedColor || !product) {
+        alert("Vui lòng chọn size và màu!");
+        return;
+    }
     addItem(product, selectedSize, selectedColor);
+    // Lưu ý: CartProvider của bạn đã có lệnh setIsCartOpen(true) nên nó sẽ tự bật Drawer lên!
   };
 
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);

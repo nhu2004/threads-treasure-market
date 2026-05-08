@@ -1,32 +1,48 @@
 const { poolPromise, sql } = require('../db');
 
-// 1. THÊM SẢN PHẨM (Đã cập nhật Size, Màu sắc, Nhà cung cấp)
+// 1. THÊM SẢN PHẨM (Để SQL tự động tăng ProductID)
 const createProduct = async (req, res) => {
     try {
-        const { name, price, originalPrice, categoryId, supplierId, description, imageUrl, badge, colors, sizes, stockQuantity } = req.body;
-        const pool = await poolPromise;
-        await pool.request()
-            .input('name', sql.NVarChar, name)
-            .input('price', sql.Decimal, price)
-            .input('originalPrice', sql.Decimal, originalPrice || price)
-            .input('cate', sql.Int, categoryId)
-            .input('sup', sql.Int, supplierId) // Lưu thông tin nhà cung cấp
-            .input('desc', sql.NVarChar, description)
-            .input('img', sql.NVarChar, imageUrl)
-            .input('badge', sql.NVarChar, badge || '')
-            .input('colors', sql.NVarChar, JSON.stringify(colors)) // Chuyển mảng màu thành chuỗi JSON
-            .input('sizes', sql.NVarChar, sizes.join(',')) // Chuyển mảng size thành chuỗi cách nhau dấu phẩy
-            .input('stock', sql.Int, stockQuantity)
-            .query(`INSERT INTO Products (Name, Price, OriginalPrice, CategoryID, SupplierID, Description, ImageUrl, Badge, Colors, Sizes, StockQuantity) 
-                    VALUES (@name, @price, @originalPrice, @cate, @sup, @desc, @img, @badge, @colors, @sizes, @stock)`);
-        
-        res.json({ message: 'Thêm sản phẩm thành công!' });
-    } catch (error) {
-        res.status(500).json({ message: "Lỗi khi thêm sản phẩm: " + error.message });
-    }
-};
+        const { 
+            name, price, originalPrice, categoryId, supplierId, 
+            description, imageUrl, badge, colors, sizes, stockQuantity, createdBy 
+        } = req.body;
 
-// 2. SỬA SẢN PHẨM (Mới bổ sung theo yêu cầu ảnh)
+        const pool = await poolPromise;
+
+        // BỎ QUA KIỂM TRA TRÙNG MÃ VÌ SQL TỰ ĐỘNG ĐÁNH SỐ
+        // THỰC HIỆN INSERT TRỰC TIẾP (Không có cột ProductID)
+        const result = await pool.request()
+            .input('name', sql.NVarChar, name)
+            .input('price', sql.Decimal(18, 2), price)
+            .input('oriPrice', sql.Decimal(18, 2), originalPrice || price)
+            .input('cate', sql.Int, categoryId)
+            .input('sup', sql.Int, supplierId)
+            .input('desc', sql.NVarChar, description || '')
+            .input('img', sql.NVarChar, imageUrl || '')
+            .input('badge', sql.NVarChar, badge || 'MỚI')
+            .input('colors', sql.NVarChar, JSON.stringify(colors)) 
+            .input('sizes', sql.NVarChar, Array.isArray(sizes) ? sizes.join(',') : sizes)
+            .input('stock', sql.Int, stockQuantity || 0)
+            .input('user', sql.Int, createdBy || 1)
+            .query(`
+                INSERT INTO Products (Name, Price, OriginalPrice, CategoryID, SupplierID, Description, ImageUrl, Badge, Colors, Sizes, StockQuantity, CreatedBy) 
+                VALUES (@name, @price, @oriPrice, @cate, @sup, @desc, @img, @badge, @colors, @sizes, @stock, @user)
+            `);
+        
+        if (result.rowsAffected[0] > 0) {
+            res.json({ message: 'Thêm sản phẩm thành công!', success: true });
+        } else {
+            res.status(500).json({ message: 'Lỗi: Không có dữ liệu nào được thêm vào.' });
+        }
+
+    } catch (error) {
+        console.error("LỖI SQL:", error.message);
+        res.status(500).json({ message: "Lỗi Server: " + error.message });
+    }
+}; 
+
+// 2. SỬA SẢN PHẨM 
 const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
@@ -52,7 +68,7 @@ const updateProduct = async (req, res) => {
     }
 };
 
-// 3. XÓA SẢN PHẨM (Mới bổ sung theo yêu cầu ảnh)
+// 3. XÓA SẢN PHẨM
 const deleteProduct = async (req, res) => {
     try {
         const { id } = req.params;
