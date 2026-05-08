@@ -10,37 +10,34 @@ import Order from "./admin/Order";
 import UpdateOrder from "./admin/Order/UpdateOrder";
 import { CustomerList } from "./admin/User";
 import Voucher from "./admin/Voucher";
-
-// 1. IMPORT COMPONENT HÓA ĐƠN
 import Invoices from "./admin/Invoices"; 
 
 const Admin = () => {
   return (
     <AdminLayout>
       <Routes>
+        {/* Đường dẫn tương đối: Không có dấu / ở đầu */}
         <Route path="/" element={<Analytics />} /> 
         
-        {/* Đăng ký cả 2 đường dẫn (có 's' và không có 's') để chống lỗi màn hình trắng */}
-        <Route path="/products" element={<ProductList />} />
-        <Route path="/product" element={<ProductList />} />
+        {/* Quản lý sản phẩm: localhost:8080/admin/products */}
+        <Route path="products" element={<ProductList />} />
         
-        <Route path="/products/add" element={<AddProduct />} />
-        <Route path="/product/add" element={<AddProduct />} />
-        <Route path="/product/addproduct" element={<AddProduct />} /> {/* Dự phòng cho ảnh 3 */}
+        {/* Thêm sản phẩm: localhost:8080/admin/products/add */}
+        <Route path="products/add" element={<AddProduct />} />
         
-        <Route path="/products/update/:id" element={<UpdateProduct />} />
-        <Route path="/product/update/:id" element={<UpdateProduct />} />
+        {/* Cập nhật sản phẩm: localhost:8080/admin/product/update/:id */}
+        {/* Xóa dấu / ở đầu để tránh đè lên link /product/:id của người dùng */}
+        <Route path="product/update/:id" element={<UpdateProduct />} />
         
-        <Route path="/categories" element={<Category />} />
-        <Route path="/suppliers" element={<Supplier />} />
-        <Route path="/orders" element={<Order />} />
-        <Route path="/orders/update/:id" element={<UpdateOrder />} />
-        <Route path="/users" element={<CustomerList />} />
-        <Route path="/vouchers" element={<Voucher />} />
+        <Route path="categories" element={<Category />} />
+        <Route path="suppliers" element={<Supplier />} />
+        <Route path="orders" element={<Order />} />
+        <Route path="orders/update/:id" element={<UpdateOrder />} />
+        <Route path="users" element={<CustomerList />} />
+        <Route path="vouchers" element={<Voucher />} />
         
-        {/* 2. KHAI BÁO ROUTE CHO HÓA ĐƠN ĐỂ HẾT BỊ TRẮNG TRANG */}
-        <Route path="/invoices" element={<Invoices />} />
-
+        {/* Route Hóa đơn */}
+        <Route path="invoices" element={<Invoices />} />
       </Routes>
     </AdminLayout>
   );

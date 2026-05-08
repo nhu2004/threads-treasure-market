@@ -56,6 +56,7 @@
     "embla-carousel-react": "^8.6.0",
     "formik": "^2.4.9",
     "framer-motion": "^12.35.0",
+    "html2pdf.js": "^0.14.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.462.0",
     "moment": "^2.30.1",

@@ -49,8 +49,8 @@ function AppContent() {
       <Toaster />
       <Sonner />
       
-      {/* SỬA LỖI: CartProvider bao bọc toàn bộ nội dung ứng dụng */}
       <CartProvider>
+        {/* Header/Footer chỉ hiện ở các trang không phải Admin */}
         {!isAdminPage && (
           <>
             <Header />
@@ -66,6 +66,7 @@ function AppContent() {
 
         <main className={!isAdminPage ? "min-h-screen" : ""}>
           <Routes>
+            {/* 1. ROUTES CHO NGƯỜI DÙNG */}
             <Route path="/" element={<Index />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/product/:id" element={<ProductDetail />} />
@@ -73,7 +74,11 @@ function AppContent() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/vouchers" element={<Vouchers />} />
+
+            {/* 2. ROUTES CHO ADMIN (Đã có tiền tố /admin/*) */}
             <Route path="/admin/*" element={<Admin />} />
+
+            {/* 3. TRANG 404 */}
             <Route path="*" element={<NotFound />} /> 
           </Routes>
         </main>
