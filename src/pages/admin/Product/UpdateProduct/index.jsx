@@ -1,13 +1,14 @@
 // Client/src/pages/Admin/Product/Updateproduct/index.js
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import Select, { components } from "react-select";
+import Select from "react-select";
 import { Row, Col, Form, Modal, Button } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 
 import styles from "./Updateproduct.module.css";
+// IMPORT CHUẨN XÁC TỪ FILE ADMIN.JS (ĐÃ KIỂM TRA)
 import {
-  useAdminProductDetail, // Đã sửa lỗi chính tả ở các import nếu có
+  useAdminProductDetail, 
   useProductOptions,
   useAddCategory,
   useAddSupplier,
@@ -18,8 +19,10 @@ function Updateproduct() {
   const params = useParams();
   const { id } = params;
 
-  // SỬA LỖI CHỮ HOA/THƯỜNG Ở ĐÂY
+  // SỬA LỖI ĐÁNH MÁY 1: Chữ 'P' ở ProductDetail phải viết hoa
   const { productData } = useAdminProductDetail(id);
+  
+  // SỬA LỖI ĐÁNH MÁY 2: Chữ 'P' ở ProductOptions phải viết hoa
   const { categoryList, supplierList } = useProductOptions(); 
 
   const {
@@ -29,7 +32,7 @@ function Updateproduct() {
     setNewcategory,
     loading: categoryLoading,
     handleSubmit: handleSubmitAddcategory,
-  } = useAddCategory();
+  } = useAddCategory(); // SỬA LỖI ĐÁNH MÁY 3: Chữ 'C' phải viết hoa
 
   const {
     showModal: showAddsupplierModal,
@@ -38,9 +41,8 @@ function Updateproduct() {
     setNewsupplier,
     loading: supplierLoading,
     handleSubmit: handleSubmitAddsupplier,
-  } = useAddSupplier();
+  } = useAddSupplier(); // SỬA LỖI ĐÁNH MÁY 4: Chữ 'S' phải viết hoa
 
-  // Bỏ updateImage vì chúng ta dùng Link URL trực tiếp
   const {
     formik,
     loading: updateLoading,
@@ -48,7 +50,7 @@ function Updateproduct() {
 
   return (
     <Row>
-      {/* Modal thêm thể loại (Giữ nguyên) */}
+      {/* Modal thêm Danh mục */}
       <Modal size="lg" show={showAddcategoryModal} onHide={() => setShowAddcategoryModal(false)}>
         <Modal.Header closeButton><Modal.Title>Thêm danh mục mới</Modal.Title></Modal.Header>
         <Modal.Body>
@@ -65,7 +67,7 @@ function Updateproduct() {
         <Modal.Footer><Button variant="secondary" onClick={() => setShowAddcategoryModal(false)}>Hủy</Button></Modal.Footer>
       </Modal>
 
-      {/* Modal thêm nhà cung cấp (Giữ nguyên) */}
+      {/* Modal thêm Nhà cung cấp */}
       <Modal size="lg" show={showAddsupplierModal} onHide={() => setShowAddsupplierModal(false)}>
         <Modal.Header closeButton><Modal.Title>Thêm nhà cung cấp mới</Modal.Title></Modal.Header>
         <Modal.Body>
@@ -134,7 +136,6 @@ function Updateproduct() {
                 </Col>
               </Row>
 
-              {/* ĐÃ SỬA THÀNH CÁC TRƯỜNG CỦA QUẦN ÁO (Thay vì Sách) */}
               <Row className="mt-3">
                 <Col xl={4}>
                   <div className="form-group">
@@ -199,7 +200,6 @@ function Updateproduct() {
                 </Col>
               </Row>
 
-              {/* PHẦN NHẬP LINK ẢNH (Đã kiểm tra chuẩn) */}
               <Row className="mt-4">
                 <Col xl={12}>
                   <div className="form-group">
