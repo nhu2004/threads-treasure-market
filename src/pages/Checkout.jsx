@@ -63,7 +63,19 @@ const Checkout = () => {
       </div>
     );
   }
-
+// --- ĐOẠN NÀY ĐỂ BẢO VỆ TRANG CHECKOUT ---
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="font-body text-muted-foreground mb-4">Vui lòng đăng nhập để tiến hành thanh toán!</p>
+          <Link to="/shop" className="font-body text-sm underline text-foreground">
+            Quay lại cửa hàng
+          </Link>
+        </div>
+      </div>
+    );
+  }
   if (items.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">

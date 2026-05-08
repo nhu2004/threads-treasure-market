@@ -11,6 +11,9 @@ import UpdateOrder from "./admin/Order/UpdateOrder";
 import { CustomerList } from "./admin/User";
 import Voucher from "./admin/Voucher";
 
+// 1. IMPORT COMPONENT HÓA ĐƠN
+import Invoices from "./admin/Invoices"; 
+
 const Admin = () => {
   return (
     <AdminLayout>
@@ -34,6 +37,10 @@ const Admin = () => {
         <Route path="/orders/update/:id" element={<UpdateOrder />} />
         <Route path="/users" element={<CustomerList />} />
         <Route path="/vouchers" element={<Voucher />} />
+        
+        {/* 2. KHAI BÁO ROUTE CHO HÓA ĐƠN ĐỂ HẾT BỊ TRẮNG TRANG */}
+        <Route path="/invoices" element={<Invoices />} />
+
       </Routes>
     </AdminLayout>
   );

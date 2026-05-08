@@ -414,3 +414,206 @@ ADD [SupplierID] INT NULL;
 ALTER TABLE [ThreadsTreasureDB].[dbo].[Products]
 ADD CONSTRAINT FK_Products_Suppliers FOREIGN KEY (SupplierID)
 REFERENCES [ThreadsTreasureDB].[dbo].[Suppliers](SupplierID);
+
+ 
+
+ BEGIN TRANSACTION;
+
+-- Khai báo biến để lưu OrderID tự động tăng
+DECLARE @OrderID1 INT, @OrderID2 INT, @OrderID3 INT;
+
+-----------------------------------------------------------
+-- ĐƠN HÀNG 1: Không dùng Voucher
+-----------------------------------------------------------
+INSERT INTO [dbo].[Orders] ([UserID], [OrderDate], [Status], [Total], [SubTotal], [DiscountAmount], [VoucherID])
+VALUES (5, GETDATE(), N'Chờ xác nhận', 5130000, 5130000, 0, NULL);
+
+-- Lấy OrderID vừa chèn
+SET @OrderID1 = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[OrderDetails] ([OrderID], [ProductID], [Quantity], [Price])
+VALUES 
+    (@OrderID1, 1, 2, 1290000), -- 2 Áo Blazer (ProductID = 1)
+    (@OrderID1, 2, 3, 850000);  -- 3 Quần Kaki (ProductID = 2)
+
+-----------------------------------------------------------
+-- ĐƠN HÀNG 2: Không dùng Voucher
+-----------------------------------------------------------
+INSERT INTO [dbo].[Orders] ([UserID], [OrderDate], [Status], [Total], [SubTotal], [DiscountAmount], [VoucherID])
+VALUES (5, GETDATE(), N'Chờ xác nhận', 5130000, 5130000, 0, NULL);
+
+SET @OrderID2 = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[OrderDetails] ([OrderID], [ProductID], [Quantity], [Price])
+VALUES 
+    (@OrderID2, 1, 2, 1290000), -- 2 Áo
+    (@OrderID2, 2, 3, 850000);  -- 3 Quần
+
+-----------------------------------------------------------
+-- ĐƠN HÀNG 3: Dùng Voucher 'NEWUSER20' (VoucherID = 3)
+-----------------------------------------------------------
+-- Total = SubTotal (5.130.000) - Discount (200.000 max) = 4.930.000
+INSERT INTO [dbo].[Orders] ([UserID], [OrderDate], [Status], [Total], [SubTotal], [DiscountAmount], [VoucherID])
+VALUES (5, GETDATE(), N'Chờ xác nhận', 4930000, 5130000, 200000, 3);
+
+SET @OrderID3 = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[OrderDetails] ([OrderID], [ProductID], [Quantity], [Price])
+VALUES 
+    (@OrderID3, 1, 2, 1290000), -- 2 Áo
+    (@OrderID3, 2, 3, 850000);  -- 3 Quần
+
+COMMIT TRANSACTION;
+
+PRINT N'Đã tạo thành công 3 đơn hàng cho UserID = 5 (Đơn thứ 3 có áp dụng NEWUSER20)!';
+
+INSERT INTO [dbo].[Products] 
+    ([Name], [Price], [CategoryID], [Description], [ImageUrl], [Badge], [Colors], [Sizes], [OriginalPrice], [StockQuantity], [CreatedBy], [SupplierID])
+VALUES
+-- 1. Quần short nam ASO225SAH2 / ASO226SAH2
+(
+    N'Quần short nam Regular Fit ASO225SAH2', 995000, 2, 
+    N'Quần short nam phom Regular Fit ôm vừa phải, thoải mái vận động. Màu sắc đa dạng, dễ phối đồ.', 
+    'https://cdn.hstatic.net/products/200000887901/22_ef82f2cdc77141b99873e8c8a05973a8.jpg', 
+    N'MỚI', 
+    '[{"name": "Xám", "hex": "#808080"}, {"name": "Be", "hex": "#F5F5DC"}]', 
+    '29,30,31,32,33,34', 995000, 100, 1, 4
+),
+
+-- 2. Quần âu nam Cropped ATR0610Z / ATR0420S3
+(
+    N'Quần âu nam Cropped ATR0610Z', 1150000, 2, 
+    N'Quần âu nam phom Cropped trẻ trung, tôn dáng. Chất liệu vải cao cấp, đứng phom.', 
+    'https://cdn.hstatic.net/products/200000887901/img_7082_668a7f4a8b504c41a136a3e9c8a422fb.jpg', 
+    N'HOT', 
+    '[{"name": "Xanh navy", "hex": "#000080"}, {"name": "Xám kẻ", "hex": "#A9A9A9"}]', 
+    '29,30,31,32,33,34', 1150000, 80, 1, 5
+),
+
+-- 3. Quần kaki nam Regular Fit AKK0040Z / AKK00103
+(
+    N'Quần kaki nam Regular Fit AKK0040Z', 950000, 2, 
+    N'Quần kaki nam phom Regular Fit suông nhẹ, thoải mái. Phù hợp môi trường công sở và dạo phố.', 
+    'https://cdn.hstatic.net/products/200000887901/a0137-1536x1536_c3626c5fdee7451189d6498ae6b3100a.jpg', 
+    N'BEST SELLER', 
+    '[{"name": "Xanh nhạt", "hex": "#ADD8E6"}, {"name": "Be", "hex": "#F5F5DC"}]', 
+    '29,30,31,32,33', 950000, 150, 1, 4
+),
+
+-- 4. Quần âu nam ATR0420Z
+(
+    N'Quần âu nam ATR0420Z', 1250000, 2, 
+    N'Quần âu nam thiết kế tinh tế, lịch lãm dành cho doanh nhân. Vải chống nhăn hiệu quả.', 
+    'https://cdn.hstatic.net/products/200000887901/a0579-1536x1536_6939a707e59a4c0e82f3f386b097ffa6.jpg', 
+    NULL, 
+    '[{"name": "Đen", "hex": "#000000"}, {"name": "Xám be", "hex": "#D3D3D3"}]', 
+    '29,30,31,32,33,34', 1250000, 90, 1, 5
+),
+
+-- 5. Cà vạt nam bản to đan lát ATI004S0H2 / ATI005S0H2
+(
+    N'Cà vạt nam bản to đan lát ATI004S0H2', 450000, 4, 
+    N'Cà vạt nam bản to họa tiết đan lát sang trọng, chất liệu lụa tổng hợp cao cấp.', 
+    'https://cdn.hstatic.net/products/200000887901/dsc09843_ba757f0103fb4726aaa09a630e9c27d9.jpg', 
+    N'MỚI', 
+    '[{"name": "Đỏ đô", "hex": "#800000"}, {"name": "Xanh navy", "hex": "#000080"}]', 
+    'Free Size', 450000, 50, 1, 8
+),
+
+-- 6. Thắt lưng nam Leather ABL00502
+(
+    N'Thắt lưng nam Leather ABL00502', 850000, 4, 
+    N'Thắt lưng nam da bò thật 100%, mặt khóa hợp kim nguyên khối chống gỉ sét.', 
+    'https://product.hstatic.net/200000887901/product/_tc_8175_31271334e19f4984801736e999c01c71_61991f44100a428da07158b27bc58e1e.jpg', 
+    N'CA CAO CẤP', 
+    '[{"name": "Đen", "hex": "#000000"}]', 
+    'Free Size', 850000, 60, 1, 8
+),
+
+-- 7. Cặp tài liệu nam da bò Epsom ABC020S0H2
+(
+    N'Cặp tài liệu nam da bò Epsom ABC020S0H2', 2500000, 4, 
+    N'Cặp tài liệu da bò dập vân Epsom sang trọng, chống xước và giữ phom cực tốt.', 
+    'https://cdn.hstatic.net/products/200000887901/dsc08619_2048_1x1_150kb_08095a5cb0be472dbe7c9f836ed2d9eb.jpg', 
+    N'VIP', 
+    '[{"name": "Đen", "hex": "#000000"}]', 
+    'Free Size', 2500000, 20, 1, 8
+),
+
+-- 8. Ghim cài áo GHBA030
+(
+    N'Ghim cài áo cao cấp GHBA030', 150000, 4, 
+    N'Ghim cài áo nam cao cấp, điểm nhấn hoàn hảo cho bộ Vest/Suit của bạn.', 
+    'https://cavatcaocap.com/wp-content/uploads/2023/02/GHBA030-2-gl.webp', 
+    NULL, 
+    '[{"name": "Bạc", "hex": "#C0C0C0"}]', 
+    'Free Size', 150000, 200, 1, 8
+),
+
+-- 9. Ghim cài áo GHBA009
+(
+    N'Ghim cài áo cao cấp GHBA009', 150000, 4, 
+    N'Ghim cài áo nam họa tiết tinh xảo, tôn vinh vẻ đẹp lịch lãm.', 
+    'https://cavatcaocap.com/wp-content/uploads/2023/02/GHBA009-2-gl.webp', 
+    NULL, 
+    '[{"name": "Vàng kim", "hex": "#FFD700"}]', 
+    'Free Size', 150000, 180, 1, 8
+),
+
+-- 10. Ghim cài áo GHVA025
+(
+    N'Ghim cài áo cao cấp GHVA025', 150000, 4, 
+    N'Ghim cài áo vest hình dáng độc đáo, đính đá sang trọng.', 
+    'https://cavatcaocap.com/wp-content/uploads/2023/02/GHVA025-2-gl.webp', 
+    NULL, 
+    '[{"name": "Bạc", "hex": "#C0C0C0"}]', 
+    'Free Size', 150000, 150, 1, 8
+);
+
+
+
+
+-- =========================================================
+-- BƯỚC 1: XỬ LÝ LỖI FONT CHỮ CỘT COLORS
+-- =========================================================
+
+-- 1.1 Chuyển cột Colors sang dạng NVARCHAR(MAX) để hỗ trợ lưu tiếng Việt Unicode (Nếu cột đã là NVARCHAR thì lệnh này vẫn an toàn)
+ALTER TABLE Products ALTER COLUMN Colors NVARCHAR(MAX);
+
+-- 1.2 Dùng lệnh REPLACE để sửa lại các chuỗi JSON bị lỗi font (Dựa trên hình ảnh bạn cung cấp)
+UPDATE Products SET Colors = REPLACE(Colors, N'Xanh nh?t', N'Xanh nhạt');
+UPDATE Products SET Colors = REPLACE(Colors, N'Xám k?', N'Xám khói');
+UPDATE Products SET Colors = REPLACE(Colors, N'Đ? dỏ', N'Đỏ đô');
+UPDATE Products SET Colors = REPLACE(Colors, N'B?c', N'Bạc');
+
+-- =========================================================
+-- BƯỚC 2: CẮT MÃ SẢN PHẨM Ở CUỐI TÊN
+-- =========================================================
+
+-- Thuật toán: Tìm khoảng trắng cuối cùng trong chuỗi. 
+-- Nếu cụm từ cuối cùng (độ dài >= 5 ký tự) và có chứa chữ số -> Khả năng cao là Mã SP -> Cắt bỏ nó đi.
+
+UPDATE Products
+SET Name = RTRIM(LEFT(Name, LEN(Name) - CHARINDEX(' ', REVERSE(Name))))
+WHERE 
+    CHARINDEX(' ', REVERSE(Name)) > 0  -- Tên phải có ít nhất 1 khoảng trắng
+    AND RIGHT(Name, CHARINDEX(' ', REVERSE(Name)) - 1) LIKE '%[0-9]%' -- Từ cuối cùng phải chứa ít nhất 1 chữ số
+    AND LEN(RIGHT(Name, CHARINDEX(' ', REVERSE(Name)) - 1)) >= 5; -- Từ cuối cùng phải dài từ 5 ký tự trở lên (VD: GHBA030)
+
+
+	SELECT COLUMNPROPERTY(OBJECT_ID('Products'), 'ProductID', 'IsIdentity') AS IsIdentity;
+
+	ALTER TABLE Orders 
+ADD Note NVARCHAR(MAX) NULL;
+
+BEGIN TRANSACTION;
+
+-- Bước 1: Xóa các sản phẩm chi tiết của đơn hàng số 66 trong bảng OrderDetails
+DELETE FROM OrderDetails 
+WHERE OrderID = 66;
+
+-- Bước 2: Xóa bản ghi của đơn hàng số 66 trong bảng Orders chính
+DELETE FROM Orders 
+WHERE OrderID = 66;
+
+COMMIT TRANSACTION;

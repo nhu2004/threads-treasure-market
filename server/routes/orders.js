@@ -194,11 +194,11 @@ router.get('/:id', async (req, res) => {
         if (orderResult.recordset.length === 0) return res.status(404).json({ message: 'Không tìm thấy' });
         const order = orderResult.recordset[0];
 
-        // Lấy Chi tiết sản phẩm
+        // Lấy Chi tiết sản phẩm (Bổ sung thêm p.StockQuantity)
         let detailsResult = await pool.request()
             .input('id', sql.Int, orderId)
             .query(`
-                SELECT od.*, p.Name as ProductName, p.ImageUrl as ProductImage
+                SELECT od.*, p.Name as ProductName, p.ImageUrl as ProductImage, p.StockQuantity
                 FROM OrderDetails od
                 LEFT JOIN Products p ON od.ProductID = p.ProductID
                 WHERE od.OrderID = @id
@@ -211,6 +211,7 @@ router.get('/:id', async (req, res) => {
             subTotal: order.SubTotal || order.Total,
             discount: order.DiscountAmount || 0,
             status: order.Status || "Chờ xác nhận",
+            note: order.Note,
             CancellationReason: order.CancellationReason,
             paymentStatus: "Thanh toán khi nhận hàng",   // Đã bỏ cột PaymentStatus gây lỗi
             delivery: {
@@ -219,11 +220,13 @@ router.get('/:id', async (req, res) => {
                 address: order.Address
             },
             products: detailsResult.recordset.map(item => ({
-                id: item.OrderDetailID,        // Dùng 'id' thay vì '_id'
+                id: item.OrderDetailID,        
                 name: item.ProductName,
                 image: item.ProductImage,
                 quantity: item.Quantity,
-                price: item.Price
+                price: item.Price,
+                // BỔ SUNG DÒNG NÀY ĐỂ TRUYỀN TỒN KHO XUỐNG FRONTEND
+                stockQuantity: item.StockQuantity || 0 
             }))
         }});
     } catch (err) {
@@ -322,26 +325,54 @@ router.put('/:id/confirm-delivery', upload.single('deliveryProofImage'), async (
         res.status(500).json({ message: 'Lỗi server' });
     }
 });
-// BỔ SUNG 3: API Hủy đơn hàng (Kèm Lý do và Người thực hiện)
+// BỔ SUNG 3: API Hủy đơn hàng (Kèm Lý do, Người thực hiện và LOGIC TỒN KHO)
 router.put('/:id/cancel', async (req, res) => {
     try {
         let pool = await sql.connect(sqlConfig);
         const orderId = req.params.id;
         const { reason, updatedBy } = req.body;
 
-        await pool.request()
-            .input('id', sql.Int, orderId)
-            .input('reason', sql.NVarChar, reason)
-            .input('updatedBy', sql.Int, updatedBy)
-            .query(`
-                UPDATE Orders 
-                SET Status = N'Đã hủy', 
-                    CancellationReason = @reason, 
-                    StatusUpdatedBy = @updatedBy
-                WHERE OrderID = @id
-            `);
+        // Khởi tạo Transaction để đảm bảo tính toàn vẹn dữ liệu
+        const transaction = new sql.Transaction(pool);
+        await transaction.begin();
 
-        res.json({ message: 'Đã hủy đơn hàng thành công', success: true });
+        try {
+            // Bước 1: Cập nhật trạng thái đơn hàng thành 'Đã hủy'
+            await transaction.request()
+                .input('id', sql.Int, orderId)
+                .input('reason', sql.NVarChar, reason)
+                .input('updatedBy', sql.Int, updatedBy)
+                .query(`
+                    UPDATE Orders 
+                    SET Status = N'Đã hủy', 
+                        CancellationReason = @reason, 
+                        StatusUpdatedBy = @updatedBy
+                    WHERE OrderID = @id
+                `);
+
+            // Bước 2: KIỂM TRA LÝ DO ĐỂ TRẢ TỒN KHO
+            // Nếu lý do KHÁC "Hàng lỗi", hệ thống sẽ join bảng OrderDetails và Products để cộng lại hàng.
+            if (reason !== "Hàng lỗi") {
+                await transaction.request()
+                    .input('id', sql.Int, orderId)
+                    .query(`
+                        UPDATE p
+                        SET p.StockQuantity = ISNULL(p.StockQuantity, 0) + od.Quantity
+                        FROM Products p
+                        INNER JOIN OrderDetails od ON p.ProductID = od.ProductID
+                        WHERE od.OrderID = @id
+                    `);
+            }
+
+            // Hoàn tất lưu dữ liệu
+            await transaction.commit();
+            res.json({ message: 'Đã hủy đơn hàng và xử lý kho thành công', success: true });
+
+        } catch (error) {
+            await transaction.rollback(); // Bị lỗi gì thì Hủy bỏ thao tác, bảo vệ DB
+            throw error;
+        }
+
     } catch (err) {
         console.error("Lỗi khi hủy đơn:", err);
         res.status(500).json({ message: 'Lỗi server khi hủy đơn' });
@@ -421,38 +452,109 @@ router.put('/:id/ship', async (req, res) => {
 });
 
 // BỔ SUNG: API TẠO ĐƠN HÀNG MỚI (Từ trang Checkout)
+// API: TẠO ĐƠN HÀNG MỚI (Dùng chung cho cả khách lẻ và thành viên)
 router.post('/', async (req, res) => {
     try {
         let pool = await sql.connect(sqlConfig);
         const { customer, items, totalPrice, userId } = req.body;
 
-        // 1. Insert vào bảng Orders
-        let orderResult = await pool.request()
-            .input('userId', sql.Int, userId || null) // Truyền ID nếu user đã đăng nhập
-            .input('total', sql.Decimal(18,2), totalPrice)
-            .input('subTotal', sql.Decimal(18,2), totalPrice)
-            .query(`
-                INSERT INTO Orders (UserID, OrderDate, Status, Total, SubTotal, DiscountAmount)
-                OUTPUT INSERTED.OrderID
-                VALUES (@userId, GETDATE(), N'Chờ xác nhận', @total, @subTotal, 0);
-            `);
+        // Bắt đầu 1 Transaction để đảm bảo nếu lưu chi tiết lỗi thì sẽ hủy luôn đơn hàng
+        const transaction = new sql.Transaction(pool);
+        await transaction.begin();
 
-        const newOrderId = orderResult.recordset[0].OrderID;
-
-        // 2. Insert vào bảng OrderDetails
-        for (let item of items) {
-            await pool.request()
-                .input('orderId', sql.Int, newOrderId)
-                .input('productId', sql.Int, item.product.id)
-                .input('quantity', sql.Int, item.quantity)
-                .input('price', sql.Decimal(18,2), item.product.price)
+        try {
+            // 1. Chèn vào bảng Orders
+            let orderResult = await transaction.request()
+                .input('userId', sql.Int, userId || null) 
+                .input('total', sql.Decimal(18,2), totalPrice)
+                .input('subTotal', sql.Decimal(18,2), totalPrice)
                 .query(`
-                    INSERT INTO OrderDetails (OrderID, ProductID, Quantity, Price)
-                    VALUES (@orderId, @productId, @quantity, @price)
+                    INSERT INTO Orders (UserID, OrderDate, Status, Total, SubTotal, DiscountAmount)
+                    OUTPUT INSERTED.OrderID
+                    VALUES (@userId, GETDATE(), N'Chờ xác nhận', @total, @subTotal, 0);
                 `);
-        }
 
-        res.json({ message: 'Đặt hàng thành công', orderId: newOrderId, success: true });
+            const newOrderId = orderResult.recordset[0].OrderID;
+
+            // 2. Chèn vào bảng OrderDetails và Cập nhật kho
+            for (let item of items) {
+                await transaction.request()
+                    .input('orderId', sql.Int, newOrderId)
+                    .input('productId', sql.Int, item.product.id)
+                    .input('quantity', sql.Int, item.quantity)
+                    .input('price', sql.Decimal(18,2), item.product.price)
+                    .query(`
+                        -- Lưu chi tiết đơn
+                        INSERT INTO OrderDetails (OrderID, ProductID, Quantity, Price)
+                        VALUES (@orderId, @productId, @quantity, @price);
+
+                        -- Cập nhật trừ tồn kho trong bảng Products
+                        UPDATE Products 
+                        SET StockQuantity = StockQuantity - @quantity 
+                        WHERE ProductID = @productId;
+                    `);
+            }
+
+            await transaction.commit();
+            res.json({ message: 'Đặt hàng thành công', orderId: newOrderId, success: true });
+
+        } catch (innerError) {
+            await transaction.rollback();
+            throw innerError;
+        }
+    } catch (err) {
+        console.error("Lỗi tạo đơn:", err);
+        res.status(500).json({ message: 'Lỗi server khi tạo đơn' });
+    }
+});
+// API: Tạo đơn hàng mới
+router.post('/', async (req, res) => {
+    try {
+        let pool = await sql.connect(sqlConfig);
+        const { customer, items, totalPrice, userId } = req.body;
+
+        const transaction = new sql.Transaction(pool);
+        await transaction.begin();
+
+        try {
+            // 1. Chèn vào bảng Orders (Kèm theo Note)
+            let orderResult = await transaction.request()
+                .input('userId', sql.Int, userId || null) 
+                .input('total', sql.Decimal(18,2), totalPrice)
+                .input('subTotal', sql.Decimal(18,2), totalPrice)
+                .input('note', sql.NVarChar, customer.note || '') // <--- Lấy Note từ Frontend
+                .query(`
+                    INSERT INTO Orders (UserID, OrderDate, Status, Total, SubTotal, DiscountAmount, Note)
+                    OUTPUT INSERTED.OrderID
+                    VALUES (@userId, GETDATE(), N'Chờ xác nhận', @total, @subTotal, 0, @note);
+                `);
+
+            const newOrderId = orderResult.recordset[0].OrderID;
+
+            // 2. Chèn vào bảng OrderDetails và Cập nhật kho
+            for (let item of items) {
+                await transaction.request()
+                    .input('orderId', sql.Int, newOrderId)
+                    .input('productId', sql.Int, item.product.id)
+                    .input('quantity', sql.Int, item.quantity)
+                    .input('price', sql.Decimal(18,2), item.product.price)
+                    .query(`
+                        INSERT INTO OrderDetails (OrderID, ProductID, Quantity, Price)
+                        VALUES (@orderId, @productId, @quantity, @price);
+
+                        UPDATE Products 
+                        SET StockQuantity = StockQuantity - @quantity 
+                        WHERE ProductID = @productId;
+                    `);
+            }
+
+            await transaction.commit();
+            res.json({ message: 'Đặt hàng thành công', orderId: newOrderId, success: true });
+
+        } catch (innerError) {
+            await transaction.rollback();
+            throw innerError;
+        }
     } catch (err) {
         console.error("Lỗi tạo đơn:", err);
         res.status(500).json({ message: 'Lỗi server khi tạo đơn' });

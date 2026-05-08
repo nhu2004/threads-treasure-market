@@ -1,54 +1,35 @@
+// TRONG FILE useUpdateProduct.js
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import productApi from "../../../api/productApi";
 
 export const useUpdateProduct = (productId) => {
   const [loading, setLoading] = useState(false);
-  const [updateImage, setUpdateImage] = useState(false); // Flag kiểm tra có đổi ảnh không
   const navigate = useNavigate();
 
   const updateProduct = async (formValues) => {
     const {
-      name, categoryId, supplierId, description,
-      price, originalPrice, colors, sizes,
-      stockQuantity, image
+      name, price, originalPrice, categoryId, supplierId, 
+      description, image, colors, sizes, stockQuantity 
     } = formValues;
 
     try {
       setLoading(true);
-      let imageUrl = null;
 
-      // 1. Nếu Admin chọn ảnh mới, tiến hành upload lại lên Cloudinary
-      if (updateImage && image) {
-        const formData = new FormData();
-        formData.append("file", image);
-        formData.append("upload_preset", "clothingstore");
-
-        const resCloudinary = await axios.post(
-          "https://api.cloudinary.com/v1_1/clothingstore/image/upload",
-          formData
-        );
-        imageUrl = resCloudinary.data.secure_url;
-      }
-
-      // 2. Chuẩn bị object dữ liệu (Sử dụng Key viết thường để khớp Backend)
-      const updateData = {
+      // Gửi dữ liệu trực tiếp, biến 'image' lúc này là link URL nhập từ ô text
+      await productApi.update(productId, {
         name,
         price,
         originalPrice,
         categoryId,
         supplierId,
         description,
-        // Chuyển đổi chuỗi "S,M,L" thành mảng nếu cần
-        colors: Array.isArray(colors) ? colors : colors.split(',').map(c => c.trim()),
-        sizes: Array.isArray(sizes) ? sizes : sizes.split(',').map(s => s.trim()),
-        stockQuantity,
-        // Chỉ gửi imageUrl nếu có thay đổi ảnh mới
-        ...(imageUrl && { imageUrl }) 
-      };
-
-      await productApi.update(productId, updateData);
+        imageUrl: image, // Link ảnh
+        // Xử lý chuỗi thành mảng nếu cần trước khi gửi
+        colors: typeof colors === 'string' ? colors.split(',').map(c => c.trim()).filter(c => c !== "") : colors,
+        sizes: typeof sizes === 'string' ? sizes.split(',').map(s => s.trim()).filter(s => s !== "") : sizes,
+        stockQuantity
+      });
       
       setLoading(false);
       alert("Cập nhật sản phẩm thành công!");
@@ -56,9 +37,9 @@ export const useUpdateProduct = (productId) => {
     } catch (error) {
       setLoading(false);
       console.error("Lỗi cập nhật sản phẩm:", error);
-      alert("Cập nhật thất bại. Vui lòng thử lại!");
+      alert(error.message || "Cập nhật thất bại!");
     }
   };
 
-  return { loading, updateImage, setUpdateImage, updateProduct };
+  return { loading, updateProduct };
 };

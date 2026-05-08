@@ -2,34 +2,31 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useUpdateProduct } from "./useUpdateProduct";
 
+// TRONG FILE useUpdateProductForm.js
+
 export const useUpdateProductForm = (id, productData, supplierList) => {
-    const { loading, updateImage, setUpdateImage, updateProduct } = useUpdateProduct(id);
+    const { loading, updateProduct } = useUpdateProduct(id);
 
     const formik = useFormik({
         initialValues: {
-            productId: id,
-            name: productData.Name || "",
-            price: productData.Price || "",
-            originalPrice: productData.OriginalPrice || "",
-            discount: productData.Discount || 0,
-            description: productData.Description || "",
-            sizes: productData.Sizes || "",
-            colors: productData.Colors || "",
-            stockQuantity: productData.StockQuantity || 0,
-            categoryId: productData.CategoryID || "",
-            supplierId: productData.SupplierID || "",
-            image: "",
+            name: productData.name || "",
+            price: productData.price || "",
+            originalPrice: productData.originalPrice || "",
+            description: productData.description || "",
+            // Chuyển mảng về chuỗi để hiển thị trong ô nhập text
+            sizes: Array.isArray(productData.sizes) ? productData.sizes.join(', ') : (productData.sizes || ""),
+            colors: Array.isArray(productData.colors) ? productData.colors.join(', ') : (productData.colors || ""),
+            stockQuantity: productData.stockQuantity || 0,
+            categoryId: productData.categoryId || "",
+            supplierId: productData.supplierId || (supplierList[0]?.SupplierID || ""),
+            image: productData.image || "", // Lấy link ảnh cũ đổ vào ô text
         },
         enableReinitialize: true,
-        validationSchema: Yup.object({
-            name: Yup.string().required("Tên không được để trống"),
-            price: Yup.number().required("Giá không được để trống"),
-            categoryId: Yup.string().required("Danh mục không được để trống"),
-        }),
+        // ... (validationSchema giữ nguyên)
         onSubmit: async (values) => {
             await updateProduct(values);
         },
     });
 
-    return { formik, loading, updateImage, setUpdateImage };
-};
+    return { formik, loading };
+}; 

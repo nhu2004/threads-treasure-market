@@ -121,6 +121,16 @@ export default function OrderDetail({ orderId, data, onBack }) {
             <p className="text-sm mb-2"><span className="text-gray-600 inline-block w-28">Điện thoại:</span> <span className="text-gray-900 font-medium">{phone || 'N/A'}</span></p>
             <p className="text-sm"><span className="text-gray-600 inline-block w-28">Địa chỉ:</span> <span className="text-gray-900">{address || 'N/A'}</span></p>
         </div>
+
+        {/* --- DÁN ĐOẠN CODE HIỂN THỊ GHI CHÚ VÀO ĐÂY --- */}
+        {orderDetail.note && (
+          <div className="mt-4 p-4 bg-yellow-50/80 rounded-lg border border-yellow-200">
+            <span className="font-semibold text-yellow-800 text-sm">Ghi chú của khách hàng:</span>
+            <p className="text-yellow-900 mt-1 text-sm italic">{orderDetail.note}</p>
+          </div>
+        )}
+        {/* --------------------------------------------- */}
+
       </div>
 
       {/* Danh sách sản phẩm */}

@@ -1,5 +1,6 @@
 import { X, Plus, Minus, ShoppingBag } from "lucide-react";
 import { useCart } from "@/contexts/CartContext"; 
+import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -9,7 +10,7 @@ const formatPrice = (price) => {
 };
 const CartDrawer = () => {
   const { items, isCartOpen, setIsCartOpen, removeItem, updateQuantity, totalPrice, totalItems } = useCart();
-
+  const { user, setLoginModalOpen } = useAuth();
   return (
     <AnimatePresence>
       {isCartOpen && (
@@ -108,8 +109,16 @@ const CartDrawer = () => {
                   <span className="font-body text-lg font-semibold text-foreground">{formatPrice(totalPrice)}</span>
                 </div>
                 <Link
-                  to="/checkout"
-                  onClick={() => setIsCartOpen(false)}
+                  to={user ? "/checkout" : "#"}
+                  onClick={(e) => {
+                    if (!user) {
+                      e.preventDefault(); // Chặn không cho chuyển trang
+                      setIsCartOpen(false); // Đóng giỏ hàng
+                      setLoginModalOpen(true); // Mở khung đăng nhập
+                    } else {
+                      setIsCartOpen(false);
+                    }
+                  }}
                   className="block w-full bg-zinc-950 text-primary-foreground text-center py-4 font-body text-sm font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity"
                 >
                   Thanh toán
