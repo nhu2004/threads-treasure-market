@@ -20,15 +20,11 @@ const productApi = {
   fetchProducts: async () => {
     return [];
   }, 
-getById: async (id) => {
-      try {
+getById: async (id) => { 
         const response = await fetch(`http://localhost:5000/api/products/${id}`);
-        if (!response.ok) throw new Error("Failed to fetch product");
-        return await response.json();
-      } catch (error) {
-        console.error(error);
-        return { product: null };
-      }
+        const data = await response.json();
+      return data.product;
+      
     }, 
 create: async (data) => {
         const response = await fetch(`http://localhost:5000/api/products`, {

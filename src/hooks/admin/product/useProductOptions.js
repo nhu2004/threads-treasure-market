@@ -19,9 +19,10 @@ export const useProductOptions = () => {
   const fetchcategorys = async () => {
     try {
       const { data } = await categoryApi.getAll({});
-      const opts = data.map((item) => {
-        return { value: item._id, label: item.name };
-      });
+      const opts = data.map((item) => ({
+    value: item.CategoryID, // Chứ không phải _id
+    label: item.Name        // Chữ N viết hoa theo SQL
+}));
       setcategoryList(opts);
     } catch (error) {
       console.log(error);

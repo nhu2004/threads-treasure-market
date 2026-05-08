@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const sql = require('mssql');
 const productController = require('../controllers/productController');
+
 const sqlConfig = {
     user: 'sa', password: '123', database: 'ThreadsTreasureDB',
     server: 'NHI\\SQL1', 
@@ -64,9 +65,10 @@ router.get('/:id', async (req, res) => {
         let result = await pool.request()
             .input('id', sql.Int, req.params.id)
             .query(`
-                SELECT p.*, c.Name AS CategoryName
+                SELECT p.*, c.Name AS CategoryName, s.Name AS SupplierName
                 FROM Products p
                 LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
+                LEFT JOIN Suppliers s ON p.SupplierID = s.SupplierID
                 WHERE p.ProductID = @id
             `);
 
@@ -84,7 +86,10 @@ router.get('/:id', async (req, res) => {
             colors: p.Colors ? JSON.parse(p.Colors) : [],
             sizes: p.Sizes ? p.Sizes.split(',') : [],
             category: p.CategoryName,
-            categoryId: p.CategoryID
+            categoryId: p.CategoryID,
+            supplierId: p.SupplierID,
+            supplierName: p.SupplierName,
+            stockQuantity: p.StockQuantity
         };
         res.json({ product: formattedProduct });
     } catch (err) {

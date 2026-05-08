@@ -106,5 +106,33 @@ const deleteProduct = async (req, res) => {
         res.status(500).json({ message: "Lỗi xóa sản phẩm: " + error.message });
     }
 };
+// Thêm hàm này vào productController.js
+const getProducts = async (req, res) => {
+    try {
+        const { search } = req.query;
+        const pool = await poolPromise;
+        
+        let query = `SELECT * FROM Products`; // Dùng * sẽ lấy hết các cột bao gồm StockQuantity
+        
+        const request = pool.request();
+        if (search) {
+            query += ` WHERE Name LIKE @search OR Description LIKE @search`;
+            request.input('search', sql.NVarChar, `%${search}%`);
+        }
 
-module.exports = { createProduct, updateProduct, deleteProduct };
+        const result = await request.query(query);
+        
+        // Trả về dữ liệu cho Frontend
+        res.json({
+            success: true,
+            products: result.recordset, // result.recordset chứa danh sách sản phẩm từ SQL
+            totalPage: 1 // Bạn có thể tính toán phân trang sau nếu cần
+        });
+    } catch (error) {
+        console.error("Lỗi lấy danh sách sản phẩm:", error.message);
+        res.status(500).json({ message: "Lỗi Server: " + error.message });
+    }
+};
+
+// Đừng quên export nó ra nhé
+module.exports = { getProducts, createProduct, updateProduct, deleteProduct };

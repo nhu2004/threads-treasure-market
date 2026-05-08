@@ -110,6 +110,8 @@ function ProductList() {
               <th className={styles.tableHeadCell}>Hình ảnh</th>
               <th className={styles.tableHeadCell}>Thông tin sản phẩm</th>
               <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Danh mục</th>
+              {/* THÊM TIÊU ĐỀ CỘT SỐ LƯỢNG TẠI ĐÂY */}
+              {/* <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Số lượng</th> */}
               {/* ĐÃ XÓA CỘT THƯƠNG HIỆU Ở ĐÂY */}
               <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Giá bán</th>
               <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Thao tác</th>
@@ -118,7 +120,7 @@ function ProductList() {
           <tbody className={styles.tableBody}>
             {loading ? (
               <tr>
-                <td colSpan={6} className={styles.loadingState}>
+                <td colSpan={7} className={styles.loadingState}>
                   <Spinner animation="border" variant="success" />
                   <p className={styles.loadingText}>Đang tải dữ liệu...</p>
                 </td>
@@ -153,6 +155,19 @@ function ProductList() {
                   <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
                     <span className={styles.categoryBadge}>{item.category || 'Mặc định'}</span>
                   </td>
+                  {/* THÊM DỮ LIỆU SỐ LƯỢNG TẠI ĐÂY */} 
+                  {/* <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
+                    <span style={{ 
+                      fontWeight: '600', 
+                      color: (item.StockQuantity || item.stockQuantity || item.stock_quantity) < 10 ? '#ef4444' : '#374151' 
+                    }}>
+                      {/* Kiểm tra tất cả các biến thể tên có thể có từ SQL hoặc API */}
+                      {/* {item.StockQuantity !== undefined ? item.StockQuantity : 
+                      item.stockQuantity !== undefined ? item.stockQuantity : 
+                      item.stock_quantity !== undefined ? item.stock_quantity : 0}
+                    </span>
+                  </td> */}
+
                   <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
                     <span className={styles.priceValue}>{format.formatPrice(item.price || 0)}</span>
                   </td>
@@ -178,7 +193,7 @@ function ProductList() {
               ))
             ) : (
               <tr>
-                <td colSpan={6} className={styles.emptyState}>
+                <td colSpan={7} className={styles.emptyState}>
                   Hiện chưa có sản phẩm nào trong kho.
                 </td>
               </tr>

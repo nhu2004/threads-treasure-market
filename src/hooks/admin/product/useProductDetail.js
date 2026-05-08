@@ -2,41 +2,35 @@ import { useState, useEffect } from "react";
 import productApi from "../../../api/productApi";
 
 export const useProductDetail = (productId) => {
-  const [bookData, setBookData] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [productData, setProductData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchBook = async () => {
-      if (!productId) return;
+    const fetchProduct = async () => {
+      if (!productId) {
+        setLoading(false);
+        return;
+      }
 
       try {
         setLoading(true);
-        const { data } = await productApi.getById(productId);
-
-        // Transform category and brand arrays for react-select
-        const categorys = data.category.map((item) => ({
-          value: item._id,
-          label: item.name,
-        }));
-
-        const brands = data.brand.map((item) => ({
-          value: item._id,
-          label: item.name,
-        }));
-
-        setBookData({ ...data, category: categorys, brand: brands });
+        const response = await productApi.getById(productId);
+        
+        // API trả về { product: {...} } hoặc chỉ {...}
+        const data = response.product || response;
+        setProductData(data);
         setLoading(false);
       } catch (error) {
         setLoading(false);
-        console.log(error);
+        console.error("Lỗi tải chi tiết sản phẩm:", error);
       }
     };
 
-    fetchBook();
+    fetchProduct();
   }, [productId]);
 
   return {
-    bookData,
+    productData,
     loading,
   };
 };

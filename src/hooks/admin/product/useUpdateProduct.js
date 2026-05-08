@@ -5,6 +5,7 @@ import productApi from "../../../api/productApi";
 
 export const useUpdateProduct = (productId) => {
   const [loading, setLoading] = useState(false);
+  const [updateImage, setUpdateImage] = useState("");
   const navigate = useNavigate();
 
   const updateProduct = async (formValues) => {
@@ -41,5 +42,5 @@ export const useUpdateProduct = (productId) => {
     }
   };
 
-  return { loading, updateProduct };
+  return { loading, updateProduct, updateImage, setUpdateImage };
 };

@@ -415,7 +415,10 @@ const UpdateOrder = () => {
           <Button variant="primary" disabled={loading} onClick={handleUpdateDetails}>Lưu thay đổi</Button>
         </Modal.Footer>
       </Modal>
-      <InvoiceTemplate orderDetail={orderDetail} />
+      <div className="d-none d-print-block">
+        <InvoiceTemplate orderDetail={orderDetail} />
+      </div>
+
     </div>
   );
 };
