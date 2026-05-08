@@ -454,27 +454,34 @@ router.put('/:id/ship', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
         let pool = await sql.connect(sqlConfig);
-        const { customer, items, totalPrice, userId } = req.body;
+        const { customer, items, totalPrice, subTotal, discountAmount, voucherId, userId } = req.body;
 
-        // Bắt đầu 1 Transaction để đảm bảo tính toàn vẹn dữ liệu
         const transaction = new sql.Transaction(pool);
         await transaction.begin();
 
         try {
-            // 1. Chèn vào bảng Orders (ĐÃ BỔ SUNG CỘT NOTE)
+            // 1. Chèn vào bảng Orders (Thêm cột VoucherID và DiscountAmount)
             let orderResult = await transaction.request()
                 .input('userId', sql.Int, userId || null) 
                 .input('total', sql.Decimal(18,2), totalPrice)
-                .input('subTotal', sql.Decimal(18,2), totalPrice)
-                .input('note', sql.NVarChar, customer.note || '') // Bắt lấy ghi chú từ form
+                .input('subTotal', sql.Decimal(18,2), subTotal)
+                .input('discount', sql.Decimal(18,2), discountAmount || 0)
+                .input('voucherId', sql.Int, voucherId || null) // <--- MỚI
+                .input('note', sql.NVarChar, customer.note || '')
                 .query(`
-                    INSERT INTO Orders (UserID, OrderDate, Status, Total, SubTotal, DiscountAmount, Note)
+                    INSERT INTO Orders (UserID, OrderDate, Status, Total, SubTotal, DiscountAmount, VoucherID, Note)
                     OUTPUT INSERTED.OrderID
-                    VALUES (@userId, GETDATE(), N'Chờ xác nhận', @total, @subTotal, 0, @note);
+                    VALUES (@userId, GETDATE(), N'Chờ xác nhận', @total, @subTotal, @discount, @voucherId, @note);
                 `);
 
             const newOrderId = orderResult.recordset[0].OrderID;
-
+        // 2. Nếu có dùng Voucher, đánh dấu IsUsed = 1 trong bảng UserVouchers
+            if (voucherId && userId) {
+                await transaction.request()
+                    .input('vId', sql.Int, voucherId)
+                    .input('uId', sql.Int, userId)
+                    .query(`UPDATE UserVouchers SET IsUsed = 1 WHERE VoucherID = @vId AND UserID = @uId`);
+            }
             // 2. Chèn vào bảng OrderDetails và Cập nhật kho
             for (let item of items) {
                 await transaction.request()
@@ -497,14 +504,12 @@ router.post('/', async (req, res) => {
             // Lưu thành công
             await transaction.commit();
             res.json({ message: 'Đặt hàng thành công', orderId: newOrderId, success: true });
-
         } catch (innerError) {
-            await transaction.rollback(); // Có lỗi thì hủy bỏ
+            await transaction.rollback();
             throw innerError;
         }
     } catch (err) {
-        console.error("Lỗi tạo đơn:", err);
-        res.status(500).json({ message: 'Lỗi server khi tạo đơn' });
+        res.status(500).json({ message: 'Lỗi server' });
     }
 });
 module.exports = router;
