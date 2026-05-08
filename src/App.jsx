@@ -31,19 +31,13 @@ function AppContent() {
   const isAdminPage = location.pathname.startsWith('/admin');
 
   const handleLoginSuccess = (userData) => {
-    // Update AuthContext
     login(userData, localStorage.getItem('token'));
-    
-    // Đóng modal
     setLoginModalOpen(false);
-    
-    // Auto redirect admin sang trang admin
     if (userData.role === 'admin') {
       navigate('/admin');
     }
   };
 
-  // Protect admin route
   useEffect(() => {
     if (isAdminPage && user && user.role !== 'admin') {
       navigate('/');
@@ -55,7 +49,7 @@ function AppContent() {
       <Toaster />
       <Sonner />
       
-      {/* BAO BỌC TOÀN BỘ BẰNG CARTPROVIDER (Đã sửa lỗi) */}
+      {/* SỬA LỖI: CartProvider bao bọc toàn bộ nội dung ứng dụng */}
       <CartProvider>
         {!isAdminPage && (
           <>
