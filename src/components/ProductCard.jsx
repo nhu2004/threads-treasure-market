@@ -1,7 +1,5 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion"; 
-import { Heart } from "lucide-react";
-
+import { motion } from "framer-motion";  
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
@@ -26,15 +24,7 @@ const ProductCard = ({ product, index = 0 }) => {
               {product.badge}
             </span>
           )}
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-            className="absolute top-3 right-3 p-2 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity text-foreground hover:text-destructive"
-          >
-            <Heart size={16} />
-          </button>
+           
         </div>
         <div>
           <h3 className="font-body text-sm font-medium text-foreground mb-1 group-hover:text-muted-foreground transition-colors">

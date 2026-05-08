@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingBag, Search, Menu, X, Heart, User, LogOut, Settings, Package, Gift } from "lucide-react";
+import { ShoppingBag, Search, Menu, X, User, LogOut, Settings, Package, Gift } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -65,10 +65,7 @@ const Header = () => {
           <div className="flex items-center gap-3">
             <Link to="/shop" className="p-2 text-foreground hover:text-muted-foreground transition-colors">
               <Search size={20} />
-            </Link>
-            <button className="p-2 text-foreground hover:text-muted-foreground transition-colors hidden md:block">
-              <Heart size={20} />
-            </button>
+            </Link> 
             <button
               onClick={() => setIsCartOpen(true)}
               className="p-2 text-foreground hover:text-muted-foreground transition-colors relative"
