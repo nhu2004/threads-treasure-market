@@ -1,42 +1,95 @@
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext"; 
-import { useAuth } from "@/contexts/AuthContext"; // THÊM: Import useAuth để lấy ID người dùng
+import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 import orderApi from "../api/orderApi";
+import voucherApi from "../api/voucherApi";
 
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCart();
-  const { user } = useAuth(); // THÊM: Lấy thông tin user đang đăng nhập
+  const { user } = useAuth();
   const [submitted, setSubmitted] = useState(false);
+
+  // --- BỔ SUNG STATE CHO VOUCHER ---
+  const [voucherCode, setVoucherCode] = useState("");
+  const [appliedVoucher, setAppliedVoucher] = useState(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [voucherError, setVoucherError] = useState("");
+
+  // FIX: Chỉ khai báo phí ship 1 lần duy nhất theo yêu cầu của bạn
+  const shippingFee = totalPrice >= 1000000 ? 0 : 30000; 
+
   const [form, setForm] = useState({
-    name: user?.fullName || "", // THÊM: Tự động điền tên nếu đã đăng nhập
-    phone: user?.phone || "",     // THÊM: Tự động điền SĐT nếu đã đăng nhập
-    email: user?.email || "",   // THÊM: Tự động điền Email
-    address: user?.address || "", // THÊM: Tự động điền Địa chỉ
+    name: user?.fullName || "", 
+    phone: user?.phone || "",     
+    email: user?.email || "",   
+    address: user?.address || "", 
     note: "",
   });
 
-  const shippingFee = totalPrice >= 1000000 ? 0 : 30000;
-
-  // THÊM: Hàm format tiền tệ (Bị thiếu gây lỗi trắng trang)
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
   };
+
+  const handleApplyVoucher = async () => {
+    try {
+      setVoucherError("");
+      const response = await voucherApi.getUserVouchers(user.id);
+      const vouchers = response.vouchers || [];
+      
+      const v = vouchers.find(x => x.Code.toUpperCase() === voucherCode.toUpperCase() && !x.used);
+
+      if (!v) {
+        setVoucherError("Mã giảm giá không hợp lệ hoặc đã hết hạn.");
+        return;
+      }
+
+      if (totalPrice < v.MinOrderValue) {
+        setVoucherError(`Đơn hàng tối thiểu ${formatPrice(v.MinOrderValue)} để áp dụng mã này.`);
+        return;
+      }
+
+      let discount = 0;
+      // SỬA TẠI ĐÂY: Dùng "percent" thay vì "Percentage" để khớp với DB
+      if (v.ByType === "percent") { 
+        discount = (totalPrice * v.Value) / 100;
+        
+        // Kiểm tra mức giảm tối đa (MaxDiscountAmount)
+        if (v.MaxDiscountAmount && discount > v.MaxDiscountAmount) {
+          discount = v.MaxDiscountAmount;
+        }
+      } else {
+        // Trường hợp "amount" - giảm theo số tiền cố định
+        discount = v.Value;
+      }
+
+      setAppliedVoucher(v);
+      setDiscountAmount(discount);
+    } catch (error) {
+      setVoucherError("Lỗi khi kiểm tra mã.");
+    }
+  };
+
+  // Tổng tiền cuối cùng = Tạm tính + Phí ship - Giảm giá
+  const finalTotal = totalPrice + shippingFee - discountAmount;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const orderData = {
-        userId: user?.id || null, // THÊM: Truyền ID người dùng vào API
+        userId: user?.id || null,
         customer: form,
         items: items,
-        totalPrice: totalPrice + shippingFee,
+        totalPrice: finalTotal, 
+        subTotal: totalPrice,
+        discountAmount: discountAmount,
+        voucherId: appliedVoucher?.VoucherID || null,
         status: 'pending',
         createdAt: new Date()
       };
       
-      await orderApi.create(orderData); // Lưu vào Database
+      await orderApi.create(orderData);
       setSubmitted(true);
       clearCart();
     } catch (error) {
@@ -145,7 +198,7 @@ const Checkout = () => {
               type="submit"
               className="w-full bg-zinc-950 text-primary-foreground py-4 font-body text-sm font-semibold uppercase tracking-widest hover:opacity-90 transition-opacity"
             >
-              Đặt hàng — {formatPrice(totalPrice + shippingFee)}
+              Đặt hàng — {formatPrice(finalTotal)}
             </button>
           </form>
 
@@ -153,37 +206,66 @@ const Checkout = () => {
           <div className="lg:col-span-2">
             <div className="bg-gray-100 text-gray-900 p-6 sticky top-32">
               <h2 className="font-display text-xl font-semibold text-foreground mb-6">Đơn hàng</h2>
+              
+              {/* List sản phẩm */}
               <div className="space-y-4 mb-6">
                 {items.map((item) => (
                   <div key={`${item.product.id}-${item.size}-${item.color}`} className="flex gap-3">
-                    <img
-                      src={item.product.image}
-                      alt={item.product.name}
-                      className="w-14 h-18 object-cover flex-shrink-0"
-                    />
+                    <img src={item.product.image} alt={item.product.name} className="w-14 h-18 object-cover flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="font-body text-sm text-foreground truncate">{item.product.name}</p>
                       <p className="font-body text-xs text-muted-foreground">{item.size} / {item.color} x{item.quantity}</p>
-                      <p className="font-body text-sm font-semibold text-foreground">
-                        {formatPrice(item.product.price * item.quantity)}
-                      </p>
+                      <p className="font-body text-sm font-semibold text-foreground">{formatPrice(item.product.price * item.quantity)}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t border-border pt-4 space-y-2">
-                <div className="flex justify-between font-body text-sm">
-                  <span className="text-muted-foreground">Tạm tính</span>
-                  <span className="text-foreground">{formatPrice(totalPrice)}</span>
+              {/* Ô NHẬP VOUCHER */}
+              <div className="mt-6 pt-6 border-t border-gray-300">
+                <label className="text-sm font-medium block mb-2">Mã giảm giá</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={voucherCode}
+                    onChange={(e) => setVoucherCode(e.target.value)}
+                    placeholder="Nhập mã..."
+                    className="flex-1 px-3 py-2 border border-border bg-white text-sm focus:outline-none"
+                    disabled={!!appliedVoucher}
+                  />
+                  <button
+                    type="button"
+                    onClick={appliedVoucher ? () => {setAppliedVoucher(null); setDiscountAmount(0); setVoucherCode("");} : handleApplyVoucher}
+                    className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors ${
+                      appliedVoucher ? "bg-red-500 text-white" : "bg-zinc-950 text-white"
+                    }`}
+                  >
+                    {appliedVoucher ? "Hủy" : "Áp dụng"}
+                  </button>
                 </div>
-                <div className="flex justify-between font-body text-sm">
-                  <span className="text-muted-foreground">Phí vận chuyển</span>
-                  <span className="text-foreground">{shippingFee === 0 ? "Miễn phí" : formatPrice(shippingFee)}</span>
+                {voucherError && <p className="text-red-500 text-xs mt-1">{voucherError}</p>}
+                {appliedVoucher && <p className="text-green-600 text-xs mt-1 italic">Đã áp dụng mã: {appliedVoucher.Name}</p>}
+              </div>
+
+              {/* Tính toán tổng tiền */}
+              <div className="border-t border-gray-300 mt-6 pt-4 space-y-2">
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Tạm tính</span>
+                  <span>{formatPrice(totalPrice)}</span>
                 </div>
-                <div className="flex justify-between font-body text-base font-bold pt-2 border-t border-border">
-                  <span className="text-foreground">Tổng cộng</span>
-                  <span className="text-foreground">{formatPrice(totalPrice + shippingFee)}</span>
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Phí vận chuyển</span>
+                  <span>{shippingFee === 0 ? "Miễn phí" : formatPrice(shippingFee)}</span>
+                </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>Giảm giá</span>
+                    <span>-{formatPrice(discountAmount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-300">
+                  <span>Tổng cộng</span>
+                  <span>{formatPrice(finalTotal)}</span>
                 </div>
               </div>
             </div>
@@ -193,5 +275,4 @@ const Checkout = () => {
     </div>
   );
 };
-
 export default Checkout;
