@@ -2,75 +2,94 @@
 const sql = require('mssql');
 
 const sqlConfig = {
-    user: 'sa', password: '123', database: 'ThreadsTreasureDB', 
-    server: 'NHI\\SQL1', options: { encrypt: false, trustServerCertificate: true }
+    user: 'sa', 
+    password: '123', 
+    database: 'ThreadsTreasureDB', 
+    server: 'NHI\\SQL1', 
+    options: { encrypt: false, trustServerCertificate: true }
 };
 
-// Lấy danh sách hóa đơn
+// 1. Lấy danh sách hóa đơn
 const getAllInvoices = async (req, res) => {
     try {
         const { search, page = 1, limit = 10 } = req.query;
         let pool = await sql.connect(sqlConfig);
         
-        // Truy vấn lấy thông tin hóa đơn từ bảng Orders (hoặc Invoices nếu bạn có bảng riêng)
+        // Liên kết Invoices -> Orders -> Users để lấy tên khách hàng
         let queryStr = `
-            SELECT o.OrderID as InvoiceID, o.OrderDate as InvoiceDate, 
-                   o.Total as TotalAmount, o.Status,
-                   d.FullName as CustomerName, d.Phone
-            FROM Orders o
-            LEFT JOIN DeliveryInfo d ON o.OrderID = d.OrderID
+            SELECT i.InvoiceID, i.InvoiceDate, i.TotalAmount, i.OrderID,
+                   u.FullName as CustomerName
+            FROM Invoices i
+            LEFT JOIN Orders o ON i.OrderID = o.OrderID
+            LEFT JOIN Users u ON o.UserID = u.UserID
         `;
         
         const request = pool.request();
         if (search) {
-            queryStr += " WHERE d.FullName LIKE @search OR o.OrderID LIKE @search";
+            queryStr += " WHERE u.FullName LIKE @search OR i.InvoiceID LIKE @search OR i.OrderID LIKE @search";
             request.input('search', sql.NVarChar, `%${search}%`);
         }
         
         const offset = (page - 1) * limit;
-        queryStr += ` ORDER BY o.OrderDate DESC OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+        queryStr += ` ORDER BY i.InvoiceDate DESC OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY`;
         
         const result = await request.query(queryStr);
         res.json({ data: result.recordset });
     } catch (err) {
+        console.error("Lỗi lấy danh sách hóa đơn:", err);
         res.status(500).json({ message: 'Lỗi server khi lấy hóa đơn' });
     }
 };
 
-// Lấy chi tiết 1 hóa đơn (Dùng để in)
+// 2. Lấy chi tiết 1 hóa đơn (Dùng để in)
 const getInvoiceDetail = async (req, res) => {
     try {
         const { id } = req.params;
         let pool = await sql.connect(sqlConfig);
         
-        // Lấy thông tin chung và sản phẩm trong đơn
-        const orderResult = await pool.request().input('id', sql.Int, id).query(`
-            SELECT o.*, d.FullName, d.Phone, d.Address 
-            FROM Orders o 
-            JOIN DeliveryInfo d ON o.OrderID = d.OrderID 
-            WHERE o.OrderID = @id
+        // Lấy thông tin hóa đơn và thông tin khách hàng từ bảng Users
+        const invoiceResult = await pool.request().input('id', sql.Int, id).query(`
+            SELECT i.InvoiceID, i.InvoiceDate, i.TotalAmount, i.SubTotal, i.DiscountAmount, i.OrderID,
+                   u.FullName, u.Phone, u.Address 
+            FROM Invoices i 
+            LEFT JOIN Orders o ON i.OrderID = o.OrderID
+            LEFT JOIN Users u ON o.UserID = u.UserID
+            WHERE i.InvoiceID = @id
         `);
         
-        const productsResult = await pool.request().input('id', sql.Int, id).query(`
+        if (invoiceResult.recordset.length === 0) return res.status(404).json({ message: 'Không tìm thấy hóa đơn' });
+        
+        const invData = invoiceResult.recordset[0];
+        
+        // Lấy danh sách sản phẩm từ OrderDetails
+        const productsResult = await pool.request().input('orderId', sql.Int, invData.OrderID).query(`
             SELECT p.Name, od.Quantity, od.Price 
             FROM OrderDetails od
             JOIN Products p ON od.ProductID = p.ProductID
-            WHERE od.OrderID = @id
+            WHERE od.OrderID = @orderId
         `);
         
-        if (orderResult.recordset.length === 0) return res.status(404).json({ message: 'Không tìm thấy' });
-        
-        const orderData = orderResult.recordset[0];
+        // Trả dữ liệu về Frontend khớp với InvoiceTemplate.jsx
         res.json({
-            OrderID: orderData.OrderID,
-            orderDate: orderData.OrderDate,
-            total: orderData.Total,
-            subTotal: orderData.SubTotal,
-            discount: orderData.Discount || 0,
-            delivery: { fullName: orderData.FullName, phone: orderData.Phone, address: orderData.Address },
-            products: productsResult.recordset.map(p => ({ name: p.Name, quantity: p.Quantity, price: p.Price }))
+            InvoiceID: invData.InvoiceID,
+            OrderID: invData.OrderID,
+            orderDate: invData.InvoiceDate,
+            total: invData.TotalAmount,
+            subTotal: invData.SubTotal,
+            discount: invData.DiscountAmount || 0,
+            delivery: { 
+                fullName: invData.FullName, 
+                phone: invData.Phone, 
+                address: invData.Address 
+            },
+            products: productsResult.recordset.map(p => ({ 
+                name: p.Name, 
+                quantity: p.Quantity, 
+                price: p.Price 
+            }))
         });
     } catch (err) {
+        console.error("Lỗi lấy chi tiết hóa đơn:", err);
         res.status(500).json({ message: 'Lỗi lấy chi tiết hóa đơn' });
     }
 };

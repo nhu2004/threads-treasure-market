@@ -1,0 +1,90 @@
+/* Client/src/pages/admin/Invoices/Invoices.css */
+
+/* Bao bọc toàn bộ nội dung quản trị */
+.admin-content-wrapper {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  margin-bottom: 30px;
+}
+
+/* Tiêu đề trang */
+.admin-content-header {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #ecf0f1;
+  padding-bottom: 10px;
+}
+
+/* Khu vực thanh tìm kiếm */
+.admin-content-action {
+  margin-bottom: 20px;
+}
+
+.admin-content-action .form-control {
+  max-width: 350px;
+  border-radius: 8px 0 0 8px;
+  border: 1px solid #ced4da;
+  box-shadow: none;
+  transition: all 0.3s ease;
+}
+
+.admin-content-action .form-control:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.admin-content-action .btn-info {
+  border-radius: 0 8px 8px 0;
+  background-color: #17a2b8;
+  border-color: #17a2b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tùy chỉnh Table */
+.admin-content-wrapper table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #eaedf1;
+  margin-bottom: 0;
+}
+
+.admin-content-wrapper table thead th {
+  background-color: #f8f9fa;
+  color: #495057;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  padding: 15px;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.admin-content-wrapper table tbody td {
+  padding: 15px;
+  border-bottom: 1px solid #eaedf1;
+  vertical-align: middle;
+}
+
+.admin-content-wrapper table tbody tr:hover {
+  background-color: #f1f3f5;
+}
+
+/* Style cho các nút Hành động trong bảng */
+.admin-content-wrapper .btn {
+  border-radius: 6px;
+  padding: 6px 12px;
+  transition: all 0.2s ease-in-out;
+}
+
+.admin-content-wrapper .btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
