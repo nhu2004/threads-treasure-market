@@ -35,7 +35,7 @@ export const useCreateProduct = () => {
 
       setLoading(false);
       alert("Thêm sản phẩm thành công!");
-      navigate(`/admin/products?refresh=${Date.now()}`);
+      navigate(`/admin/product?refresh=${Date.now()}`);
 
     } catch (error) {
       setLoading(false);

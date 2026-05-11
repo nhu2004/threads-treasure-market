@@ -3,13 +3,16 @@ const { poolPromise, sql } = require('../db');
 // 1. THÊM SẢN PHẨM (Để SQL tự động tăng ProductID)
 const createProduct = async (req, res) => {
     try {
+        // Bổ sung thêm chữ "image" vào danh sách lấy từ req.body
         const { 
             name, price, originalPrice, categoryId, supplierId, 
-            description, imageUrl, badge, colors, sizes, stockQuantity, createdBy 
+            description, imageUrl, image, badge, colors, sizes, stockQuantity, createdBy 
         } = req.body;
 
         const pool = await poolPromise;
 
+        // Ưu tiên lấy 'image' (từ formik), nếu không có thì lấy 'imageUrl'
+        const finalImageUrl = image || imageUrl || '';
         // BỎ QUA KIỂM TRA TRÙNG MÃ VÌ SQL TỰ ĐỘNG ĐÁNH SỐ
         // THỰC HIỆN INSERT TRỰC TIẾP (Không có cột ProductID)
         const result = await pool.request()
@@ -19,7 +22,7 @@ const createProduct = async (req, res) => {
             .input('cate', sql.Int, categoryId)
             .input('sup', sql.Int, supplierId)
             .input('desc', sql.NVarChar, description || '')
-            .input('img', sql.NVarChar, imageUrl || '')
+            .input('img', sql.NVarChar, finalImageUrl)
             .input('badge', sql.NVarChar, badge || 'MỚI')
             .input('colors', sql.NVarChar, JSON.stringify(colors)) 
             .input('sizes', sql.NVarChar, Array.isArray(sizes) ? sizes.join(',') : sizes)
@@ -112,21 +115,45 @@ const getProducts = async (req, res) => {
         const { search } = req.query;
         const pool = await poolPromise;
         
-        let query = `SELECT * FROM Products`; // Dùng * sẽ lấy hết các cột bao gồm StockQuantity
+        // 1. Thêm LEFT JOIN để lấy tên Danh mục
+        let queryStr = `
+            SELECT 
+                p.*, 
+                c.Name AS CategoryName
+            FROM Products p
+            LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
+        `;
         
         const request = pool.request();
         if (search) {
-            query += ` WHERE Name LIKE @search OR Description LIKE @search`;
+            queryStr += ` WHERE p.Name LIKE @search OR p.Description LIKE @search`;
             request.input('search', sql.NVarChar, `%${search}%`);
         }
 
-        const result = await request.query(query);
+        const result = await request.query(queryStr);
         
-        // Trả về dữ liệu cho Frontend
+        // 2. Format lại dữ liệu y hệt như Frontend đang cần
+        const formattedProducts = result.recordset.map(p => ({
+            id: p.ProductID,
+            name: p.Name,
+            price: p.Price,
+            originalPrice: p.OriginalPrice,
+            image: p.ImageUrl,          // Đổi về chữ thường
+            description: p.Description,
+            badge: p.Badge,
+            // Chuyển chuỗi thành Mảng để Frontend không bị lỗi .map() hay .join()
+            colors: p.Colors ? JSON.parse(p.Colors) : [],
+            sizes: p.Sizes ? p.Sizes.split(',') : [],
+            category: p.CategoryName || 'Mặc định',
+            categoryId: p.CategoryID,
+            supplierId: p.SupplierID,
+            stockQuantity: p.StockQuantity // Giữ lại cột số lượng
+        }));
+
         res.json({
             success: true,
-            products: result.recordset, // result.recordset chứa danh sách sản phẩm từ SQL
-            totalPage: 1 // Bạn có thể tính toán phân trang sau nếu cần
+            products: formattedProducts,
+            totalPage: 1
         });
     } catch (error) {
         console.error("Lỗi lấy danh sách sản phẩm:", error.message);

@@ -17,9 +17,9 @@ export const AdminLayout = ({ children }) => {
   const menuItems = [
     { icon: Home, label: "Tổng quan", path: "/admin" },
     { 
-      icon: Package, label: "Sản phẩm", path: "/admin/products",
+      icon: Package, label: "Sản phẩm", path: "/admin/product",
       subItems: [
-        { label: "Danh sách sản phẩm", path: "/admin/products" },
+        { label: "Danh sách sản phẩm", path: "/admin/product" },
         { label: "Quản lý danh mục", path: "/admin/categories" }, // Menu con quản lý danh mục
         { label: "Quản lý nhà cung cấp", path: "/admin/suppliers" } // Menu con quản lý nhà cung cấp
 

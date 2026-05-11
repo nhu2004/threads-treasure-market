@@ -34,7 +34,7 @@ export const useUpdateProduct = (productId) => {
       
       setLoading(false);
       alert("Cập nhật sản phẩm thành công!");
-      navigate(`/admin/products?refresh=${Date.now()}`);
+      navigate(`/admin/product?refresh=${Date.now()}`);
     } catch (error) {
       setLoading(false);
       console.error("Lỗi cập nhật sản phẩm:", error);

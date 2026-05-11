@@ -12,7 +12,7 @@ import {
 } from "../../../../hooks/admin/admin";
 
 function Addproduct() {
-  // Lấy dữ liệu từ hook (Brand, Category, Supplier)
+  // Lấy dữ liệu từ hook (Brand, Category, Supplier) 
   const { brandList, categoryList, supplierList } = useProductOptions();
 
   const {
@@ -141,20 +141,20 @@ console.log("Formik Errors:", formik.errors); // Dòng này giúp bạn thấy F
                   <div className="form-group">
                     <label className={styles.formLabel}>Danh mục (Category)</label>
                     <Select
-                      options={categoryList}
-                      onChange={(opt) => formik.setFieldValue("categoryId", opt.value)}
-                      placeholder="Chọn danh mục..."
-                    />
+                        options={categoryList || []}
+                        onChange={(opt) => formik.setFieldValue("categoryId", opt.value)}
+                        placeholder="Chọn danh mục..."
+                      />
                   </div>
                 </Col>
                 <Col xl={4}>
                   <div className="form-group">
                     <label className={styles.formLabel}>Nhà cung cấp (Supplier)</label>
                     <Select
-                      options={supplierList.map((s) => ({
+                      options={supplierList?.map((s) => ({
                         value: s.SupplierID,
                         label: s.Name,
-                      }))}
+                      })) || []}
                       onChange={(opt) => formik.setFieldValue("supplierId", opt.value)}
                       placeholder="Chọn nhà cung cấp..."
                     />
