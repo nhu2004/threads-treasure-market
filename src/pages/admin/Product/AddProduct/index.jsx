@@ -13,7 +13,11 @@ import {
 
 function Addproduct() {
   // Lấy dữ liệu từ hook (Brand, Category, Supplier)
-  const { brandList, categoryList, supplierList } = useProductOptions();
+    const {
+      brandList = [],
+      categoryList = [],
+      supplierList = [],
+    } = useProductOptions();
 
   const {
     showModal: showAddcategoryModal,

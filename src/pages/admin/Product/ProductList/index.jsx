@@ -111,8 +111,11 @@ function ProductList() {
               <th className={styles.tableHeadCell}>Thông tin sản phẩm</th>
               <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Danh mục</th>
               {/* THÊM TIÊU ĐỀ CỘT SỐ LƯỢNG TẠI ĐÂY */}
-              {/* <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Số lượng</th> */}
-              {/* ĐÃ XÓA CỘT THƯƠNG HIỆU Ở ĐÂY */}
+                <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>
+                  Số lượng
+                </th>
+
+                {/* ĐÃ XÓA CỘT THƯƠNG HIỆU Ở ĐÂY */}
               <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Giá bán</th>
               <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Thao tác</th>
             </tr>
@@ -155,18 +158,24 @@ function ProductList() {
                   <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
                     <span className={styles.categoryBadge}>{item.category || 'Mặc định'}</span>
                   </td>
-                  {/* THÊM DỮ LIỆU SỐ LƯỢNG TẠI ĐÂY */} 
-                  {/* <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
-                    <span style={{ 
-                      fontWeight: '600', 
-                      color: (item.StockQuantity || item.stockQuantity || item.stock_quantity) < 10 ? '#ef4444' : '#374151' 
-                    }}>
-                      {/* Kiểm tra tất cả các biến thể tên có thể có từ SQL hoặc API */}
-                      {/* {item.StockQuantity !== undefined ? item.StockQuantity : 
-                      item.stockQuantity !== undefined ? item.stockQuantity : 
-                      item.stock_quantity !== undefined ? item.stock_quantity : 0}
+                  {/* THÊM DỮ LIỆU SỐ LƯỢNG TẠI ĐÂY */}
+                  <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
+                    <span
+                      className={
+                        (item.StockQuantity ??
+                          item.stockQuantity ??
+                          item.stock_quantity ??
+                          0) < 10
+                          ? styles.stockLow
+                          : styles.stockNormal
+                      }
+                    >
+                      {item.StockQuantity ??
+                        item.stockQuantity ??
+                        item.stock_quantity ??
+                        0}
                     </span>
-                  </td> */}
+                  </td>
 
                   <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
                     <span className={styles.priceValue}>{format.formatPrice(item.price || 0)}</span>

@@ -4,42 +4,61 @@ const sql = require('mssql');
 const productController = require('../controllers/productController');
 
 const sqlConfig = {
-    user: 'sa', password: '123', database: 'ThreadsTreasureDB',
-    server: 'NHI\\SQL1', 
-    options: { encrypt: false, trustServerCertificate: true }
+    user: 'sa',
+    password: '123456789',
+    database: 'ThreadsTreasureDB',
+    server: 'LAPTOP-1D1H6LSB\\MSSQLSERVER01',
+    options: {
+        encrypt: false,
+        trustServerCertificate: true
+    }
 };
 
+// API: Lấy danh sách sản phẩm
 router.get('/', async (req, res) => {
     try {
         // 1. Nhận từ khóa tìm kiếm từ React gửi lên
-        const searchKeyword = req.query.search || ''; 
+        const searchKeyword = req.query.search || '';
         let pool = await sql.connect(sqlConfig);
-        
+
         // 2. Chuẩn bị câu truy vấn gốc
         let queryStr = `
-            SELECT 
-                p.ProductID, p.Name, p.Price, p.OriginalPrice, 
-                p.ImageUrl, p.Description, p.Badge, p.Colors, p.Sizes, 
+            SELECT
+                p.ProductID,
+                p.Name,
+                p.Price,
+                p.OriginalPrice,
+                p.ImageUrl,
+                p.Description,
+                p.Badge,
+                p.Colors,
+                p.Sizes,
+                p.StockQuantity,
                 c.Name AS CategoryName
             FROM Products p
-            LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
+            LEFT JOIN Categories c
+                ON p.CategoryID = c.CategoryID
         `;
 
-        // 3. Nếu có từ khóa tìm kiếm, ghép thêm điều kiện WHERE vào SQL
+        // 3. Nếu có từ khóa tìm kiếm thì thêm điều kiện WHERE
         if (searchKeyword) {
-            // Tìm sản phẩm có Tên hoặc Danh mục chứa từ khóa
-            queryStr += ` WHERE p.Name LIKE @search OR c.Name LIKE @search`;
+            queryStr += `
+                WHERE p.Name LIKE @search
+                   OR c.Name LIKE @search
+            `;
         }
 
-        // 4. Chạy truy vấn an toàn
+        // 4. Chạy truy vấn
         let request = pool.request();
+
         if (searchKeyword) {
             request.input('search', sql.NVarChar, `%${searchKeyword}%`);
         }
+
         let result = await request.query(queryStr);
 
         // 5. Chuẩn hóa dữ liệu trả về
-        const formattedProducts = result.recordset.map(p => ({
+        const formattedProducts = result.recordset.map((p) => ({
             id: p.ProductID,
             name: p.Name,
             price: p.Price,
@@ -47,34 +66,62 @@ router.get('/', async (req, res) => {
             image: p.ImageUrl,
             description: p.Description,
             badge: p.Badge,
-            colors: p.Colors ? JSON.parse(p.Colors) : [],
+
+            // Parse Colors an toàn
+            colors: (() => {
+                try {
+                    return p.Colors ? JSON.parse(p.Colors) : [];
+                } catch {
+                    return [];
+                }
+            })(),
+
             sizes: p.Sizes ? p.Sizes.split(',') : [],
-            category: p.CategoryName
+            category: p.CategoryName,
+            stockQuantity: p.StockQuantity
         }));
 
-        res.json({ products: formattedProducts, totalPage: 1 });
+        res.json({
+            products: formattedProducts,
+            totalPage: 1
+        });
     } catch (err) {
-        console.error("Lỗi lấy sản phẩm:", err);
-        res.status(500).json({ message: 'Lỗi kết nối database' });
+        console.error('Lỗi lấy sản phẩm:', err);
+        res.status(500).json({
+            message: 'Lỗi kết nối database',
+            error: err.message
+        });
     }
 });
+
 // API: Lấy chi tiết 1 sản phẩm theo ID
 router.get('/:id', async (req, res) => {
     try {
         let pool = await sql.connect(sqlConfig);
+
         let result = await pool.request()
             .input('id', sql.Int, req.params.id)
             .query(`
-                SELECT p.*, c.Name AS CategoryName, s.Name AS SupplierName
+                SELECT
+                    p.*,
+                    c.Name AS CategoryName,
+                    s.Name AS SupplierName
                 FROM Products p
-                LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
-                LEFT JOIN Suppliers s ON p.SupplierID = s.SupplierID
+                LEFT JOIN Categories c
+                    ON p.CategoryID = c.CategoryID
+                LEFT JOIN Suppliers s
+                    ON p.SupplierID = s.SupplierID
                 WHERE p.ProductID = @id
             `);
 
-        if (result.recordset.length === 0) return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
+        if (result.recordset.length === 0) {
+            return res.status(404).json({
+                message: 'Không tìm thấy sản phẩm'
+            });
+        }
 
         const p = result.recordset[0];
+
         const formattedProduct = {
             id: p.ProductID,
             name: p.Name,
@@ -83,7 +130,15 @@ router.get('/:id', async (req, res) => {
             image: p.ImageUrl,
             description: p.Description,
             badge: p.Badge,
-            colors: p.Colors ? JSON.parse(p.Colors) : [],
+
+            colors: (() => {
+                try {
+                    return p.Colors ? JSON.parse(p.Colors) : [];
+                } catch {
+                    return [];
+                }
+            })(),
+
             sizes: p.Sizes ? p.Sizes.split(',') : [],
             category: p.CategoryName,
             categoryId: p.CategoryID,
@@ -91,28 +146,50 @@ router.get('/:id', async (req, res) => {
             supplierName: p.SupplierName,
             stockQuantity: p.StockQuantity
         };
-        res.json({ product: formattedProduct });
+
+        res.json({
+            product: formattedProduct
+        });
     } catch (err) {
-        console.error("Lỗi lấy chi tiết SP:", err);
-        res.status(500).json({ message: 'Lỗi server' });
+        console.error('Lỗi lấy chi tiết SP:', err);
+        res.status(500).json({
+            message: 'Lỗi server',
+            error: err.message
+        });
     }
 });
 
-// --- BỔ SUNG CÁC ROUTE THAO TÁC (QUAN TRỌNG) ---
-router.post('/', productController.createProduct); // Fix lỗi 404 khi Đăng sản phẩm
+// API: Tạo sản phẩm
+router.post('/', productController.createProduct);
+
+// API: Cập nhật sản phẩm
 router.put('/:id', productController.updateProduct);
+
+// API: Xóa sản phẩm
 router.delete('/:id', productController.deleteProduct);
 
-// API kiểm tra sản phẩm đã có đơn hàng chưa (phục vụ việc xóa)
+// API: Kiểm tra sản phẩm đã có đơn hàng chưa
 router.get('/:id/check-ordered', async (req, res) => {
     try {
         let pool = await sql.connect(sqlConfig);
+
         let result = await pool.request()
             .input('id', sql.Int, req.params.id)
-            .query(`SELECT TOP 1 OrderDetailID FROM OrderDetails WHERE ProductID = @id`);
-        res.json({ data: result.recordset });
+            .query(`
+                SELECT TOP 1 OrderDetailID
+                FROM OrderDetails
+                WHERE ProductID = @id
+            `);
+
+        res.json({
+            data: result.recordset
+        });
     } catch (err) {
-        res.status(500).json({ message: 'Lỗi kiểm tra đơn hàng' });
+        console.error('Lỗi kiểm tra đơn hàng:', err);
+        res.status(500).json({
+            message: 'Lỗi kiểm tra đơn hàng',
+            error: err.message
+        });
     }
 });
 

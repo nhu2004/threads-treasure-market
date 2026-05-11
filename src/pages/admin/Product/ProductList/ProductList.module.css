@@ -446,3 +446,14 @@
   background-color: #f3f4f6;
   border: 1px solid #e5e7eb;
 }
+
+/* Hiển thị số lượng sản phẩm */
+.stockNormal {
+  font-weight: 600;
+  color: #374151;
+}
+
+.stockLow {
+  font-weight: 700;
+  color: #ef4444;
+}

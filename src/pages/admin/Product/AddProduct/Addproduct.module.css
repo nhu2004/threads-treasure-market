@@ -203,3 +203,27 @@
     font-size: 13px;
   }
 }
+
+.formLabel {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.imagePreviewWrapper {
+  margin-top: 12px;
+}
+
+.previewText {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.previewImage {
+  max-width: 200px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  object-fit: cover;
+}
