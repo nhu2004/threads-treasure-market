@@ -1,10 +1,13 @@
 // Client/src/pages/Admin/supplier/index.jsx
 import { useCallback, useState } from "react";
 import PaginationproductStore from "../../../components/PaginationproductStore";
-import { FaEdit, FaTrashAlt, FaSearch, FaFileExport, FaBoxOpen, FaEye, FaClipboardList } from "react-icons/fa";
+import { FaEdit, FaTrashAlt, FaSearch, FaFileExport, FaBoxOpen, FaEye, FaClipboardList, FaPlus } from "react-icons/fa";
 import { Row, Col, Table, Spinner, Modal, Button, ButtonGroup } from "react-bootstrap";
 import { usesupplierList, usesupplierCRUD } from "../../../hooks/admin/admin";
 import supplierApi from "../../../api/supplierApi";
+
+// IMPORT FILE CSS RIÊNG CỦA SUPPLIER MÀ BẠN VỪA TẠO
+import "./SupplierList.css"; 
 
 function SupplierList() {
   const {
@@ -167,7 +170,6 @@ function SupplierList() {
       </Modal>
 
       {/* 2. MODAL CẬP NHẬT NHÀ CUNG CẤP */}
-      {/* 2. MODAL CẬP NHẬT NHÀ CUNG CẤP */}
       <Modal size="lg" show={showUpdateModal} onHide={() => setShowUpdateModal(false)}>
         <Modal.Header closeButton><Modal.Title>Cập nhật nhà cung cấp</Modal.Title></Modal.Header>
         <Modal.Body>
@@ -187,8 +189,8 @@ function SupplierList() {
                   value={selectedsupplier?.Description || selectedsupplier?.description || ""} 
                   onChange={(e) => setSelectedsupplier((prev) => ({ 
                       ...prev, 
-                      Description: e.target.value, // Cập nhật để hiển thị ngay trên UI
-                      description: e.target.value  // Cập nhật để gửi xuống API
+                      Description: e.target.value,
+                      description: e.target.value
                   }))} 
                 />
               </Col>
@@ -216,7 +218,7 @@ function SupplierList() {
                 <textarea 
                   className="form-control" rows="4" 
                   placeholder="Nhập mô tả về nhà cung cấp..."
-                  value={addsupplier?.description || ""} // Sử dụng addsupplier thay vì selectedsupplier
+                  value={addsupplier?.description || ""} 
                   onChange={(e) => setAddsupplier((prev) => ({ 
                       ...prev, 
                       description: e.target.value 
@@ -240,48 +242,64 @@ function SupplierList() {
         </Modal.Footer>
       </Modal>
 
-      {/* BẢNG MAIN DANH SÁCH NCC */}
+      {/* --- GIAO DIỆN CHÍNH (Đã đồng bộ style Sản Phẩm) --- */}
       <Col xl={12}>
-        <div className="admin-content-wrapper">
-          <div className="admin-content-header">Danh sách nhà cung cấp</div>
-          <div className="admin-content-action">
-            <div className="d-flex">
-              <input className="form-control search" placeholder="Tìm kiếm nhà cung cấp..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
-              <Button type="button" style={{ color: "white" }} variant="info" onClick={handleSearch}><FaSearch /></Button>
-              <Button variant="success" className="ms-auto d-flex align-items-center gap-2" onClick={() => setShowAddModal(true)}>
-                 Thêm nhà cung cấp
-              </Button>
+        <div className="supplier-wrapper">
+          <h2 className="supplier-header-title">Quản lý Nhà Cung Cấp</h2>
+          
+          <div className="supplier-action-bar">
+            <div className="supplier-search">
+              <input 
+                type="text" 
+                placeholder="Tìm kiếm nhà cung cấp..." 
+                value={searchInput} 
+                onChange={(e) => setSearchInput(e.target.value)} 
+              />
+              <button type="button" onClick={handleSearch}>
+                <FaSearch /> Tìm kiếm
+              </button>
             </div>
+            
+            <button className="supplier-btn-add" onClick={() => setShowAddModal(true)}>
+               <FaPlus /> Thêm NCC mới
+            </button>
           </div>
-          <div className="admin-content-body">
-            <Table striped bordered hover>
+
+          <div className="supplier-table-container">
+            <table className="supplier-table">
               <thead>
                 <tr>
-                  <th className="text-center">STT</th>
-                  <th>Nhà cung cấp</th>
+                  <th className="text-center" style={{ width: '80px' }}>STT</th>
+                  <th>Tên Nhà Cung Cấp</th>
                   <th className="text-center">Số lượng SP</th>
-                  <th className="text-center">Hành động</th>
+                  <th className="text-center" style={{ width: '150px' }}>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={4} className="text-center py-4"><Spinner animation="border" variant="success" /></td></tr>
+                  <tr><td colSpan={4} className="text-center py-5"><Spinner animation="border" variant="success" /></td></tr>
                 ) : supplierData.suppliers && supplierData.suppliers.length > 0 ? (
                   supplierData.suppliers.map((item, index) => {
                     return (
                       <tr key={item._id}>
-                        <td className="text-center align-middle">{(1 && page - 1) * 10 + (index + 1)}</td>
-                        <td className="align-middle fw-bold text-primary" style={{ cursor: "pointer" }} onClick={() => handleViewSupplier(item)} title="Click để xem chi tiết">
+                        <td className="text-center">{(1 && page - 1) * 10 + (index + 1)}</td>
+                        <td className="fw-bold" style={{ color: "#1f2937", cursor: "pointer" }} onClick={() => handleViewSupplier(item)} title="Click để xem chi tiết">
                           {item.name}
                         </td>
-                        <td className="text-center align-middle">
-                           <span className="badge bg-success rounded-pill px-3 py-2">{item.productCount || 0} SP</span>
+                        <td className="text-center">
+                           <span style={{ fontWeight: 'bold' }}>{item.productCount || 0}</span>
                         </td>
-                        <td className="text-center align-middle">
-                          <div className="d-flex gap-2 justify-content-center">
-                            <Button variant="info" title="Xem chi tiết & Xuất file" onClick={() => handleViewSupplier(item)}><FaEye color="white" /></Button>
-                            <Button variant="warning" title="Chỉnh sửa" onClick={() => openUpdateModal(item)}><FaEdit color="white" /></Button>
-                            <Button variant="danger" title="Xóa nhà cung cấp" onClick={() => openDeleteModal(item)}><FaTrashAlt color="white" /></Button>
+                        <td>
+                          <div className="supplier-action-group">
+                            <button className="supplier-action-btn view" title="Xem chi tiết & Xuất file" onClick={() => handleViewSupplier(item)}>
+                              <FaEye />
+                            </button>
+                            <button className="supplier-action-btn edit" title="Chỉnh sửa" onClick={() => openUpdateModal(item)}>
+                              <FaEdit />
+                            </button>
+                            <button className="supplier-action-btn delete" title="Xóa nhà cung cấp" onClick={() => openDeleteModal(item)}>
+                              <FaTrashAlt />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -291,13 +309,10 @@ function SupplierList() {
                   <tr><td colSpan={4} className="text-center py-4 text-muted">Không tìm thấy nhà cung cấp!</td></tr>
                 )}
               </tbody>
-            </Table>
-            <div className="admin-content-pagination">
-              <Row>
-                <Col xl={12}>
-                  {supplierData.totalPage > 1 ? <PaginationproductStore totalPage={supplierData.totalPage} currentPage={page} onChangePage={handleChangePage} /> : null}
-                </Col>
-              </Row>
+            </table>
+            
+            <div className="supplier-pagination">
+              {supplierData.totalPage > 1 ? <PaginationproductStore totalPage={supplierData.totalPage} currentPage={page} onChangePage={handleChangePage} /> : null}
             </div>
           </div>
         </div>

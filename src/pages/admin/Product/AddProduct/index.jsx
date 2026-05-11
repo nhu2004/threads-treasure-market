@@ -60,7 +60,7 @@ console.log("Formik Errors:", formik.errors); // Dòng này giúp bạn thấy F
 
       <Col xl={12}>
         <div className="admin-content-wrapper">
-          <div className="admin-content-header">Thêm Sản Phẩm Thời Trang Mới</div>
+          <div className="admin-content-header">Thêm Sản Phẩm Mới</div>
           <div className="admin-content-body">
             <form onSubmit={formik.handleSubmit}>
               <Row> 

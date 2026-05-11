@@ -1,23 +1,23 @@
-/* Tắt Times New Roman, sử dụng font hiện đại */
-.admin-content-wrapper {
+/* Bao bọc toàn bộ trang Nhà Cung Cấp */
+.supplier-wrapper {
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: transparent;
 }
 
 /* Tiêu đề có gạch xanh lá bên trái */
-.admin-header-title {
+.supplier-header-title {
   font-size: 1.25rem;
   font-weight: 700;
   color: #1f2937;
   margin-bottom: 1.5rem;
-  border-left: 4px solid #10b981; /* Màu xanh lá (Emerald) */
+  border-left: 4px solid #10b981; /* Màu xanh lá */
   padding-left: 12px;
   display: flex;
   align-items: center;
 }
 
 /* Thanh công cụ (Tìm kiếm & Nút thêm) */
-.admin-action-bar {
+.supplier-action-bar {
   background-color: #ffffff;
   border-radius: 12px;
   padding: 16px 24px;
@@ -30,13 +30,13 @@
   flex-wrap: wrap;
 }
 
-.search-box {
+.supplier-search {
   display: flex;
   flex: 1;
   max-width: 400px;
 }
 
-.search-box input {
+.supplier-search input {
   border-radius: 8px 0 0 8px;
   border: 1px solid #e5e7eb;
   padding: 10px 16px;
@@ -46,11 +46,11 @@
   font-size: 14px;
 }
 
-.search-box input:focus {
+.supplier-search input:focus {
   border-color: #3b82f6;
 }
 
-.search-box button {
+.supplier-search button {
   border-radius: 0 8px 8px 0;
   background-color: #3b82f6; /* Nút xanh dương */
   color: white;
@@ -63,7 +63,7 @@
   font-size: 14px;
 }
 
-.btn-add-new {
+.supplier-btn-add {
   background-color: #10b981; /* Nút xanh lá */
   color: white;
   border-radius: 8px;
@@ -77,13 +77,13 @@
   transition: opacity 0.2s;
 }
 
-.btn-add-new:hover {
+.supplier-btn-add:hover {
   opacity: 0.9;
   color: white;
 }
 
 /* Khu vực Bảng (Table) */
-.table-container {
+.supplier-table-container {
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.02);
@@ -91,12 +91,12 @@
   overflow-x: auto;
 }
 
-.admin-table {
+.supplier-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.admin-table th {
+.supplier-table th {
   background-color: #f3f4f6;
   color: #4b5563;
   font-weight: 600;
@@ -106,10 +106,10 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
-.admin-table th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
-.admin-table th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+.supplier-table th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+.supplier-table th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
 
-.admin-table td {
+.supplier-table td {
   padding: 16px;
   border-bottom: 1px solid #e5e7eb;
   vertical-align: middle;
@@ -117,22 +117,22 @@
   font-size: 0.95rem;
 }
 
-.admin-table tr:last-child td {
+.supplier-table tr:last-child td {
   border-bottom: none;
 }
 
-.admin-table tr:hover td {
+.supplier-table tr:hover td {
   background-color: #f9fafb;
 }
 
 /* Các nút thao tác trong bảng (Outline style) */
-.action-btn-group {
+.supplier-action-group {
   display: flex;
   gap: 10px;
   justify-content: center;
 }
 
-.action-btn {
+.supplier-action-btn {
   width: 36px;
   height: 36px;
   border-radius: 6px;
@@ -146,19 +146,19 @@
 }
 
 /* Nút Xem (Mắt) - Xanh lam */
-.btn-view { border: 1px solid #3b82f6; color: #3b82f6; }
-.btn-view:hover { background: #3b82f6; color: white; }
+.supplier-action-btn.view { border: 1px solid #3b82f6; color: #3b82f6; }
+.supplier-action-btn.view:hover { background: #3b82f6; color: white; }
 
 /* Nút Sửa (Bút) - Vàng cam */
-.btn-edit { border: 1px solid #f59e0b; color: #f59e0b; }
-.btn-edit:hover { background: #f59e0b; color: white; }
+.supplier-action-btn.edit { border: 1px solid #f59e0b; color: #f59e0b; }
+.supplier-action-btn.edit:hover { background: #f59e0b; color: white; }
 
 /* Nút Xóa (Thùng rác) - Đỏ */
-.btn-delete { border: 1px solid #ef4444; color: #ef4444; }
-.btn-delete:hover { background: #ef4444; color: white; }
+.supplier-action-btn.delete { border: 1px solid #ef4444; color: #ef4444; }
+.supplier-action-btn.delete:hover { background: #ef4444; color: white; }
 
 /* Phân trang */
-.admin-content-pagination {
+.supplier-pagination {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;

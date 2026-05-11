@@ -20,9 +20,10 @@ router.get('/', async (req, res) => {
             SELECT 
                 p.ProductID, p.Name, p.Price, p.OriginalPrice, 
                 p.ImageUrl, p.Description, p.Badge, p.Colors, p.Sizes, 
+                p.StockQuantity, -- THÊM CỘT NÀY VÀO LỆNH SELECT
                 c.Name AS CategoryName
-            FROM Products p
-            LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
+        FROM Products p
+        LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
         `;
 
         // 3. Nếu có từ khóa tìm kiếm, ghép thêm điều kiện WHERE vào SQL
@@ -49,7 +50,8 @@ router.get('/', async (req, res) => {
             badge: p.Badge,
             colors: p.Colors ? JSON.parse(p.Colors) : [],
             sizes: p.Sizes ? p.Sizes.split(',') : [],
-            category: p.CategoryName
+            category: p.CategoryName,
+            stockQuantity: p.StockQuantity // THÊM DÒNG NÀY ĐỂ GỬI TRẢ VỀ FRONTEND
         }));
 
         res.json({ products: formattedProducts, totalPage: 1 });

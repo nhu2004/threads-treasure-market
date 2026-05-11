@@ -1,7 +1,7 @@
-import { useCallback } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useState } from "react";
+import { Link,useNavigate } from "react-router-dom";
 import PaginationproductStore from "../../../../components/PaginationproductStore";
-import { FaEdit, FaTrashAlt, FaSearch, FaPlus } from "react-icons/fa";
+import { FaEdit, FaTrashAlt, FaSearch, FaPlus, FaBoxOpen, FaFileExcel, FaHandPointer } from "react-icons/fa"; // Bổ sung icon
 import { Spinner, Modal, Button } from "react-bootstrap";
 import format from "../../../../helper/format";
 import { useProductList, useDeleteProduct } from "../../../../hooks/admin/admin";
@@ -21,6 +21,10 @@ function ProductList() {
 
   const { showModal, setShowModal, productDelete, openDeleteModal, handleDelete } =
     useDeleteProduct(removeProduct);
+  
+    const navigate = useNavigate(); // Dùng để chuyển trang
+  // 1. Thêm state quản lý Modal chọn cách thêm sản phẩm
+  const [showAddOptions, setShowAddOptions] = useState(false);
 
   const handleChangePage = useCallback(
     (page) => setPage(page),
@@ -79,7 +83,49 @@ function ProductList() {
         </div>
       )}
       </Modal>
- 
+      
+      {/* 2. THÊM MODAL CHỌN CÁCH THÊM SẢN PHẨM MỚI */}
+      <Modal size="lg" show={showAddOptions} onHide={() => setShowAddOptions(false)} centered>
+        <div style={{ padding: '24px', backgroundColor: 'white', borderRadius: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+            <h4 style={{ margin: 0, fontWeight: '700', color: '#1f2937' }}>Chọn phương thức thêm sản phẩm</h4>
+            <button onClick={() => setShowAddOptions(false)} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer' }}>&times;</button>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            {/* Lựa chọn 1: Thêm thủ công */}
+            <div 
+              className={styles.optionCard}
+              onClick={() => {
+                setShowAddOptions(false);
+                navigate("/admin/product/add");
+              }}
+            >
+              <div className={styles.iconCircle} style={{ backgroundColor: '#eff6ff', color: '#3b82f6' }}>
+                <FaHandPointer size={24} />
+              </div>
+              <h5 style={{ fontWeight: '600', marginTop: '16px' }}>Thêm thủ công 1 sản phẩm</h5>
+              <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>Điền form thông tin chi tiết cho một sản phẩm mới hoàn toàn.</p>
+            </div>
+
+            {/* Lựa chọn 2: Import Excel */}
+            <div 
+              className={styles.optionCard}
+              onClick={() => {
+                // Xử lý mở form upload Excel ở đây
+                alert("Tính năng upload file Excel đang được phát triển!");
+              }}
+            >
+              <div className={styles.iconCircle} style={{ backgroundColor: '#f0fdf4', color: '#10b981' }}>
+                <FaFileExcel size={24} />
+              </div>
+              <h5 style={{ fontWeight: '600', marginTop: '16px' }}>Nhập hàng loạt qua file</h5>
+              <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>Tải lên file mẫu (.xlsx, .csv) để thêm nhiều sản phẩm cùng lúc.</p>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
         <h2 className="text-xl font-bold text-gray-800 mb-2 border-l-4 border-emerald-500 pl-3">Quản lý Sản Phẩm</h2>
      
 
@@ -96,9 +142,21 @@ function ProductList() {
               <FaSearch /> Tìm kiếm
             </button>
           </div>
-          <Link to="/admin/product/add" className={styles.addBtn}>
-            <FaPlus /> Thêm sản phẩm
-          </Link>
+          {/* Nhóm nút bấm mới */}
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button 
+              className={styles.restockBtn}
+              onClick={() => alert("Mở form chọn sản phẩm cũ để cộng thêm số lượng")}
+            >
+              <FaBoxOpen /> Cập nhật tồn kho
+            </button>
+            <button 
+              className={styles.addBtn} 
+              onClick={() => setShowAddOptions(true)}
+            >
+              <FaPlus /> Thêm sản phẩm mới
+            </button>
+          </div>
         </div>
       </div>
 
@@ -111,7 +169,7 @@ function ProductList() {
               <th className={styles.tableHeadCell}>Thông tin sản phẩm</th>
               <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Danh mục</th>
               {/* THÊM TIÊU ĐỀ CỘT SỐ LƯỢNG TẠI ĐÂY */}
-              {/* <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Số lượng</th> */}
+              <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Số lượng</th>
               {/* ĐÃ XÓA CỘT THƯƠNG HIỆU Ở ĐÂY */}
               <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Giá bán</th>
               <th className={`${styles.tableHeadCell} ${styles.tableCellCenter}`}>Thao tác</th>
@@ -156,17 +214,17 @@ function ProductList() {
                     <span className={styles.categoryBadge}>{item.category || 'Mặc định'}</span>
                   </td>
                   {/* THÊM DỮ LIỆU SỐ LƯỢNG TẠI ĐÂY */} 
-                  {/* <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
+                  <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
                     <span style={{ 
                       fontWeight: '600', 
                       color: (item.StockQuantity || item.stockQuantity || item.stock_quantity) < 10 ? '#ef4444' : '#374151' 
-                    }}>
-                      {/* Kiểm tra tất cả các biến thể tên có thể có từ SQL hoặc API */}
-                      {/* {item.StockQuantity !== undefined ? item.StockQuantity : 
+                    }}> 
+                     {/* Kiểm tra tất cả các biến thể tên có thể có từ SQL hoặc API */}
+                      {item.StockQuantity !== undefined ? item.StockQuantity : 
                       item.stockQuantity !== undefined ? item.stockQuantity : 
                       item.stock_quantity !== undefined ? item.stock_quantity : 0}
                     </span>
-                  </td> */}
+                  </td>
 
                   <td className={`${styles.tableCell} ${styles.tableCellCenter}`}>
                     <span className={styles.priceValue}>{format.formatPrice(item.price || 0)}</span>

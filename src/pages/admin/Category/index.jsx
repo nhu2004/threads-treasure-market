@@ -252,7 +252,7 @@ function categoryList() {
       {/* BẢNG MAIN DANH SÁCH THỂ LOẠI */}
       <Col xl={12}>
         <div className="admin-content-wrapper">
-          <div className="admin-content-header">Danh sách danh mục</div>
+          <div className="text-xl font-bold text-gray-800 mb-2 border-l-4 border-emerald-500 pl-3">Danh sách danh mục</div>
           <div className="admin-content-action">
             <div className="d-flex">
               <input className="form-control search" placeholder="Tìm kiếm theo tên danh mục..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
