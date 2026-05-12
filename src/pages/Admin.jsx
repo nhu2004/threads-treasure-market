@@ -23,7 +23,7 @@ const Admin = () => {
         <Route path="products" element={<ProductList />} />
         
         {/* Thêm sản phẩm: localhost:8080/admin/products/add */}
-        <Route path="products/add" element={<AddProduct />} />
+        <Route path="product/addproduct" element={<AddProduct />} />
         
         {/* Cập nhật sản phẩm: localhost:8080/admin/product/update/:id */}
         {/* Xóa dấu / ở đầu để tránh đè lên link /product/:id của người dùng */}
