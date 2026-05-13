@@ -79,6 +79,7 @@ router.post('/login', async (req, res) => {
                 phone: user.Phone,
                 address: user.Address,
                 totalSpent: user.TotalSpent,
+                RankID: user.RankID,
                 rankName: user.RankName,           // Thêm dòng này
                 rankBenefit: user.BenefitDescription // Thêm dòng này
             }
@@ -89,5 +90,44 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Lỗi server kết nối database.' });
     }
 });
+// Thêm đoạn này vào dưới route /login trong auth.js
+router.post('/register', async (req, res) => {
+    try {
+        const { phone, password, fullName, email } = req.body;
+        let pool = await sql.connect(sqlConfig);
 
+        // Kiểm tra trùng lặp
+        const checkUser = await pool.request().input('phone', sql.VarChar, phone).query(`SELECT UserID FROM Users WHERE Phone = @phone OR Username = @phone`);
+        if (checkUser.recordset.length > 0) return res.status(400).json({ message: 'Số điện thoại này đã được đăng ký' });
+
+        // Tạo User (Rank = 1)
+        const insertResult = await pool.request()
+            .input('username', sql.NVarChar, phone)
+            .input('pass', sql.NVarChar, password || '1')
+            .input('fullName', sql.NVarChar, fullName)
+            .input('email', sql.NVarChar, email)
+            .input('phone', sql.VarChar, phone)
+            .query(`
+                INSERT INTO Users (Username, PasswordHash, FullName, Email, Phone, Role, RankID, TotalSpent, CreatedAt, Status)
+                OUTPUT INSERTED.UserID
+                VALUES (@username, @pass, @fullName, @email, @phone, 'customer', 1, 0, GETDATE(), 'active')
+            `);
+        
+        const newUserId = insertResult.recordset[0].UserID;
+
+        // TỰ ĐỘNG CẤP VOUCHER NEWUSER CHO KHÁCH
+        const newUserVoucher = await pool.request().query(`SELECT TOP 1 VoucherID FROM Vouchers WHERE VoucherType = 'NewUser' AND IsActive = 1`);
+        if (newUserVoucher.recordset.length > 0) {
+            await pool.request()
+                .input('uid', sql.Int, newUserId)
+                .input('vid', sql.Int, newUserVoucher.recordset[0].VoucherID)
+                .query(`INSERT INTO UserVouchers (UserID, VoucherID, IsUsed, ReceivedDate) VALUES (@uid, @vid, 0, GETDATE())`);
+        }
+
+        res.status(201).json({ message: 'Đăng ký thành công' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Lỗi server' });
+    }
+});
 module.exports = router;

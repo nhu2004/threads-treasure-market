@@ -1,7 +1,7 @@
 // Backend/routes/vouchers.js
 const express = require('express');
 const router = express.Router();
-const { getVouchers, getUserVouchers, createVoucher,getTopVouchers,updateVoucher,deleteVoucher } = require('../controllers/voucherController');
+const { getVouchers, getUserVouchers, createVoucher,getTopVouchers,updateVoucher,deleteVoucher,claimVoucher } = require('../controllers/voucherController');
 
 // Lấy tất cả voucher (Dành cho Admin)
 router.get('/', getVouchers);
@@ -18,4 +18,8 @@ router.put('/:id', updateVoucher);
 
 // Xóa voucher (Dùng method DELETE)
 router.delete('/:id', deleteVoucher);
+
+// Nhận voucher
+router.post('/claim', claimVoucher);
+
 module.exports = router;
