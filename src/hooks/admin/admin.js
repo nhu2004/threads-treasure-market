@@ -1,10 +1,10 @@
 // Export all admin hooks from subdirectories
 
 // Category hooks
-export { usecategoryList, usecategoryCRUD } from "./category";
+export { useCategoryList, useCategoryCRUD } from "./category";
 
 // Supplier hooks
-export { usesupplierList, usesupplierCRUD } from "./supplier";
+export { useSupplierList, useSupplierCRUD } from "./supplier";
 
 // Product hooks
 export {

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import supplierApi from "../../../api/supplierApi";
 
-export const usesupplierList = () => {
-  const [supplierData, setsupplierData] = useState({});
+export const useSupplierList = () => {
+  const [supplierData, setSupplierData] = useState({});
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [searchInput, setSearchInput] = useState("");
@@ -18,7 +18,7 @@ export const usesupplierList = () => {
           page: page,
         });
         setLoading(false);
-        setsupplierData({ suppliers: data, totalPage: pagination?.totalPage || 1 });
+        setSupplierData({ suppliers: data, totalPage: pagination?.totalPage || 1 });
       } catch (error) {
         setLoading(false);
         console.log("Lỗi tải dữ liệu nhà cung cấp:", error);

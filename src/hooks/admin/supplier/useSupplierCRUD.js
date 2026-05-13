@@ -1,10 +1,10 @@
 import { useState } from "react";
 import supplierApi from "../../../api/supplierApi";
 
-export const usesupplierCRUD = (onSuccess) => {
+export const useSupplierCRUD = (onSuccess) => {
   const [loading, setLoading] = useState(false);
 
-  // Create
+  // --- Create ---
   const [showAddModal, setShowAddModal] = useState(false);
   const [addsupplier, setAddsupplier] = useState({ name: "", description: "" });
 
@@ -25,13 +25,11 @@ export const usesupplierCRUD = (onSuccess) => {
     }
   };
 
-  // Update
+  // --- Update ---
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedsupplier, setSelectedsupplier] = useState({});
 
   const openUpdateModal = (supplier) => {
-    // ĐÃ SỬA: Chuẩn hóa dữ liệu sang chữ thường và xóa key chữ hoa
-    // Điều này giúp giao diện form sửa Mô tả nhận đúng ký tự bạn gõ!
     setSelectedsupplier({
         ...supplier,
         description: supplier.Description || supplier.description || "",
@@ -56,23 +54,32 @@ export const usesupplierCRUD = (onSuccess) => {
     }
   };
 
-  // Delete
+  // --- Toggle Status (Thay thế chức năng Xóa) ---
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [supplierDelete, setsupplierDelete] = useState({});
 
   const openDeleteModal = (supplier) => {
-    setsupplierDelete({ _id: supplier._id, name: supplier.name });
+    // Map thêm IsActive để hiển thị đúng dữ liệu
+    setsupplierDelete({ 
+      _id: supplier._id || supplier.SupplierID, 
+      name: supplier.name || supplier.Name,
+      IsActive: supplier.IsActive 
+    });
     setShowDeleteModal(true);
   };
 
   const handleDelete = async () => {
     try {
-      await supplierApi.delete(supplierDelete._id);
+      // SỬA TẠI ĐÂY: Gọi thẳng hàm toggleStatus thay vì delete
+      await supplierApi.toggleStatus(supplierDelete._id); 
       setShowDeleteModal(false);
-      alert("Xóa thành công!");
+      
+      // SỬA TẠI ĐÂY: Thay đổi câu chữ thông báo
+      alert("Cập nhật trạng thái hợp tác thành công!"); 
+      
       if (onSuccess) onSuccess();
     } catch (error) {
-      alert("Xóa thất bại!");
+      alert("Cập nhật trạng thái thất bại!");
       setShowDeleteModal(false);
     }
   };
@@ -92,7 +99,7 @@ export const usesupplierCRUD = (onSuccess) => {
     setSelectedsupplier,
     openUpdateModal,
     handleUpdate,
-    // Delete
+    // Toggle Status (Sử dụng lại state cũ để không phải sửa UI component)
     showDeleteModal,
     setShowDeleteModal,
     supplierDelete,
