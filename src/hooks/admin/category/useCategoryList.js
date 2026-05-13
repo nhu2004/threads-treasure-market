@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import categoryApi from "../../../api/categoryApi";
 
-export const usecategoryList = () => {
-  const [categoryData, setcategoryData] = useState({});
+export const useCategoryList = () => {
+  const [categoryData, setCategoryData] = useState({});
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [searchInput, setSearchInput] = useState("");

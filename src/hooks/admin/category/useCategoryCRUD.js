@@ -1,7 +1,7 @@
 import { useState } from "react";
 import categoryApi from "../../../api/categoryApi";
 
-export const usecategoryCRUD = (onSuccess) => {
+export const useCategoryCRUD = (onSuccess) => {
   const [loading, setLoading] = useState(false);
 
   // Create

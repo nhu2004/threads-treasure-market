@@ -163,7 +163,7 @@ const Shop = () => {
           <h1 className="text-4xl font-bold uppercase text-gray-900">
             Thời Trang Nam
           </h1>
-          <p className="mt-2 text-gray-600">{filtered.length} sản phẩm sẵn sàng</p>
+          <p className="mt-2 text-gray-600">{filtered.length} sản phẩm</p>
         </div>
       </div>
 

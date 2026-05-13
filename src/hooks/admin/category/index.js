@@ -1,5 +1,5 @@
-export { usecategoryList } from "./useCategoryList";
-export { usecategoryCRUD } from "./useCategoryCRUD";
+export { useCategoryList } from "./useCategoryList";
+export { useCategoryCRUD } from "./useCategoryCRUD";
 
 
 

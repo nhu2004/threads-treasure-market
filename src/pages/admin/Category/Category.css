@@ -1,58 +1,54 @@
-/* Tắt Times New Roman, sử dụng font hiện đại */
-.admin-content-wrapper {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+/* category.css */
+
+/* Tổng thể trang */
+.category-wrapper {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background-color: transparent;
 }
 
-/* Tiêu đề có gạch xanh lá bên trái */
-.admin-header-title {
+/* Tiêu đề đồng bộ với trang Sản phẩm */
+.category-header-title {
   font-size: 1.25rem;
   font-weight: 700;
   color: #1f2937;
   margin-bottom: 1.5rem;
-  border-left: 4px solid #10b981; /* Màu xanh lá (Emerald) */
+  border-left: 4px solid #10b981; /* Màu Emerald Green */
   padding-left: 12px;
   display: flex;
   align-items: center;
 }
 
-/* Thanh công cụ (Tìm kiếm & Nút thêm) */
-.admin-action-bar {
+/* Thanh công cụ tìm kiếm và nút thêm */
+.category-action-bar {
   background-color: #ffffff;
   border-radius: 12px;
   padding: 16px 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   margin-bottom: 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  flex-wrap: wrap;
 }
 
-.search-box {
+.category-search-box {
   display: flex;
   flex: 1;
-  max-width: 400px;
+  max-width: 450px;
 }
 
-.search-box input {
+.category-search-box input {
   border-radius: 8px 0 0 8px;
   border: 1px solid #e5e7eb;
   padding: 10px 16px;
-  box-shadow: none;
   width: 100%;
   outline: none;
   font-size: 14px;
 }
 
-.search-box input:focus {
-  border-color: #3b82f6;
-}
-
-.search-box button {
+.category-search-box button {
   border-radius: 0 8px 8px 0;
-  background-color: #3b82f6; /* Nút xanh dương */
+  background-color: #3b82f6; /* Màu xanh dương Primary */
   color: white;
   border: none;
   padding: 10px 20px;
@@ -60,11 +56,10 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 14px;
 }
 
-.btn-add-new {
-  background-color: #10b981; /* Nút xanh lá */
+.btn-add-category {
+  background-color: #10b981;
   color: white;
   border-radius: 8px;
   padding: 10px 20px;
@@ -74,30 +69,23 @@
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  transition: opacity 0.2s;
 }
 
-.btn-add-new:hover {
-  opacity: 0.9;
-  color: white;
-}
-
-/* Khu vực Bảng (Table) */
-.table-container {
+/* Khu vực Bảng dữ liệu */
+.category-table-container {
   background-color: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   padding: 24px;
-  overflow-x: auto;
 }
 
-.admin-table {
+.category-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.admin-table th {
-  background-color: #f3f4f6;
+.category-table th {
+  background-color: #f9fafb;
   color: #4b5563;
   font-weight: 600;
   font-size: 0.8rem;
@@ -106,35 +94,27 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
-.admin-table th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
-.admin-table th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
-
-.admin-table td {
+.category-table td {
   padding: 16px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #f3f4f6;
   vertical-align: middle;
   color: #374151;
-  font-size: 0.95rem;
 }
 
-.admin-table tr:last-child td {
-  border-bottom: none;
-}
-
-.admin-table tr:hover td {
+.category-table tr:hover td {
   background-color: #f9fafb;
 }
 
-/* Các nút thao tác trong bảng (Outline style) */
-.action-btn-group {
+/* Các nút thao tác Outline (viền mỏng) */
+.cat-action-group {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   justify-content: center;
 }
 
-.action-btn {
-  width: 36px;
-  height: 36px;
+.cat-btn-outline {
+  width: 34px;
+  height: 34px;
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -142,24 +122,23 @@
   background: white;
   transition: all 0.2s;
   cursor: pointer;
-  font-size: 16px;
 }
 
-/* Nút Xem (Mắt) - Xanh lam */
-.btn-view { border: 1px solid #3b82f6; color: #3b82f6; }
-.btn-view:hover { background: #3b82f6; color: white; }
+.cat-btn-view { border: 1px solid #3b82f6; color: #3b82f6; }
+.cat-btn-view:hover { background: #3b82f6; color: white; }
 
-/* Nút Sửa (Bút) - Vàng cam */
-.btn-edit { border: 1px solid #f59e0b; color: #f59e0b; }
-.btn-edit:hover { background: #f59e0b; color: white; }
+.cat-btn-edit { border: 1px solid #f59e0b; color: #f59e0b; }
+.cat-btn-edit:hover { background: #f59e0b; color: white; }
 
-/* Nút Xóa (Thùng rác) - Đỏ */
-.btn-delete { border: 1px solid #ef4444; color: #ef4444; }
-.btn-delete:hover { background: #ef4444; color: white; }
+.cat-btn-delete { border: 1px solid #ef4444; color: #ef4444; }
+.cat-btn-delete:hover { background: #ef4444; color: white; }
 
-/* Phân trang */
-.admin-content-pagination {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
+/* Badge số lượng sản phẩm */
+.count-badge {
+  background-color: #f3f4f6;
+  color: #1f2937;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
 }

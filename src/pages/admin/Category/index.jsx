@@ -1,24 +1,24 @@
 // Client/src/pages/Admin/category/index.js 
 import { useCallback, useState } from "react";
 import PaginationproductStore from "../../../components/PaginationproductStore";
-import { FaEdit, FaTrashAlt, FaSearch, FaFileExport, FaBoxOpen, FaEye, FaClipboardList } from "react-icons/fa"; 
+import { FaPlus ,FaEdit, FaTrashAlt, FaSearch, FaFileExport, FaBoxOpen, FaEye, FaClipboardList } from "react-icons/fa"; 
 import { Row, Col, Table, Spinner, Modal, Button, ButtonGroup } from "react-bootstrap";
-import { usecategoryList, usecategoryCRUD } from "../../../hooks/admin/admin";
+import { useCategoryList,useCategoryCRUD } from "../../../hooks/admin/admin";
 import categoryApi from "../../../api/categoryApi"; 
 import "./category.css"; 
 
-function categoryList() {
+function CategoryList() {
   const {
     categoryData, page, setPage, loading, searchInput,
     setSearchInput, handleSearch, refreshList,
-  } = usecategoryList();
+  } = useCategoryList();
 
   const {
     loading: crudLoading, showAddModal, setShowAddModal, addcategory,
     setAddcategory, handleCreate, showUpdateModal, setShowUpdateModal,
     selectedcategory, setSelectedcategory, openUpdateModal, handleUpdate,
     showDeleteModal, setShowDeleteModal, categoryDelete, openDeleteModal, handleDelete,
-  } = usecategoryCRUD(refreshList);
+  } = useCategoryCRUD(refreshList);
 
   const handleChangePage = useCallback((page) => { setPage(page); }, [setPage]);
 
@@ -38,38 +38,28 @@ function categoryList() {
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [exporting, setExporting] = useState(false);
 
-  // Mở Modal và mặc định load danh sách Sản phẩm
   const handleViewCategory = async (category) => {
     setViewingCategory(category);
     setShowDetailsModal(true);
-    setActiveView('products'); // Mặc định mở tab sản phẩm
-    setCategoryOrders([]);     // Reset data đơn hàng cũ
+    setActiveView('products');
+    setCategoryOrders([]);
     setLoadingProducts(true);
-    
     try {
       const data = await categoryApi.exportProducts(category._id);
       setCategoryProducts(data);
-    } catch (error) {
-      alert("Lỗi khi lấy danh sách sản phẩm!");
-    } finally {
-      setLoadingProducts(false);
-    }
+    } catch (error) { alert("Lỗi tải sản phẩm!"); } 
+    finally { setLoadingProducts(false); }
   };
 
-  // Hàm load danh sách Đơn hàng khi bấm chuyển Tab
   const handleSwitchToOrders = async () => {
     setActiveView('orders');
-    // Chỉ gọi API nếu chưa có dữ liệu để tránh load lại nhiều lần
     if (categoryOrders.length === 0) {
       setLoadingOrders(true);
       try {
         const data = await categoryApi.exportOrders(viewingCategory._id);
         setCategoryOrders(data);
-      } catch (error) {
-        alert("Lỗi khi lấy danh sách đơn hàng!");
-      } finally {
-        setLoadingOrders(false);
-      }
+      } catch (error) { alert("Lỗi tải đơn hàng!"); } 
+      finally { setLoadingOrders(false); }
     }
   };
 
@@ -114,34 +104,17 @@ function categoryList() {
     }
   };
 
-  return (
-    <Row>
-      {/* MODAL XEM CHI TIẾT (SẢN PHẨM / ĐƠN HÀNG) & XUẤT FILE */}
+  return ( 
+      <div className="category-wrapper">
+      {/* 1. MODAL XEM CHI TIẾT (Giữ nguyên nhưng sửa nhẹ style nút trong modal) */}
       <Modal size="xl" show={showDetailsModal} onHide={() => setShowDetailsModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            Danh mục: <span className="text-primary fw-bold">{viewingCategory?.name || viewingCategory?.Name}</span>
-          </Modal.Title>
-        </Modal.Header>
+        <Modal.Header closeButton><Modal.Title>Chi tiết danh mục: {viewingCategory?.name}</Modal.Title></Modal.Header>
         <Modal.Body>
-          {/* THANH ĐIỀU HƯỚNG TAB & NÚT XUẤT FILE */}
-          <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
-            <ButtonGroup>
-              <Button 
-                variant={activeView === 'products' ? 'primary' : 'outline-primary'} 
-                onClick={() => setActiveView('products')}
-              >
-                <FaBoxOpen className="me-2" />
-                Danh sách Sản Phẩm
-              </Button>
-              <Button 
-                variant={activeView === 'orders' ? 'success' : 'outline-success'} 
-                onClick={handleSwitchToOrders}
-              >
-                <FaClipboardList className="me-2" />
-                Đơn Hàng Đã Bán
-              </Button>
-            </ButtonGroup>
+           <div className="d-flex justify-content-between mb-3">
+              <ButtonGroup>
+                <Button variant={activeView === 'products' ? 'dark' : 'outline-dark'} onClick={() => setActiveView('products')}>Sản phẩm</Button>
+                <Button variant={activeView === 'orders' ? 'dark' : 'outline-dark'} onClick={handleSwitchToOrders}>Đơn hàng</Button>
+              </ButtonGroup>
 
             {/* Nút Xuất File linh hoạt đổi theo Tab đang mở */}
             {activeView === 'products' ? (
@@ -250,63 +223,88 @@ function categoryList() {
       </Modal>
 
       {/* BẢNG MAIN DANH SÁCH THỂ LOẠI */}
-      <Col xl={12}>
-        <div className="admin-content-wrapper">
-          <div className="text-xl font-bold text-gray-800 mb-2 border-l-4 border-emerald-500 pl-3">Danh sách danh mục</div>
-          <div className="admin-content-action">
-            <div className="d-flex">
-              <input className="form-control search" placeholder="Tìm kiếm theo tên danh mục..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
-              <Button type="button" style={{ color: "white" }} variant="info" onClick={handleSearch}><FaSearch /></Button>
-              <button type="button" className="btn btn-success ms-auto" onClick={() => setShowAddModal(true)}>Thêm danh mục</button>
+      {/* --- GIAO DIỆN CHÍNH ĐÃ ĐỒNG BỘ --- */}
+      <Row>
+        <Col xl={12}>
+          {/* Đầu đề đồng bộ có gạch xanh lá */}
+          <h2 className="category-header-title">Quản lý Danh Mục Sản Phẩm</h2>
+
+          {/* Action Bar: Thanh tìm kiếm và Nút thêm mới */}
+          <div className="category-action-bar">
+            <div className="category-search-box">
+              <input 
+                type="text" 
+                placeholder="Tìm kiếm danh mục..." 
+                value={searchInput} 
+                onChange={(e) => setSearchInput(e.target.value)} 
+              />
+              <button type="button" onClick={handleSearch}>
+                <FaSearch /> Tìm kiếm
+              </button>
             </div>
+            <button className="btn-add-category" onClick={() => setShowAddModal(true)}>
+              <FaPlus /> Thêm danh mục mới
+            </button>
           </div>
-          <div className="admin-content-body">
-            <Table striped bordered hover>
+
+          {/* Table Container nền trắng bo góc */}
+          <div className="category-table-container">
+            <table className="category-table">
               <thead>
                 <tr>
-                  <th className="text-center">STT</th>
-                  <th>Tên danh mục</th>
-                  <th className="text-center">Số lượng SP</th>
-                  <th className="text-center">Hành động</th>
+                  <th className="text-center" style={{ width: '80px' }}>STT</th>
+                  <th>Tên Danh Mục</th>
+                  <th className="text-center">Số lượng Sản Phẩm</th>
+                  <th className="text-center" style={{ width: '160px' }}>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={4} className="text-center py-4"><Spinner animation="border" variant="success" /></td></tr>
+                  <tr><td colSpan={4} className="text-center py-5"><Spinner animation="border" variant="success" /></td></tr>
                 ) : categoryData.categorys && categoryData.categorys.length > 0 ? (
-                  categoryData.categorys.map((item, index) => {
-                    return (
-                      <tr key={item._id}>
-                        <td className="text-center align-middle">{(1 && page - 1) * 10 + (index + 1)}</td>
-                        <td className="align-middle fw-bold text-primary" style={{ cursor: "pointer"  }} onClick={() => handleViewCategory(item)} title="Click để xem chi tiết">
-                          {item.name || item.Name}
-                        </td>
-                        <td className="text-center align-middle">
-                          <span className="badge bg-success rounded-pill px-3 py-2">{item.productCount || 0} SP</span>
-                        </td>
-                        <td className="text-center align-middle">
-                          <div className="d-flex gap-2 justify-content-center">
-                            <Button variant="info" title="Xem chi tiết & Xuất file" onClick={() => handleViewCategory(item)}><FaEye color="white" /></Button>
-                            <Button variant="warning" title="Chỉnh sửa" onClick={() => openUpdateModal(item)}><FaEdit color="white" /></Button>
-                            <Button variant="danger" title="Xóa danh mục" onClick={() => openDeleteModal(item)}><FaTrashAlt color="white" /></Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
+                  categoryData.categorys.map((item, index) => (
+                    <tr key={item._id}>
+                      <td className="text-center">{(page - 1) * 10 + (index + 1)}</td>
+                      <td className="fw-bold" style={{ color: "#111827" }}>{item.name || item.Name}</td>
+                      <td className="text-center">
+                        <span className="count-badge">{item.productCount || 0} SP</span>
+                      </td>
+                      <td>
+                        <div className="cat-action-group">
+                          <button className="cat-btn-outline cat-btn-view" title="Xem chi tiết" onClick={() => handleViewCategory(item)}>
+                            <FaEye />
+                          </button>
+                          <button className="cat-btn-outline cat-btn-edit" title="Chỉnh sửa" onClick={() => openUpdateModal(item)}>
+                            <FaEdit />
+                          </button>
+                          <button className="cat-btn-outline cat-btn-delete" title="Xóa" onClick={() => openDeleteModal(item)}>
+                            <FaTrashAlt />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
                 ) : (
-                  <tr><td colSpan={4} className="text-center py-4 text-muted">Không tìm thấy danh mục nào!</td></tr>
+                  <tr><td colSpan={4} className="text-center py-4 text-muted">Không tìm thấy dữ liệu.</td></tr>
                 )}
               </tbody>
-            </Table>
-            <div className="admin-content-pagination">
-              <Row><Col xl={12}>{categoryData.totalPage > 1 ? <PaginationproductStore totalPage={categoryData.totalPage} currentPage={page} onChangePage={handleChangePage} /> : null}</Col></Row>
+            </table>
+
+            {/* Phân trang */}
+            <div className="mt-4 d-flex justify-content-end">
+              {categoryData.totalPage > 1 && (
+                <PaginationproductStore 
+                  totalPage={categoryData.totalPage} 
+                  currentPage={page} 
+                  onChangePage={handleChangePage} 
+                />
+              )}
             </div>
           </div>
-        </div>
-      </Col>
-    </Row>
+        </Col>
+      </Row>
+    </div>
   );
 }
 
-export default categoryList;
+export default CategoryList;
