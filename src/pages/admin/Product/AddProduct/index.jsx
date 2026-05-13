@@ -1,8 +1,5 @@
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { Row, Col, Form, Spinner, Modal, Button } from "react-bootstrap";
-import Select, { components } from "react-select";
-import PreviewImage from "../../../../components/PreviewImage";
+import Select from "react-select";
 import styles from "./Addproduct.module.css";
 import {
   useProductOptions,
@@ -12,8 +9,7 @@ import {
 } from "../../../../hooks/admin/admin";
 
 function Addproduct() {
-  // Lấy dữ liệu từ hook (Brand, Category, Supplier) 
-  const { brandList, categoryList, supplierList } = useProductOptions();
+  const { categoryList, supplierList } = useProductOptions();
 
   const {
     showModal: showAddcategoryModal,
@@ -24,140 +20,94 @@ function Addproduct() {
     handleSubmit: handleSubmitAddcategory,
   } = useAddCategory();
 
-  const {
-    showModal: showAddsupplierModal,
-    setShowModal: setShowAddsupplierModal,
-    newsupplier,
-    setNewsupplier,
-    loading: supplierLoading,
-    handleSubmit: handleSubmitAddsupplier,
-  } = useAddSupplier();
-
   const { formik, loading: createLoading } = useAddProductForm(supplierList);
-console.log("Formik Errors:", formik.errors); // Dòng này giúp bạn thấy Form đang bị kẹt ở đâu trong Console (F12)
 
   return (
     <Row>
-      {/* Modal thêm Danh mục mới (Category) */}
       <Modal show={showAddcategoryModal} onHide={() => setShowAddcategoryModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Thêm danh mục quần áo</Modal.Title>
-        </Modal.Header>
+        {/* Modal thêm danh mục giữ nguyên */}
+        <Modal.Header closeButton><Modal.Title>Thêm danh mục quần áo</Modal.Title></Modal.Header>
         <Modal.Body>
           <Form.Group>
-            <Form.Label>Tên danh mục (Ví dụ: Áo sơ mi, Quần Jean...)</Form.Label>
-            <Form.Control
-              type="text"
-              value={newcategory?.name || ""}
-              onChange={(e) => setNewcategory({ ...newcategory, name: e.target.value })}
-            />
+            <Form.Label>Tên danh mục</Form.Label>
+            <Form.Control type="text" value={newcategory?.name || ""} onChange={(e) => setNewcategory({ ...newcategory, name: e.target.value })} />
           </Form.Group>
-          <Button variant="success" className="mt-3" onClick={handleSubmitAddcategory} disabled={categoryLoading}>
-            Lưu danh mục
-          </Button>
+          <Button variant="success" className="mt-3" onClick={handleSubmitAddcategory} disabled={categoryLoading}>Lưu danh mục</Button>
         </Modal.Body>
       </Modal>
 
       <Col xl={12}>
         <div className="admin-content-wrapper">
-          <div className="admin-content-header">Thêm Sản Phẩm Mới</div>
+          <div className="admin-content-header">Thêm Sản Phẩm Mới (1 Phân loại)</div>
           <div className="admin-content-body">
             <form onSubmit={formik.handleSubmit}>
-              <Row> 
-                <Col xl={12}>
+              
+              {/* Hàng 1: Mã Nhóm và SKU */}
+              <Row className="mb-3"> 
+                <Col xl={6}>
+                  <div className="form-group">
+                    <label className={styles.formLabel}>Mã nhóm SP (Ví dụ: BLAZER-OVS)</label>
+                    <Form.Control type="text" name="productGroupId" placeholder="Các size/màu cùng loại phải nhập chung mã này..." value={formik.values.productGroupId || ''} onChange={formik.handleChange} />
+                  </div>
+                </Col> 
+                <Col xl={6}>
+                  <div className="form-group">
+                    <label className={styles.formLabel}>Mã kho SKU (Ví dụ: BLAZ-DEN-XL)</label>
+                    <Form.Control type="text" name="sku" placeholder="Mã định danh duy nhất..." value={formik.values.sku || ''} onChange={formik.handleChange} />
+                  </div>
+                </Col>
+              </Row>
+
+              {/* Hàng 2: Tên và Giá */}
+              <Row className="mb-3"> 
+                <Col xl={8}>
                   <div className="form-group">
                     <label className={styles.formLabel}>Tên sản phẩm</label>
-                    <Form.Control
-                      type="text"
-                      name="name"
-                      placeholder="Nhập tên sản phẩm..."
-                      value={formik.values.name}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      isInvalid={!!formik.errors.name && formik.touched.name}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {formik.errors.name}
-                    </Form.Control.Feedback>
+                    <Form.Control type="text" name="name" placeholder="Nhập tên sản phẩm..." value={formik.values.name} onChange={formik.handleChange} isInvalid={!!formik.errors.name && formik.touched.name} />
                   </div>
                 </Col> 
                 <Col xl={4}>
                   <div className="form-group">
                     <label className={styles.formLabel}>Giá bán (VNĐ)</label>
-                    <input
-                      type="number"
-                      name="price"
-                      className="form-control"
-                      value={formik.values.price}
-                      onChange={formik.handleChange}
-                    />
+                    <input type="number" name="price" className="form-control" value={formik.values.price} onChange={formik.handleChange} />
                   </div>
                 </Col>
               </Row>
 
-              <Row className="mt-3">
-                <Col xl={6}>
+              {/* Hàng 3: Màu, Size, Tồn kho */}
+              <Row className="mb-3">
+                <Col xl={4}>
                   <div className="form-group">
-                    <label className={styles.formLabel}>Màu sắc (Các màu cách nhau bằng dấu phẩy)</label>
-                    <input
-                      type="text"
-                      name="colors"
-                      className="form-control"
-                      placeholder="Ví dụ: Đen, Trắng, Đỏ"
-                      value={formik.values.colors || ""}
-                      onChange={(e) => formik.setFieldValue("colors", e.target.value.split(',').map(c => c.trim()))}
-                    />
+                    <label className={styles.formLabel}>Màu sắc (1 Màu)</label>
+                    <input type="text" name="color" className="form-control" placeholder="Ví dụ: Đen" value={formik.values.color || ""} onChange={formik.handleChange} />
                   </div>
                 </Col>
-                <Col xl={6}>
+                <Col xl={4}>
                   <div className="form-group">
-                    <label className={styles.formLabel}>Kích cỡ (Sizes)</label>
-                    <input
-                      type="text"
-                      name="sizes"
-                      className="form-control"
-                      placeholder="Ví dụ: S, M, L, XL"
-                      value={formik.values.sizes || ""}
-                      onChange={(e) => formik.setFieldValue("sizes", e.target.value.split(',').map(s => s.trim()))}
-                    />
+                    <label className={styles.formLabel}>Kích cỡ (1 Size)</label>
+                    <input type="text" name="size" className="form-control" placeholder="Ví dụ: XL" value={formik.values.size || ""} onChange={formik.handleChange} />
+                  </div>
+                </Col>
+                <Col xl={4}>
+                  <div className="form-group">
+                    <label className={styles.formLabel}>Số lượng ban đầu</label>
+                    <input type="number" name="stockQuantity" className="form-control" value={formik.values.stockQuantity || 0} onChange={formik.handleChange} />
                   </div>
                 </Col>
               </Row>
 
-              <Row className="mt-3">
-                <Col xl={4}>
-                  <div className="form-group">
-                    <label className={styles.formLabel}>Số lượng tồn kho</label>
-                    <input
-                      type="number"
-                      name="stockQuantity"
-                      className="form-control"
-                      value={formik.values.stockQuantity || 0}
-                      onChange={formik.handleChange}
-                    />
-                  </div>
-                </Col>
-                <Col xl={4}>
+              {/* Hàng 4: Phân loại */}
+              <Row className="mb-3">
+                <Col xl={6}>
                   <div className="form-group">
                     <label className={styles.formLabel}>Danh mục (Category)</label>
-                    <Select
-                        options={categoryList || []}
-                        onChange={(opt) => formik.setFieldValue("categoryId", opt.value)}
-                        placeholder="Chọn danh mục..."
-                      />
+                    <Select options={categoryList || []} onChange={(opt) => formik.setFieldValue("categoryId", opt.value)} placeholder="Chọn danh mục..." />
                   </div>
                 </Col>
-                <Col xl={4}>
+                <Col xl={6}>
                   <div className="form-group">
                     <label className={styles.formLabel}>Nhà cung cấp (Supplier)</label>
-                    <Select
-                      options={supplierList?.map((s) => ({
-                        value: s.SupplierID,
-                        label: s.Name,
-                      })) || []}
-                      onChange={(opt) => formik.setFieldValue("supplierId", opt.value)}
-                      placeholder="Chọn nhà cung cấp..."
-                    />
+                    <Select options={supplierList?.map((s) => ({ value: s.SupplierID, label: s.Name })) || []} onChange={(opt) => formik.setFieldValue("supplierId", opt.value)} placeholder="Chọn nhà cung cấp..." />
                   </div>
                 </Col>
               </Row>
@@ -165,52 +115,20 @@ console.log("Formik Errors:", formik.errors); // Dòng này giúp bạn thấy F
               <Row className="mt-4">
                 <Col xl={12}>
                   <label className={styles.formLabel}>Mô tả chi tiết sản phẩm</label>
-                  {/* Thay CKEditor bằng Form.Control textarea */}
-                  <Form.Control
-                    as="textarea"
-                    rows={5}
-                    name="description"
-                    placeholder="Nhập mô tả chi tiết sản phẩm tại đây..."
-                    value={formik.values.description}
-                    onChange={formik.handleChange}
-                    className={formik.errors.description && formik.touched.description ? "is-invalid" : ""}
-                  />
-                  {formik.errors.description && formik.touched.description && (
-                    <div className="invalid-feedback">{formik.errors.description}</div>
-                  )}
+                  <Form.Control as="textarea" rows={5} name="description" value={formik.values.description} onChange={formik.handleChange} />
                 </Col>
               </Row>
+
               <Row className="mt-4">
                 <Col xl={12}>
                   <div className="form-group">
-                    <label className={styles.formLabel}>Link hình ảnh sản phẩm (URL)</label>
-                    <Form.Control
-                      type="text"
-                      name="image" // Vẫn giữ name là image để khớp với formik
-                      placeholder="Ví dụ: https://img.com/ao-so-mi.jpg hoặc http://localhost:5000/images/ao.jpg"
-                      value={formik.values.image}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      isInvalid={!!formik.errors.image && formik.touched.image}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {formik.errors.image}
-                    </Form.Control.Feedback>
+                    <label className={styles.formLabel}>Link hình ảnh sản phẩm</label>
+                    <Form.Control type="text" name="image" value={formik.values.image} onChange={formik.handleChange} />
                   </div>
                 </Col>
-
                 <Col xl={12} className="mt-3 text-center">
-                  {/* Hiển thị ảnh xem trước trực tiếp từ link */}
                   {formik.values.image && (
-                    <div className="image-preview-wrapper">
-                      <p className="small text-muted">Xem trước ảnh:</p>
-                      <img 
-                        src={formik.values.image} 
-                        alt="Preview" 
-                        style={{ maxWidth: '200px', borderRadius: '8px', border: '1px solid #ddd' }}
-                        onError={(e) => { e.target.src = 'https://via.placeholder.com/200?text=Link+ảnh+lỗi'; }}
-                      />
-                    </div>
+                    <img src={formik.values.image} alt="Preview" style={{ maxWidth: '200px', borderRadius: '8px' }} onError={(e) => { e.target.src = 'https://via.placeholder.com/200'; }} />
                   )}
                 </Col>
               </Row>

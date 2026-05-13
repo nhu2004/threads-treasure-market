@@ -8,8 +8,6 @@ import styles from "./Updateproduct.module.css";
 import {
   useAdminProductDetail,
   useProductOptions,
-  useAddCategory,
-  useAddSupplier,
   useUpdateProductForm,
 } from "../../../../hooks/admin/admin";
 
@@ -17,43 +15,31 @@ function Updateproduct() {
   const { id } = useParams();
   const { productData, loading: productLoading } = useAdminProductDetail(id);
   const { categoryList, supplierList } = useProductOptions();
-
-  const {
-    showModal: showAddCategoryModal, setShowModal: setShowAddCategoryModal,
-    newcategory, setNewcategory, loading: categoryLoading, handleSubmit: handleSubmitAddCategory,
-  } = useAddCategory();
-
-  const {
-    showModal: showAddSupplierModal, setShowModal: setShowAddSupplierModal,
-    newsupplier, setNewsupplier, loading: supplierLoading, handleSubmit: handleSubmitAddSupplier,
-  } = useAddSupplier();
-
-  // Hook quản lý form
   const { formik, loading: updateLoading } = useUpdateProductForm(id, productData, supplierList);
 
-  // Chặn lỗi render khi dữ liệu chưa về
   if (productLoading || !productData) {
-    return (
-      <div className="text-center p-5"><Spinner animation="border" variant="primary" /> <p>Đang tải dữ liệu...</p></div>
-    );
+    return <div className="text-center p-5"><Spinner animation="border" variant="primary" /> <p>Đang tải dữ liệu...</p></div>;
   }
 
   return (
     <div className={styles.wrapper}>
-      <Modal show={showAddCategoryModal} onHide={() => setShowAddCategoryModal(false)} centered>
-        <Modal.Header closeButton><Modal.Title>Thêm danh mục</Modal.Title></Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleSubmitAddCategory}>
-            <Form.Control required value={newcategory?.name || ""} onChange={(e) => setNewcategory({name: e.target.value})} />
-            <Button type="submit" className="mt-3" disabled={categoryLoading}>Lưu</Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
-
       <Row className="justify-content-center">
         <Col xl={11}>
           <div className="admin-content-wrapper p-4 bg-white shadow-sm">
+            <h4 className="mb-4 fw-bold text-primary">Cập nhật Sản Phẩm</h4>
             <Form onSubmit={formik.handleSubmit}>
+              
+              <Row className="mb-3">
+                <Col md={6}>
+                  <Form.Label className="fw-bold">Mã nhóm SP (ProductGroupID)</Form.Label>
+                  <Form.Control name="productGroupId" {...formik.getFieldProps("productGroupId")} />
+                </Col>
+                <Col md={6}>
+                  <Form.Label className="fw-bold">Mã kho (SKU)</Form.Label>
+                  <Form.Control name="sku" {...formik.getFieldProps("sku")} />
+                </Col>
+              </Row>
+
               <Form.Group className="mb-3">
                 <Form.Label className="fw-bold">Tên sản phẩm</Form.Label>
                 <Form.Control name="name" {...formik.getFieldProps("name")} isInvalid={!!formik.errors.name} />
@@ -71,19 +57,19 @@ function Updateproduct() {
               </Row>
 
               <Row className="mt-3">
-                <Col md={4}><Form.Label>Màu sắc</Form.Label><Form.Control name="colors" {...formik.getFieldProps("colors")} /></Col>
-                <Col md={4}><Form.Label>Kích cỡ</Form.Label><Form.Control name="sizes" {...formik.getFieldProps("sizes")} /></Col>
-                <Col md={4}><Form.Label>Tồn kho</Form.Label><Form.Control type="number" name="stockQuantity" {...formik.getFieldProps("stockQuantity")} /></Col>
+                <Col md={4}><Form.Label className="fw-bold">Màu sắc (1 Màu)</Form.Label><Form.Control name="color" {...formik.getFieldProps("color")} /></Col>
+                <Col md={4}><Form.Label className="fw-bold">Kích cỡ (1 Size)</Form.Label><Form.Control name="size" {...formik.getFieldProps("size")} /></Col>
+                <Col md={4}><Form.Label className="fw-bold">Tồn kho</Form.Label><Form.Control type="number" name="stockQuantity" {...formik.getFieldProps("stockQuantity")} /></Col>
               </Row>
 
               <Row className="mt-3">
-                <Col md={6}><Form.Label>Giá bán</Form.Label><Form.Control type="number" name="price" {...formik.getFieldProps("price")} /></Col>
-                <Col md={6}><Form.Label>Giá gốc</Form.Label><Form.Control type="number" name="originalPrice" {...formik.getFieldProps("originalPrice")} /></Col>
+                <Col md={6}><Form.Label className="fw-bold">Giá bán</Form.Label><Form.Control type="number" name="price" {...formik.getFieldProps("price")} /></Col>
+                <Col md={6}><Form.Label className="fw-bold">Giá gốc</Form.Label><Form.Control type="number" name="originalPrice" {...formik.getFieldProps("originalPrice")} /></Col>
               </Row>
 
               <Form.Group className="mt-4">
                 <Form.Label className="fw-bold">Mô tả</Form.Label>
-                <CKEditor editor={ClassicEditor} data={formik.values.description} onChange={(e, editor) => formik.setFieldValue("description", editor.getData())} />
+                <CKEditor editor={ClassicEditor} data={formik.values.description || ""} onChange={(e, editor) => formik.setFieldValue("description", editor.getData())} />
               </Form.Group>
 
               <Form.Group className="mt-4">
@@ -91,7 +77,7 @@ function Updateproduct() {
                 <Form.Control name="image" {...formik.getFieldProps("image")} />
               </Form.Group>
 
-              <Button type="submit" className="mt-4 w-100" disabled={updateLoading}>Lưu thay đổi</Button>
+              <Button type="submit" className="mt-4 w-100" variant="warning" disabled={updateLoading}>Lưu thay đổi</Button>
             </Form>
           </div>
         </Col>

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 const formatPrice = (price) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 };
+
 const ProductCard = ({ product, index = 0 }) => {
   return (
     <motion.div
@@ -24,7 +25,6 @@ const ProductCard = ({ product, index = 0 }) => {
               {product.badge}
             </span>
           )}
-           
         </div>
         <div>
           <h3 className="font-body text-sm font-medium text-foreground mb-1 group-hover:text-muted-foreground transition-colors">
@@ -34,21 +34,24 @@ const ProductCard = ({ product, index = 0 }) => {
             <span className="font-body text-sm font-semibold text-foreground">
               {formatPrice(product.price)}
             </span>
-            {product.originalPrice && (
+            {product.originalPrice && product.originalPrice > product.price && (
               <span className="font-body text-xs text-muted-foreground line-through">
                 {formatPrice(product.originalPrice)}
               </span>
             )}
           </div>
-          <div className="flex gap-1.5 mt-2">
-            {product.colors.map((color) => (
-              <span
-                key={color.name}
-                className="w-3.5 h-3.5 rounded-full border border-border"
-                style={{ backgroundColor: color.hex }}
-                title={color.name}
-              />
-            ))}
+          {/* Hiển thị Màu và Size theo cấu trúc mới */}
+          <div className="flex gap-2 mt-2 text-[11px] text-gray-500 font-medium">
+            {product.color && (
+              <span className="px-2 py-1 bg-gray-100 rounded-md border border-gray-200">
+                {product.color}
+              </span>
+            )}
+            {product.size && (
+              <span className="px-2 py-1 bg-gray-100 rounded-md border border-gray-200">
+                {product.size}
+              </span>
+            )}
           </div>
         </div>
       </Link>

@@ -13,8 +13,10 @@ export const useUpdateProductForm = (id, productData, supplierList) => {
             originalPrice: productData?.originalPrice || "",
             discount: productData?.discount || 0,
             description: productData?.description || "",
-            sizes: Array.isArray(productData?.sizes) ? productData.sizes.join(', ') : (productData?.sizes || ""),
-            colors: Array.isArray(productData?.colors) ? productData.colors.join(', ') : (productData?.colors || ""),
+            size: productData?.size || "",               // Lấy size đơn
+            color: productData?.color || "",             // Lấy color đơn
+            productGroupId: productData?.productGroupId || "", // Thêm mã nhóm
+            sku: productData?.sku || "",                 // Thêm SKU
             stockQuantity: productData?.stockQuantity || 0,
             categoryId: productData?.categoryId || "",
             supplierId: productData?.supplierId || (supplierList?.[0]?.SupplierID || ""),

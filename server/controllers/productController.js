@@ -1,20 +1,17 @@
 const { poolPromise, sql } = require('../db');
 
-// 1. THÊM SẢN PHẨM (Để SQL tự động tăng ProductID)
+// 1. THÊM SẢN PHẨM (Mỗi lần thêm là 1 Size + 1 Màu)
 const createProduct = async (req, res) => {
     try {
-        // Bổ sung thêm chữ "image" vào danh sách lấy từ req.body
         const { 
             name, price, originalPrice, categoryId, supplierId, 
-            description, imageUrl, image, badge, colors, sizes, stockQuantity, createdBy 
+            description, imageUrl, image, badge, 
+            productGroupId, color, size, sku, stockQuantity, createdBy 
         } = req.body;
 
         const pool = await poolPromise;
-
-        // Ưu tiên lấy 'image' (từ formik), nếu không có thì lấy 'imageUrl'
         const finalImageUrl = image || imageUrl || '';
-        // BỎ QUA KIỂM TRA TRÙNG MÃ VÌ SQL TỰ ĐỘNG ĐÁNH SỐ
-        // THỰC HIỆN INSERT TRỰC TIẾP (Không có cột ProductID)
+
         const result = await pool.request()
             .input('name', sql.NVarChar, name)
             .input('price', sql.Decimal(18, 2), price)
@@ -24,21 +21,18 @@ const createProduct = async (req, res) => {
             .input('desc', sql.NVarChar, description || '')
             .input('img', sql.NVarChar, finalImageUrl)
             .input('badge', sql.NVarChar, badge || 'MỚI')
-            .input('colors', sql.NVarChar, JSON.stringify(colors)) 
-            .input('sizes', sql.NVarChar, Array.isArray(sizes) ? sizes.join(',') : sizes)
+            .input('groupId', sql.NVarChar, productGroupId || null)
+            .input('color', sql.NVarChar, color || null)
+            .input('size', sql.NVarChar, size || null)
+            .input('sku', sql.VARCHAR, sku || null)
             .input('stock', sql.Int, stockQuantity || 0)
             .input('user', sql.Int, createdBy || 1)
             .query(`
-                INSERT INTO Products (Name, Price, OriginalPrice, CategoryID, SupplierID, Description, ImageUrl, Badge, Colors, Sizes, StockQuantity, CreatedBy) 
-                VALUES (@name, @price, @oriPrice, @cate, @sup, @desc, @img, @badge, @colors, @sizes, @stock, @user)
+                INSERT INTO Products (Name, Price, OriginalPrice, CategoryID, SupplierID, Description, ImageUrl, Badge, ProductGroupID, Color, Size, SKU, StockQuantity, CreatedBy) 
+                VALUES (@name, @price, @oriPrice, @cate, @sup, @desc, @img, @badge, @groupId, @color, @size, @sku, @stock, @user)
             `);
         
-        if (result.rowsAffected[0] > 0) {
-            res.json({ message: 'Thêm sản phẩm thành công!', success: true });
-        } else {
-            res.status(500).json({ message: 'Lỗi: Không có dữ liệu nào được thêm vào.' });
-        }
-
+        res.json({ message: 'Thêm sản phẩm thành công!', success: true });
     } catch (error) {
         console.error("LỖI SQL:", error.message);
         res.status(500).json({ message: "Lỗi Server: " + error.message });
@@ -46,21 +40,15 @@ const createProduct = async (req, res) => {
 }; 
 
 // 2. SỬA SẢN PHẨM 
-// TRONG FILE productController.js
-
 const updateProduct = async (req, res) => {
     try {
-        const { id } = req.params; // Đây là ProductID từ URL
+        const { id } = req.params;
         const { 
             name, price, originalPrice, categoryId, supplierId, 
-            description, imageUrl, colors, sizes, stockQuantity 
+            description, imageUrl, productGroupId, color, size, sku, stockQuantity 
         } = req.body;
 
         const pool = await poolPromise;
-        
-        // Chuyển đổi mảng thành chuỗi để lưu vào SQL (nếu chưa là chuỗi)
-        const colorsStr = Array.isArray(colors) ? JSON.stringify(colors) : colors;
-        const sizesStr = Array.isArray(sizes) ? sizes.join(',') : sizes;
 
         await pool.request()
             .input('id', sql.Int, id)
@@ -71,8 +59,10 @@ const updateProduct = async (req, res) => {
             .input('sup', sql.Int, supplierId)
             .input('desc', sql.NVarChar, description || '')
             .input('img', sql.NVarChar, imageUrl)
-            .input('colors', sql.NVarChar, colorsStr)
-            .input('sizes', sql.NVarChar, sizesStr)
+            .input('groupId', sql.NVarChar, productGroupId || null)
+            .input('color', sql.NVarChar, color || null)
+            .input('size', sql.NVarChar, size || null)
+            .input('sku', sql.VARCHAR, sku || null)
             .input('stock', sql.Int, stockQuantity)
             .query(`
                 UPDATE Products 
@@ -83,8 +73,10 @@ const updateProduct = async (req, res) => {
                     SupplierID = @sup, 
                     Description = @desc, 
                     ImageUrl = @img,
-                    Colors = @colors, 
-                    Sizes = @sizes, 
+                    ProductGroupID = @groupId,
+                    Color = @color, 
+                    Size = @size, 
+                    SKU = @sku,
                     StockQuantity = @stock 
                 WHERE ProductID = @id
             `);
@@ -96,70 +88,81 @@ const updateProduct = async (req, res) => {
     }
 };
 
-// 3. XÓA SẢN PHẨM
+// 3. XÓA SẢN PHẨM (Nên đổi thành xóa mềm trong tương lai, hiện tại giữ nguyên để không phá code cũ)
 const deleteProduct = async (req, res) => {
     try {
         const { id } = req.params;
         const pool = await poolPromise;
-        await pool.request()
-            .input('id', sql.Int, id)
-            .query(`DELETE FROM Products WHERE ProductID=@id`);
+        await pool.request().input('id', sql.Int, id).query(`DELETE FROM Products WHERE ProductID=@id`);
         res.json({ message: 'Xóa sản phẩm thành công!' });
     } catch (error) {
         res.status(500).json({ message: "Lỗi xóa sản phẩm: " + error.message });
     }
 };
-// Thêm hàm này vào productController.js
+
+// 4. LẤY DANH SÁCH (Cho Admin - Gom nhóm)
 const getProducts = async (req, res) => {
     try {
         const { search } = req.query;
         const pool = await poolPromise;
+        try { await pool.request().query('EXEC sp_AutoClearanceSale'); } catch (e) { console.log(e.message); }
         
-        // 1. Thêm LEFT JOIN để lấy tên Danh mục
         let queryStr = `
-            SELECT 
-                p.*, 
-                c.Name AS CategoryName
-            FROM Products p
-            LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
+            WITH GroupedData AS (
+                SELECT ISNULL(NULLIF(ProductGroupID, ''), CAST(ProductID AS NVARCHAR)) as GroupKey, SUM(StockQuantity) as TotalStock
+                FROM Products WHERE IsActive = 1 AND IsDeleted = 0
+                GROUP BY ISNULL(NULLIF(ProductGroupID, ''), CAST(ProductID AS NVARCHAR))
+            ),
+            RankedProducts AS (
+                SELECT p.*, c.Name AS CategoryName, g.TotalStock,
+                       ROW_NUMBER() OVER(PARTITION BY ISNULL(NULLIF(p.ProductGroupID, ''), CAST(p.ProductID AS NVARCHAR)) ORDER BY p.ProductID) as rn
+                FROM Products p
+                LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
+                LEFT JOIN GroupedData g ON ISNULL(NULLIF(p.ProductGroupID, ''), CAST(p.ProductID AS NVARCHAR)) = g.GroupKey
+                WHERE p.IsActive = 1 AND p.IsDeleted = 0
         `;
         
         const request = pool.request();
         if (search) {
-            queryStr += ` WHERE p.Name LIKE @search OR p.Description LIKE @search`;
+            queryStr += ` AND (p.Name LIKE @search OR p.Description LIKE @search OR p.SKU LIKE @search)`;
             request.input('search', sql.NVarChar, `%${search}%`);
         }
+        queryStr += ` ) SELECT * FROM RankedProducts WHERE rn = 1 ORDER BY ProductID DESC`;
 
         const result = await request.query(queryStr);
         
-        // 2. Format lại dữ liệu y hệt như Frontend đang cần
         const formattedProducts = result.recordset.map(p => ({
-            id: p.ProductID,
-            name: p.Name,
-            price: p.Price,
-            originalPrice: p.OriginalPrice,
-            image: p.ImageUrl,          // Đổi về chữ thường
-            description: p.Description,
-            badge: p.Badge,
-            // Chuyển chuỗi thành Mảng để Frontend không bị lỗi .map() hay .join()
-            colors: p.Colors ? JSON.parse(p.Colors) : [],
-            sizes: p.Sizes ? p.Sizes.split(',') : [],
-            category: p.CategoryName || 'Mặc định',
-            categoryId: p.CategoryID,
-            supplierId: p.SupplierID,
-            stockQuantity: p.StockQuantity // Giữ lại cột số lượng
+            id: p.ProductID, name: p.Name, price: p.Price, originalPrice: p.OriginalPrice, image: p.ImageUrl,
+            description: p.Description, badge: p.Badge, productGroupId: p.ProductGroupID, 
+            color: p.Color, size: p.Size, sku: p.SKU, category: p.CategoryName || 'Mặc định',
+            categoryId: p.CategoryID, supplierId: p.SupplierID, 
+            stockQuantity: p.TotalStock // Hiển thị tổng số lượng kho của cả nhóm
         }));
 
-        res.json({
-            success: true,
-            products: formattedProducts,
-            totalPage: 1
-        });
+        res.json({ success: true, products: formattedProducts, totalPage: 1 });
     } catch (error) {
-        console.error("Lỗi lấy danh sách sản phẩm:", error.message);
         res.status(500).json({ message: "Lỗi Server: " + error.message });
     }
 };
 
-// Đừng quên export nó ra nhé
-module.exports = { getProducts, createProduct, updateProduct, deleteProduct };
+
+// 5. HÀM MỚI: LẤY CÁC SẢN PHẨM CÙNG NHÓM (Cho Khách Hàng chọn Size/Màu)
+const getProductsByGroup = async (req, res) => {
+    try {
+        const { groupId } = req.params;
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('groupId', sql.NVarChar, groupId)
+            .query(`
+                SELECT ProductID, Name, Price, ImageUrl, Color, Size, StockQuantity 
+                FROM Products 
+                WHERE ProductGroupID = @groupId AND IsActive = 1 AND IsDeleted = 0
+            `);
+        
+        res.json({ success: true, variants: result.recordset });
+    } catch (error) {
+        res.status(500).json({ message: "Lỗi Server: " + error.message });
+    }
+};
+
+module.exports = { getProducts, createProduct, updateProduct, deleteProduct, getProductsByGroup };
