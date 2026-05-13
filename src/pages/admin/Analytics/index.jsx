@@ -175,7 +175,7 @@ function AnalyticsPage() {
             
             <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-200">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-                <h3 className="text-lg font-bold text-gray-800">Doanh thu theo ngày</h3>
+                <h3 className="text-lg font-bold text-gray-800">Doanh thu theo</h3>
                 <select 
                   className="px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-700 focus:outline-none focus:border-blue-500" 
                   value={revenueTime.value}

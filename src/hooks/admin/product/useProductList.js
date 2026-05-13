@@ -14,8 +14,8 @@ export const useProductList = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // ĐÃ SỬA: Truyền trực tiếp chữ tìm kiếm thay vì dùng query của MongoDB
-        const res = await productApi.getAll({ search: searchString, page: page, limit: 10 });
+        // THÊM admin: true để Backend biết đây là Admin đang gọi
+        const res = await productApi.getAll({ search: searchString, page: page, limit: 10, admin: true });
         
         const productsList = res.data || res.products || [];
         const totalPage = res.pagination?.totalPage || res.totalPage || 1;
@@ -35,25 +35,22 @@ export const useProductList = () => {
     setPage(1);
   };
 
+  // ĐÃ SỬA: Đổi trạng thái Ẩn/Hiện trong React State thay vì xóa đi
   const removeProduct = (productId) => {
     setProductData((preState) => {
       const newArray = [...(preState.products || [])];
       return {
         ...preState,
-        // Dùng đúng ProductID của SQL Server hoặc _id của MongoDB
-        products: newArray.filter((item) => item.ProductID !== productId && item._id !== productId && item.id !== productId),
+        products: newArray.map((item) => {
+            if (item.id === productId || item.ProductID === productId) {
+                // Đảo ngược trạng thái isActive
+                return { ...item, isActive: item.isActive === false ? true : false };
+            }
+            return item;
+        }),
       };
     });
   };
 
-  return {
-    productData,
-    page,
-    setPage,
-    loading,
-    searchInput,
-    setSearchInput,
-    handleSearch,
-    removeProduct,
-  };
+  return { productData, page, setPage, loading, searchInput, setSearchInput, handleSearch, removeProduct };
 };

@@ -13,16 +13,17 @@ export const useUpdateProductForm = (id, productData, supplierList) => {
             originalPrice: productData?.originalPrice || "",
             discount: productData?.discount || 0,
             description: productData?.description || "",
-            size: productData?.size || "",               // Lấy size đơn
-            color: productData?.color || "",             // Lấy color đơn
-            productGroupId: productData?.productGroupId || "", // Thêm mã nhóm
-            sku: productData?.sku || "",                 // Thêm SKU
+            // Đã đổi thành chuỗi đơn, không dùng .join() nữa
+            size: productData?.size || "",               
+            color: productData?.color || "",             
+            productGroupId: productData?.productGroupId || "", 
+            sku: productData?.sku || "",                 
             stockQuantity: productData?.stockQuantity || 0,
             categoryId: productData?.categoryId || "",
             supplierId: productData?.supplierId || (supplierList?.[0]?.SupplierID || ""),
             image: productData?.image || "",
         },
-        enableReinitialize: true,
+        enableReinitialize: true, // Rất quan trọng để tự động load dữ liệu cũ lên Form
         validationSchema: Yup.object({
             name: Yup.string().required("Tên không được để trống"),
             price: Yup.number().required("Giá không được để trống"),

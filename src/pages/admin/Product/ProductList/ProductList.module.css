@@ -493,3 +493,25 @@
   background-color: #f3f4f6;
   border-color: #9ca3af;
 }
+
+.hideBtn {
+  border-color: #f87171;
+  color: #dc2626;
+  background: transparent;
+}
+
+.hideBtn:hover {
+  background-color: #fee2e2;
+  transform: translateY(-2px);
+}
+
+.showBtn {
+  border-color: #34d399;
+  color: #059669;
+  background: transparent;
+}
+
+.showBtn:hover {
+  background-color: #d1fae5;
+  transform: translateY(-2px);
+}

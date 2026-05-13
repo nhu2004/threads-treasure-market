@@ -8,15 +8,16 @@ export const useUpdateProduct = (productId) => {
   const navigate = useNavigate();
 
   const updateProduct = async (formValues) => {
-    // Đã cập nhật tham số
+    // Đổi colors, sizes thành color, size
     const {
       name, price, originalPrice, categoryId, supplierId, 
-      description, image, size, color, productGroupId, sku, stockQuantity 
+      description, image, color, size, productGroupId, sku, stockQuantity 
     } = formValues;
 
     try {
       setLoading(true);
 
+      // Gửi dữ liệu trực tiếp, biến 'image' lúc này là link URL nhập từ ô text
       await productApi.update(productId, {
         name,
         price,
@@ -24,11 +25,11 @@ export const useUpdateProduct = (productId) => {
         categoryId,
         supplierId,
         description,
-        imageUrl: image, 
-        size,           // Truyền thẳng chuỗi
-        color,          // Truyền thẳng chuỗi
-        productGroupId, // Mã nhóm
-        sku,            // SKU
+        imageUrl: image, // Backend đang nhận imageUrl
+        color,           // Gửi thẳng chuỗi
+        size,            // Gửi thẳng chuỗi
+        productGroupId,
+        sku,
         stockQuantity
       });
       
