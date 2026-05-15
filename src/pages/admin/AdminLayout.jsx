@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom"; 
-import { Menu, X, LogOut, Package, ShoppingCart, Users, Tag, Home, Settings, ListTree } from "lucide-react"; 
+import { Truck,Menu, X, LogOut, Package, ShoppingCart, Users, Tag, Home, Settings, ListTree } from "lucide-react"; 
 import { useAuth } from "@/contexts/AuthContext";
 
 export const AdminLayout = ({ children }) => {
@@ -25,11 +25,19 @@ export const AdminLayout = ({ children }) => {
 
       ]
     },
+    // BỔ SUNG MỤC NHẬP HÀNG VÀO ĐÂY
+    {
+      icon: Truck, label: "Nhập hàng", path: "/admin/purchase-orders",
+      subItems: [
+        { label: "Danh sách đơn nhập", path: "/admin/purchase-orders" },
+        { label: "Đặt hàng với Nhà cung cấp", path: "/admin/purchase-orders/create" }
+      ]
+    },
     { icon: ShoppingCart, label: "Đơn hàng", path: "/admin/orders"  ,
     subItems: [ 
         { label: "Hóa Đơn bán lẻ", path: "/admin/invoices" } // Menu con quản lý đơn hàng
       ]
-    },
+    }, 
     { icon: Users, label: "Khách hàng", path: "/admin/users" },
     { icon: Tag, label: "Voucher", path: "/admin/vouchers" },  
   ];

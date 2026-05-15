@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import categoryApi from "../../../api/categoryApi";
 
 export const useCategoryList = () => {
-  const [categoryData, setCategoryData] = useState({});
+  // 1. KHỞI TẠO STATE AN TOÀN: Mặc định phải có categorys là mảng rỗng []
+  const [categoryData, setCategoryData] = useState({ categorys: [], totalPage: 1 });
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [searchInput, setSearchInput] = useState("");
@@ -12,20 +13,25 @@ export const useCategoryList = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const query = {
-          name: { $regex: searchString, $options: "i" },
-        };
-        const { data, pagination } = await categoryApi.getAll({
-          query,
+        // 2. Gọi API với các tham số tìm kiếm, phân trang
+        const response = await categoryApi.getAll({
+          search: searchString,
           page: page,
           limit: 10,
-          sortByDate: "desc",
         });
+
+        // 3. Cập nhật state (Lấy response.data vì categoryApi.js trả về { data, pagination })
+        setCategoryData({ 
+            categorys: response.data || [], 
+            totalPage: response.pagination?.totalPage || 1 
+        });
+        
         setLoading(false);
-        setcategoryData({ categorys: data, totalPage: pagination.totalPage });
       } catch (error) {
+        console.error("Lỗi tải danh mục:", error);
+        // Fallback an toàn nếu lỗi mạng
+        setCategoryData({ categorys: [], totalPage: 1 }); 
         setLoading(false);
-        console.log(error);
       }
     };
     fetchData();
@@ -38,25 +44,10 @@ export const useCategoryList = () => {
 
   const refreshList = () => {
     setSearchString(searchString + " ");
-    setTimeout(() => setSearchString(searchString), 100);
+    setTimeout(() => setSearchString(searchString.trim()), 100);
   };
 
   return {
-    categoryData,
-    page,
-    setPage,
-    loading,
-    searchInput,
-    setSearchInput,
-    handleSearch,
-    refreshList,
+    categoryData, page, setPage, loading, searchInput, setSearchInput, handleSearch, refreshList,
   };
 };
-
-
-
-
-
-
-
-

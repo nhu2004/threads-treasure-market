@@ -15,102 +15,120 @@ const sqlConfig = {
     }
 };
 
-// 1. API Lấy toàn bộ danh mục KÈM ĐẾM SỐ LƯỢNG SẢN PHẨM (GET /api/categories)
+// 1. LẤY DANH MỤC & ĐẾM SỐ LƯỢNG SP
 router.get('/', async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const searchKeyword = req.query.search || ''; 
+        const offset = (page - 1) * limit;
+
         let pool = await sql.connect(sqlConfig);
-        // Dùng LEFT JOIN để đếm số lượng SP thuộc danh mục, nếu không có thì ra 0
-        let result = await pool.request().query(`
+        let request = pool.request();
+        
+        // Dùng LEFT JOIN để đếm số lượng SP thuộc danh mục và KHÔNG bị xóa
+        let queryStr = `
             SELECT c.CategoryID, c.Name, COUNT(p.ProductID) AS ProductCount 
             FROM Categories c
-            LEFT JOIN Products p ON c.CategoryID = p.CategoryID
-            GROUP BY c.CategoryID, c.Name
-        `);
+            LEFT JOIN Products p ON c.CategoryID = p.CategoryID AND p.IsDeleted = 0
+        `;
+
+        if (searchKeyword) {
+            queryStr += " WHERE c.Name LIKE @search ";
+            request.input('search', sql.NVarChar, `%${searchKeyword}%`);
+        }
+
+        queryStr += " GROUP BY c.CategoryID, c.Name ";
+        queryStr += ` ORDER BY c.CategoryID DESC OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+
+        const result = await request.query(queryStr);
         
-        res.json({ categories: result.recordset });
+        let countQuery = "SELECT COUNT(*) as total FROM Categories";
+        if (searchKeyword) countQuery += " WHERE Name LIKE @search";
+        const countRequest = pool.request();
+        if (searchKeyword) countRequest.input('search', sql.NVarChar, `%${searchKeyword}%`);
+        const countResult = await countRequest.query(countQuery);
+        const totalRecords = countResult.recordset[0].total;
+
+        // Map data để Frontend nhận được _id
+        const formattedData = result.recordset.map(cat => ({
+            _id: cat.CategoryID,
+            name: cat.Name,
+            productCount: cat.ProductCount
+        }));
+
+        res.json({ 
+            data: formattedData, 
+            pagination: { page, limit, total: totalRecords, totalPage: Math.ceil(totalRecords / limit) }
+        });
     } catch (err) {
         console.error("Lỗi lấy danh mục:", err);
         res.status(500).json({ message: 'Lỗi server khi lấy danh mục' });
     }
 });
 
-// 2. API Thêm mới danh mục (POST /api/categories)
-router.post('/', async (req, res) => {
-    const { name } = req.body;
-    if (!name) return res.status(400).json({ message: 'Tên danh mục không được để trống' });
-
+// 2. LẤY CHI TIẾT 1 DANH MỤC
+router.get('/:id', async (req, res) => {
     try {
         let pool = await sql.connect(sqlConfig);
-        await pool.request()
-            .input('name', sql.NVarChar, name)
-            .query('INSERT INTO Categories (Name) VALUES (@name)');
-            
-        res.status(201).json({ message: 'Thêm danh mục thành công' });
-    } catch (err) {
-        console.error("Lỗi thêm danh mục:", err);
-        res.status(500).json({ message: 'Lỗi server khi thêm danh mục' });
-    }
+        const result = await pool.request()
+            .input('id', sql.Int, req.params.id)
+            .query('SELECT CategoryID as _id, Name as name FROM Categories WHERE CategoryID = @id');
+        if (result.recordset.length === 0) return res.status(404).json({ message: 'Không tìm thấy' });
+        res.json({ data: result.recordset[0] });
+    } catch (err) { res.status(500).json({ message: 'Lỗi server' }); }
 });
 
-// 3. API CẬP NHẬT DANH MỤC (PUT /api/categories/:id) -> GIẢI QUYẾT LỖI CẬP NHẬT THẤT BẠI
-router.put('/:id', async (req, res) => {
-    const { id } = req.params;
-    const { name } = req.body;
-
+// 3. TẠO MỚI DANH MỤC
+router.post('/', async (req, res) => {
     try {
+        const { name } = req.body;
+        if (!name) return res.status(400).json({ message: 'Tên không được để trống' });
+
+        let pool = await sql.connect(sqlConfig);
+        const result = await pool.request()
+            .input('name', sql.NVarChar, name)
+            .query(`
+                INSERT INTO Categories (Name) VALUES (@name)
+                SELECT SCOPE_IDENTITY() AS CategoryID
+            `);
+        res.status(201).json({ message: 'Thành công', data: { _id: result.recordset[0].CategoryID, name } });
+    } catch (err) { res.status(500).json({ message: 'Lỗi server' }); }
+});
+
+// 4. CẬP NHẬT DANH MỤC
+router.put('/:id', async (req, res) => {
+    try {
+        const { name } = req.body;
         let pool = await sql.connect(sqlConfig);
         await pool.request()
-            .input('id', sql.Int, id)
+            .input('id', sql.Int, req.params.id)
             .input('name', sql.NVarChar, name)
             .query('UPDATE Categories SET Name = @name WHERE CategoryID = @id');
-            
-        res.json({ message: 'Cập nhật thành công' });
-    } catch (err) {
-        console.error("Lỗi cập nhật:", err);
-        res.status(500).json({ message: 'Lỗi server' });
-    }
+        res.json({ message: 'Thành công' });
+    } catch (err) { res.status(500).json({ message: 'Lỗi server' }); }
 });
 
-// 4. API XÓA DANH MỤC (DELETE /api/categories/:id) -> GIẢI QUYẾT LỖI XÓA THẤT BẠI
+// 5. XÓA DANH MỤC
 router.delete('/:id', async (req, res) => {
-  const { id } = req.params;
+    try {
+        let pool = await sql.connect(sqlConfig);
+        
+        // Kiểm tra xem danh mục có đang chứa sản phẩm không
+        const check = await pool.request()
+            .input('id', sql.Int, req.params.id)
+            .query('SELECT COUNT(*) as count FROM Products WHERE CategoryID = @id AND IsDeleted = 0');
+            
+        if (check.recordset[0].count > 0) {
+            return res.status(400).json({ message: 'Không thể xóa vì danh mục đang chứa sản phẩm!' });
+        }
 
-  try {
-    let pool = await sql.connect(sqlConfig);
-
-    // BƯỚC 1: KIỂM TRA CÓ SẢN PHẨM NÀO ĐANG NẰM TRONG DANH MỤC NÀY KHÔNG
-    let checkResult = await pool.request()
-      .input('id', sql.Int, id)
-      .query('SELECT COUNT(*) as ProductCount FROM Products WHERE CategoryID = @id');
-
-    const productCount = checkResult.recordset[0].ProductCount;
-
-    // NẾU CÓ SẢN PHẨM -> BÁO LỖI (STATUS 400) VÀ CHẶN LẠI NGAY
-    if (productCount > 0) {
-      return res.status(400).json({ 
-        message: `Xóa thất bại! Danh mục này đang chứa ${productCount} sản phẩm. Vui lòng chuyển các sản phẩm sang danh mục khác trước khi xóa.` 
-      });
-    }
-
-    // BƯỚC 2: NẾU SỐ SẢN PHẨM = 0 -> TIẾN HÀNH XÓA DANH MỤC
-    let deleteResult = await pool.request()
-      .input('id', sql.Int, id)
-      .query('DELETE FROM Categories WHERE CategoryID = @id');
-
-    // Kiểm tra xem có thực sự xóa được dòng nào không
-    if (deleteResult.rowsAffected[0] === 0) {
-        return res.status(404).json({ message: 'Không tìm thấy danh mục để xóa!' });
-    }
-
-    // Trả về thành công
-    res.json({ message: 'Xóa thành công!', success: true });
-
-  } catch (err) {
-    console.error("Lỗi xóa danh mục:", err);
-    res.status(500).json({ message: 'Lỗi server khi xóa danh mục.' });
-  }
+        await pool.request().input('id', sql.Int, req.params.id).query('DELETE FROM Categories WHERE CategoryID = @id');
+        res.json({ message: 'Xóa thành công!' });
+    } catch (err) { res.status(500).json({ message: 'Lỗi server' }); }
 });
-// 5. API XUẤT DANH SÁCH SẢN PHẨM THUỘC DANH MỤC
+
+// 6. XUẤT FILE SẢN PHẨM THEO DANH MỤC (ĐÃ FIX LỖI COLOR/SIZE Ở ĐÂY)
 router.get('/:id/export-products', async (req, res) => {
     try {
         let pool = await sql.connect(sqlConfig);
@@ -119,13 +137,14 @@ router.get('/:id/export-products', async (req, res) => {
             .query(`
                 SELECT 
                     ProductID as N'Mã SP', 
+                    SKU as N'Mã SKU',
                     Name as N'Tên Sản Phẩm', 
                     Price as N'Giá Bán', 
                     StockQuantity as N'Tồn Kho',
-                    Sizes as N'Kích cỡ',
-                    Colors as N'Màu sắc'
+                    Size as N'Kích cỡ',
+                    Color as N'Màu sắc'
                 FROM Products 
-                WHERE CategoryID = @id
+                WHERE CategoryID = @id AND IsDeleted = 0
             `);
         res.json(result.recordset);
     } catch (err) { 
@@ -134,7 +153,7 @@ router.get('/:id/export-products', async (req, res) => {
     }
 });
 
-// 6. API XUẤT DANH SÁCH ĐƠN HÀNG ĐÃ BÁN THEO DANH MỤC
+// 7. XUẤT DANH SÁCH ĐƠN HÀNG ĐÃ BÁN THEO DANH MỤC
 router.get('/:id/export-orders', async (req, res) => {
     try {
         let pool = await sql.connect(sqlConfig);
@@ -156,8 +175,9 @@ router.get('/:id/export-orders', async (req, res) => {
             `);
         res.json(result.recordset);
     } catch (err) { 
-        console.error("Lỗi xuất file ĐH:", err);
+        console.error("Lỗi xuất file Đơn hàng:", err);
         res.status(500).json({ message: 'Lỗi server' }); 
     }
 });
+
 module.exports = router;

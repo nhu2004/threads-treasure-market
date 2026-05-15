@@ -1,0 +1,43 @@
+.wrapper { padding: 30px; background: #fff; min-height: 80vh; border-radius: 12px; }
+.searchDropdown { position: absolute; width: 100%; background: white; z-index: 100; border: 1px solid #ddd; border-top: none; max-height: 200px; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.searchItem { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; }
+.searchItem:hover { background: #f8f9fa; }
+
+/* TRICK CSS ĐỂ IN PHIẾU PDF CHUẨN XÁC */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    
+    .printableModal, .printableModal * {
+        visibility: visible;
+    }
+    
+    .printArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 0 20px;
+        color: black !important;
+    }
+    
+    /* Ẩn giao diện thao tác web khi in */
+    .d-print-none, .no-print, .no-print * {
+        display: none !important;
+    }
+    
+    /* Hiện giao diện Mẫu phiếu in 01-VT */
+    .d-print-block {
+        display: block !important;
+    }
+    
+    /* Ép viền bảng màu đen đậm khi in */
+    .table-print {
+        border: 2px solid black !important;
+    }
+    .table-print th, .table-print td {
+        border: 1px solid black !important;
+        padding: 8px !important;
+    }
+}

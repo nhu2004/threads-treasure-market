@@ -2,21 +2,37 @@
 const API_URL = 'http://localhost:5000/api/categories';
 
 const categoryApi = {
-  getAll: async (params) => {
+  // HỢP NHẤT LOGIC: Xử lý tìm kiếm, phân trang và cờ admin (nếu cần)
+  getAll: async (params = {}) => {
     try {
-      const res = await fetch(API_URL);
-      const data = await res.json();
+      const search = params.search || '';
+      const page = params.page || 1;
+      const limit = params.limit || 10;
+
+      // Dựng URL kèm Query String chuẩn xác
+      const queryParams = new URLSearchParams();
+      if (search) queryParams.append('search', search);
+      queryParams.append('page', page);
+      queryParams.append('limit', limit);
+
+      const res = await fetch(`${API_URL}?${queryParams.toString()}`);
+      const responseData = await res.json();
+       const rawList = responseData.data || responseData.categories || [];
       
-      const formattedData = (data.categories || []).map(cat => ({
+      const formattedData = rawList.map(cat => ({
           ...cat,
-          _id: cat.CategoryID,
-          name: cat.Name,
-          productCount: cat.ProductCount // NHẬN THÊM TRƯỜNG NÀY
+          _id: cat.CategoryID || cat._id, // Map ID linh hoạt
+          name: cat.Name || cat.name,       // Map tên linh hoạt
+          productCount: cat.productCount || cat.ProductCount || 0
       }));
 
-      return { data: formattedData, pagination: { page: 1, total: formattedData.length } };
+      return { 
+        data: formattedData, 
+        pagination: responseData.pagination || { page: 1, totalPage: 1 } 
+      };
     } catch (err) { 
-      return { data: [], pagination: { page: 1, total: 0 } }; 
+      console.error("Lỗi kết nối API Danh mục:", err);
+      return { data: [], pagination: { page: 1, totalPage: 1 } }; 
     }
   },
   
@@ -42,14 +58,16 @@ const categoryApi = {
     const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
     return await res.json();
   },
-  // THÊM 2 HÀM NÀY
+
   exportProducts: async (id) => {
     const res = await fetch(`${API_URL}/${id}/export-products`);
     return await res.json();
   },
+
   exportOrders: async (id) => {
     const res = await fetch(`${API_URL}/${id}/export-orders`);
     return await res.json();
-  },
+  }
 };
-export default categoryApi; 
+
+export default categoryApi;

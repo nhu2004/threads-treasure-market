@@ -1,8 +1,11 @@
 const sql = require('mssql');
 
 const sqlConfig = {
-    user: 'sa', password: '123', database: 'ThreadsTreasureDB',
-    server: 'NHI\\SQL1', options: { encrypt: false, trustServerCertificate: true }
+    user: 'sa', 
+    password: '123', 
+    database: 'ThreadsTreasureDB',
+    server: 'NHI\\SQL1', 
+    options: { encrypt: false, trustServerCertificate: true }
 };
 
 // 1. Lấy danh sách NCC KÈM ĐẾM SỐ LƯỢNG SP VÀ ĐẦY ĐỦ CỘT MỚI
@@ -11,14 +14,14 @@ const getAllSuppliers = async (req, res) => {
         const { search, page = 1, limit = 10 } = req.query;
         let pool = await sql.connect(sqlConfig);
         
-        // ĐÃ SỬA: Lấy đầy đủ các cột mới tạo từ database để truyền xuống Frontend
+        // ĐÃ SỬA: Lấy đầy đủ cột và bổ sung điều kiện p.IsDeleted = 0
         let queryStr = `
             SELECT s.SupplierID, s.Name, s.Description,
                    s.ContactPerson, s.Phone, s.Email, s.Address,
                    s.BankName, s.BankAccount, s.IsActive,
                    COUNT(p.ProductID) AS ProductCount 
             FROM Suppliers s
-            LEFT JOIN Products p ON s.SupplierID = p.SupplierID
+            LEFT JOIN Products p ON s.SupplierID = p.SupplierID AND p.IsDeleted = 0
         `;
         
         const request = pool.request();
@@ -27,7 +30,6 @@ const getAllSuppliers = async (req, res) => {
             request.input('search', sql.NVarChar, `%${search}%`);
         }
         
-        // ĐÃ SỬA: Khi dùng hàm đếm COUNT(), bắt buộc phải GROUP BY tất cả các cột được SELECT ở trên
         queryStr += ` GROUP BY s.SupplierID, s.Name, s.Description, s.ContactPerson, s.Phone, s.Email, s.Address, s.BankName, s.BankAccount, s.IsActive`;
         
         const offset = (page - 1) * limit;
@@ -71,7 +73,6 @@ const createSupplier = async (req, res) => {
         const result = await pool.request()
             .input('name', sql.NVarChar, name)
             .input('description', sql.NVarChar, description || '')
-            // FIX: Đã xóa chữ "suicide" vô lý ở đây
             .query(`
                 INSERT INTO Suppliers (Name, Description, IsActive) 
                 VALUES (@name, @description, 1)
@@ -113,24 +114,45 @@ const deleteSupplier = async (req, res) => {
     } catch (err) { res.status(500).json({ message: 'Lỗi server' }); }
 };
 
+// ĐÃ FIX: Xóa bỏ Colors, Sizes. Bổ sung Color, Size, SKU
 const exportProducts = async (req, res) => {
     try {
         let pool = await sql.connect(sqlConfig);
         let result = await pool.request().input('id', sql.Int, req.params.id).query(`
-            SELECT ProductID as N'Mã SP', Name as N'Tên Sản Phẩm', Price as N'Giá Bán', StockQuantity as N'Tồn Kho', Sizes as N'Kích cỡ', Colors as N'Màu sắc'
-            FROM Products WHERE SupplierID = @id
+            SELECT 
+                ProductID as N'Mã SP', 
+                SKU as N'Mã SKU',
+                Name as N'Tên Sản Phẩm', 
+                Price as N'Giá Bán', 
+                StockQuantity as N'Tồn Kho',
+                Size as N'Kích cỡ',
+                Color as N'Màu sắc'
+            FROM Products 
+            WHERE SupplierID = @id AND IsDeleted = 0
         `);
         res.json(result.recordset);
-    } catch (err) { res.status(500).json({ message: 'Lỗi server' }); }
+    } catch (err) { 
+        console.error("Lỗi xuất file SP nhà cung cấp:", err);
+        res.status(500).json({ message: 'Lỗi server' }); 
+    }
 };
 
 const exportOrders = async (req, res) => {
     try {
         let pool = await sql.connect(sqlConfig);
         let result = await pool.request().input('id', sql.Int, req.params.id).query(`
-            SELECT o.OrderID as N'Mã Đơn', CONVERT(varchar, o.OrderDate, 103) as N'Ngày Đặt', p.Name as N'Tên Sản Phẩm', od.Quantity as N'Số Lượng Bán', od.Price as N'Đơn Giá Lúc Bán', (od.Quantity * od.Price) as N'Thành Tiền'
-            FROM Orders o JOIN OrderDetails od ON o.OrderID = od.OrderID JOIN Products p ON od.ProductID = p.ProductID
-            WHERE p.SupplierID = @id ORDER BY o.OrderDate DESC
+            SELECT 
+                o.OrderID as N'Mã Đơn', 
+                CONVERT(varchar, o.OrderDate, 103) as N'Ngày Đặt', 
+                p.Name as N'Tên Sản Phẩm', 
+                od.Quantity as N'Số Lượng Bán', 
+                od.Price as N'Đơn Giá Lúc Bán', 
+                (od.Quantity * od.Price) as N'Thành Tiền'
+            FROM Orders o 
+            JOIN OrderDetails od ON o.OrderID = od.OrderID 
+            JOIN Products p ON od.ProductID = p.ProductID
+            WHERE p.SupplierID = @id
+            ORDER BY o.OrderDate DESC
         `);
         res.json(result.recordset);
     } catch (err) { res.status(500).json({ message: 'Lỗi server' }); }

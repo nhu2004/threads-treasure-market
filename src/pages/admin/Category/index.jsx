@@ -261,8 +261,8 @@ function CategoryList() {
               <tbody>
                 {loading ? (
                   <tr><td colSpan={4} className="text-center py-5"><Spinner animation="border" variant="success" /></td></tr>
-                ) : categoryData.categorys && categoryData.categorys.length > 0 ? (
-                  categoryData.categorys.map((item, index) => (
+                ) : categoryData?.categorys && categoryData.categorys.length > 0 ? (
+                  categoryData?.categorys.map((item, index) => (
                     <tr key={item._id}>
                       <td className="text-center">{(page - 1) * 10 + (index + 1)}</td>
                       <td className="fw-bold" style={{ color: "#111827" }}>{item.name || item.Name}</td>

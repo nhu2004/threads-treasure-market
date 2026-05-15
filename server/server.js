@@ -16,6 +16,7 @@ const authRouter = require('./routes/auth');
   const usersRouter = require('./routes/users');
   const suppliersRouter = require('./routes/suppliers');
   const invoicesRouter = require('./routes/invoices');
+  const purchaseOrdersRouter = require('./routes/purchaseOrders');
 // 3. Sử dụng các Routes
 app.use('/api/auth', authRouter);
   app.use('/api/products', productsRouter);
@@ -26,6 +27,7 @@ app.use('/api/auth', authRouter);
   app.use('/api/users', usersRouter);
   app.use('/api/suppliers', suppliersRouter);  
   app.use('/api/invoices', require('./routes/invoices'));
+  app.use('/api/purchase-orders', require('./routes/purchaseOrders'));
 // Route kiểm tra server
 app.get('/', (req, res) => {
   res.send('Backend server Threads & Treasure is running!');
