@@ -450,3 +450,76 @@ VALUES
 (4, 60, 'CSV', 1, '2026-04-20 11:00:00'),     -- Nhập 60 Quần âu nam dáng Cropped (NCC 5)
 (8, 30, 'Manual', 1, '2026-04-28 11:30:00'),  -- Nhập 30 Thắt lưng nam Leather (NCC 8)
 (10, 100, 'Manual', 1, '2026-04-28 11:45:00');-- Nhập 100 Ghim cài áo cao cấp (NCC 8)
+
+-----------------------
+
+-- ==============================================================================
+-- BỔ SUNG CỘT VÀ KHÓA NGOẠI CHO BẢNG PurchaseOrders ĐÃ CÓ SẴN DỮ LIỆU
+-- ==============================================================================
+
+BEGIN TRY
+    -- 1. Thêm cột người tạo (Mặc định gán cho User ID 1 đối với các đơn cũ)
+    ALTER TABLE PurchaseOrders ADD CreatedBy INT NOT NULL DEFAULT 1;
+    
+    -- 2. Thêm cột ngày tạo và ngày cập nhật
+    ALTER TABLE PurchaseOrders ADD CreatedAt DATETIME DEFAULT GETDATE();
+    ALTER TABLE PurchaseOrders ADD UpdatedAt DATETIME DEFAULT GETDATE();
+    
+    PRINT N'Đã thêm các cột thành công!';
+END TRY
+BEGIN CATCH
+    PRINT N'Cột có thể đã tồn tại, tiếp tục chạy khóa ngoại...';
+END CATCH;
+GO
+
+BEGIN TRY
+    -- 3. Bổ sung Khóa ngoại liên kết với bảng Suppliers
+    ALTER TABLE PurchaseOrders
+    ADD CONSTRAINT FK_PO_Supplier FOREIGN KEY (SupplierID) REFERENCES Suppliers(SupplierID);
+    
+    PRINT N'Đã thêm Khóa ngoại FK_PO_Supplier thành công!';
+END TRY
+BEGIN CATCH
+    PRINT N'Khóa ngoại đã tồn tại hoặc có lỗi xung đột dữ liệu!';
+END CATCH;
+GO
+
+---------------------------------------------
+-- TẠO BẢNG CHI TIẾT NHẬP HÀNG (Dựa trên cấu trúc PurchaseOrderID của bạn)
+CREATE TABLE PurchaseOrderDetails (
+    PODetailID INT IDENTITY(1,1) PRIMARY KEY,
+    PurchaseOrderID INT NOT NULL,          -- Khóa ngoại trỏ về bảng Đơn nhập hàng của bạn
+    ProductID INT NOT NULL,                -- Mã biến thể sản phẩm (Color/Size)
+    ImportPrice DECIMAL(18, 2) NOT NULL,   -- Giá nhập
+    OrderQuantity INT NOT NULL,            -- Số lượng ĐẶT
+    ReceiveQuantity INT DEFAULT 0,         -- Số lượng THỰC NHẬN (Mặc định là 0 lúc mới đặt)
+    TotalPrice DECIMAL(18, 2) DEFAULT 0,   -- Thành tiền (ImportPrice * ReceiveQuantity)
+    CONSTRAINT FK_PODetail_PO FOREIGN KEY (PurchaseOrderID) REFERENCES PurchaseOrders(PurchaseOrderID),
+    CONSTRAINT FK_PODetail_Product FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+);
+GO
+
+-------------------
+-- Đổ dữ liệu mẫu vào bảng PurchaseOrderDetails
+INSERT INTO PurchaseOrderDetails (PurchaseOrderID, ProductID, ImportPrice, OrderQuantity, ReceiveQuantity, TotalPrice)
+VALUES
+-- PO 1: Hoàn tất (Công ty Dệt may Phong Phú)
+(1, 1, 800000, 50, 50, 40000000),   -- Áo Blazer
+(1, 2, 500000, 30, 30, 15000000),   -- Quần kaki trắng ngà
+
+-- PO 2: Đang xử lý (Công ty Dệt may Phong Phú) -> Chưa nhận hàng nên ReceiveQuantity = 0
+(2, 34, 1000000, 20, 0, 0),         -- Áo Sơ Mi Đen Size 38
+(2, 35, 1000000, 12, 0, 0),         -- Áo Sơ Mi Đen Size 39
+
+-- PO 3: Hoàn tất (Xưởng may Gia Định)
+(3, 39, 700000, 30, 30, 21000000),  -- Quần âu Trắng Size 30
+(3, 40, 700000, 30, 30, 21000000),  -- Quần âu Trắng Size 31
+
+-- PO 4: Hoàn tất (Công ty Phụ kiện Hưng Đạo)
+(4, 10, 50000, 100, 100, 5000000),  -- Ghim cài áo Bạc
+(4, 8, 400000, 25, 25, 10000000),   -- Thắt lưng da bò
+
+-- PO 5: Chờ xác nhận (Công ty Phụ kiện Hưng Đạo)
+(5, 7, 200000, 30, 0, 0),           -- Cà vạt nam
+(5, 9, 1500000, 5, 0, 0);           -- Cặp tài liệu
+GO

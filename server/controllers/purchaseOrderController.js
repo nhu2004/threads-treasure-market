@@ -140,36 +140,5 @@ const completePurchaseOrder = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-const getPOById = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const pool = await poolPromise;
-        
-        // Lấy thông tin Đơn nhập + Nhà cung cấp
-        const poRes = await pool.request().input('id', sql.Int, id).query(`
-            SELECT po.*, s.Name as SupplierName, s.ContactPerson, s.Phone, s.Email, s.Address
-            FROM PurchaseOrders po
-            JOIN Suppliers s ON po.SupplierID = s.SupplierID
-            WHERE po.PurchaseOrderID = @id
-        `);
-        
-        // Lấy danh sách sản phẩm chi tiết
-        const detailsRes = await pool.request().input('id', sql.Int, id).query(`
-            SELECT pod.*, p.Name, p.SKU, p.Color, p.Size 
-            FROM PurchaseOrderDetails pod
-            JOIN Products p ON pod.ProductID = p.ProductID
-            WHERE pod.PurchaseOrderID = @id
-        `);
-        
-        if (poRes.recordset.length > 0) {
-            res.json({ success: true, order: poRes.recordset[0], details: detailsRes.recordset });
-        } else {
-            res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
-        }
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
 
-// Đừng quên export nó ở cuối file
-module.exports = { getAllPurchaseOrders, getPODetails, createPurchaseOrder, updatePOStatus, completePurchaseOrder, getPOById };
+module.exports = { getAllPurchaseOrders, getPODetails, createPurchaseOrder, updatePOStatus, completePurchaseOrder };

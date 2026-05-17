@@ -203,4 +203,25 @@ const getProductsByGroup = async (req, res) => {
     }
 };
 
-module.exports = { getProducts, createProduct, updateProduct, deleteProduct, getProductsByGroup };
+// 6. HÀM MỚI: ẨN / HIỆN SẢN PHẨM BẰNG CÁCH LẬT CỜ IsActive
+const toggleStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const pool = await poolPromise;
+        
+        await pool.request()
+            .input('id', sql.Int, id)
+            .query(`
+                UPDATE Products 
+                SET IsActive = CASE WHEN IsActive = 1 THEN 0 ELSE 1 END 
+                WHERE ProductID = @id
+            `);
+            
+        res.json({ success: true, message: 'Đã thay đổi trạng thái hiển thị của sản phẩm' });
+    } catch (error) {
+        console.error("Lỗi toggle status:", error);
+        res.status(500).json({ success: false, message: "Lỗi Server: " + error.message });
+    }
+};
+ 
+module.exports = { getProducts, createProduct, updateProduct, deleteProduct, getProductsByGroup,toggleStatus };

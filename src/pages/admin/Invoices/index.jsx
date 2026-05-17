@@ -161,14 +161,7 @@ const handleDownloadPDF = async (id) => {
                 <td className="text-center">
                   <div className="d-flex gap-2 justify-content-center">
                     <Button variant="outline-info" size="sm" onClick={() => handleViewInvoice(inv.InvoiceID)} title="Xem chi tiết"><FaEye /></Button>
-                    <Button 
-                      variant="outline-danger" 
-                      size="sm" 
-                      title="Tải PDF"
-                      onClick={() => handleDownloadPDF(inv.InvoiceID)}
-                    >
-                      <FaFilePdf />
-                    </Button>
+                     
                     <Button variant="outline-success" size="sm" onClick={() => handleViewInvoice(inv.InvoiceID)} title="In hóa đơn"><FaPrint /></Button>
                   </div>
                 </td>

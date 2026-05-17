@@ -8,6 +8,5 @@ router.get('/:id/details', poController.getPODetails);
 router.post('/', poController.createPurchaseOrder);
 router.put('/:id/status', poController.updatePOStatus);
 router.put('/:id/complete', poController.completePurchaseOrder);
-router.get('/:id', poController.getPOById);
 
 module.exports = router;

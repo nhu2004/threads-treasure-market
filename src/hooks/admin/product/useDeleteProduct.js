@@ -13,25 +13,23 @@ export const useDeleteProduct = (onSuccess) => {
 
   const handleDelete = async () => {
     try {
-      // Kiểm tra xem sản phẩm đã từng được đặt hàng chưa[cite: 22]
-      const { data: orders } = await productApi.checkIsOrdered(productDelete.ProductID || productDelete.id);
+      const productId = productDelete.ProductID || productDelete.id;
       
-      if (orders.length > 0) {
-        toast.error("Sản phẩm đã có trong đơn hàng, không thể xóa!", {
-          autoClose: 2000,
-        });
-        return;
-      }
-
-      await productApi.delete(productDelete.ProductID || productDelete.id);
-      toast.success("Xóa sản phẩm thành công!", { autoClose: 2000 });
+      // 🔴 SỬA Ở ĐÂY: Gọi API toggleStatus thay vì API delete
+      await productApi.toggleStatus(productId);
+      
+      // Xác định câu thông báo dựa vào trạng thái hiện tại
+      const isCurrentlyActive = productDelete.isActive !== false && productDelete.isActive !== 0;
+      const actionName = isCurrentlyActive ? "Ẩn" : "Hiện lại";
+      
+      toast.success(`${actionName} phân loại thành công!`, { autoClose: 2000 });
       setShowModal(false);
 
       if (onSuccess) {
-        onSuccess(productDelete.ProductID || productDelete.id);
+        onSuccess(); // Gọi hàm tải lại danh sách
       }
     } catch (error) {
-      toast.error("Lỗi khi xóa sản phẩm!");
+      toast.error("Lỗi khi thay đổi trạng thái hiển thị!");
       setShowModal(false);
     }
   };

@@ -18,8 +18,9 @@ function ProductList() {
 
   const handleChangePage = useCallback((page) => setPage(page), [setPage]);
   const productsList = Array.isArray(productData) ? productData : (productData?.products || productData?.data || []);
-  const totalPages = productData?.totalPage || 1;
-
+  
+// Đảm bảo lấy đúng tổng số trang từ Backend
+  const totalPages = productData?.totalPage || productData?.pagination?.totalPage || 1;
   // 🔴 THUẬT TOÁN GOM NHÓM FRONTEND
   const groupedProducts = useMemo(() => {
     const groups = {};
@@ -207,8 +208,13 @@ function ProductList() {
         </table>
       </div>
 
-      {!loading && totalPages > 1 && (<div className={styles.paginationContainer}><PaginationproductStore totalPage={totalPages} currentPage={page} onChangePage={handleChangePage} /></div>)}
-    </div>
+{/* Hiển thị phân trang nếu tổng số trang > 1 */}
+      {!loading && totalPages > 1 && (
+        <div className={styles.paginationContainer}>
+          <PaginationproductStore totalPage={totalPages} currentPage={page} onChangePage={handleChangePage} />
+        </div>
+      )}
+</div>
   );
 }
 

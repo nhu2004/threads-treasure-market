@@ -11,24 +11,29 @@ export const useProductList = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        // THÊM admin: true để Backend biết đây là Admin đang gọi
-        const res = await productApi.getAll({ search: searchString, page: page, limit: 10, admin: true });
-        
-        const productsList = res.data || res.products || [];
-        const totalPage = res.pagination?.totalPage || res.totalPage || 1;
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      // ĐỔI TỪ 10 THÀNH 7
+      const res = await productApi.getAll({ 
+        search: searchString, 
+        page: page, 
+        limit: 7, 
+        admin: true 
+      });
+      
+      const productsList = res.products || [];
+      const totalPage = res.totalPage || 1;
 
-        setProductData({ products: productsList, totalPage: totalPage });
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-        console.error("Lỗi khi tải dữ liệu sản phẩm:", error);
-      }
-    };
-    fetchData();
-  }, [page, searchString, location.search]);
+      setProductData({ products: productsList, totalPage: totalPage });
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      console.error("Lỗi khi tải dữ liệu:", error);
+    }
+  };
+  fetchData();
+}, [page, searchString, location.search]);
 
   const handleSearch = () => {
     setSearchString(searchInput);

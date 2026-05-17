@@ -127,7 +127,7 @@ router.post('/', productController.createProduct);
 router.put('/:id', productController.updateProduct);
 router.delete('/:id', productController.deleteProduct); 
 router.get('/group/:groupId', productController.getProductsByGroup);
-
+router.put('/:id/toggle-status', productController.toggleStatus);
 // 2. LẤY CHI TIẾT SẢN PHẨM 
 router.get('/:id', async (req, res) => {
     try {
@@ -163,6 +163,5 @@ router.get('/:id/check-ordered', async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: 'Lỗi kiểm tra đơn hàng' });
     }
-});
-
+}); 
 module.exports = router;
